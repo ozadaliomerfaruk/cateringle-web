@@ -193,14 +193,22 @@ export default async function AdminLayout({
                 {profile.full_name || "Admin"}
               </span>
             </div>
-            <form action="/auth/logout" method="POST">
-              <button
-                type="submit"
-                className="rounded-lg bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="rounded-lg px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
               >
-                Çıkış
-              </button>
-            </form>
+                Siteyi Gör
+              </Link>
+              <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+                  {profile.full_name?.charAt(0)?.toUpperCase() || "A"}
+                </span>
+                <span className="hidden text-sm font-medium text-slate-700 sm:block">
+                  {profile.full_name || "Admin"}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 

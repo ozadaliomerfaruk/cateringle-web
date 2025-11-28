@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import LogoutButton from "../../components/LogoutButton";
 
 export default async function VendorLayout({
   children,
@@ -90,26 +89,25 @@ export default async function VendorLayout({
             >
               Siteye Dön
             </Link>
-            <LogoutButton />
           </div>
         </div>
         {/* Mobil menü */}
-        <div className="flex items-center justify-between gap-4 border-t px-4 py-2 text-xs md:hidden">
-          <div className="flex gap-4">
-            <Link
-              href="/vendor"
-              className="text-slate-600 hover:text-slate-900"
-            >
-              Teklifler
-            </Link>
-            <Link
-              href="/vendor/settings"
-              className="text-slate-600 hover:text-slate-900"
-            >
-              Ayarlar
-            </Link>
-          </div>
-          <LogoutButton className="text-xs text-red-600 hover:text-red-700" />
+        <div className="flex items-center justify-center gap-4 border-t px-4 py-2 text-xs md:hidden">
+          <Link href="/vendor" className="text-slate-600 hover:text-slate-900">
+            Teklifler
+          </Link>
+          <Link
+            href="/vendor/menu"
+            className="text-slate-600 hover:text-slate-900"
+          >
+            Menü
+          </Link>
+          <Link
+            href="/vendor/settings"
+            className="text-slate-600 hover:text-slate-900"
+          >
+            Ayarlar
+          </Link>
         </div>
       </nav>
 
