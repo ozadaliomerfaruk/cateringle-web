@@ -302,7 +302,10 @@ export default function Header() {
           {/* Auth Buttons - Desktop */}
           <div className="hidden items-center gap-2 lg:flex">
             {loading ? (
-              <div className="h-9 w-24 animate-pulse rounded-lg bg-slate-100" />
+              <div className="flex items-center gap-2">
+                <div className="h-9 w-20 animate-pulse rounded-lg bg-slate-200" />
+                <div className="h-9 w-24 animate-pulse rounded-lg bg-slate-200" />
+              </div>
             ) : userProfile ? (
               <div className="flex items-center gap-2">
                 {isAdmin && (
@@ -353,7 +356,7 @@ export default function Header() {
                 </form>
               </div>
             ) : (
-              <>
+              <div className="flex items-center gap-2">
                 <Link
                   href="/auth/login"
                   className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
@@ -366,8 +369,9 @@ export default function Header() {
                 >
                   Ücretsiz Kayıt
                 </Link>
-              </>
+              </div>
             )}
+          </div>
           </div>
 
           {/* Mobile Menu Button */}
