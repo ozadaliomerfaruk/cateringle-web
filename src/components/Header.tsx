@@ -659,8 +659,7 @@ export default function Header() {
                   <form action="/auth/logout" method="POST" className="mt-2">
                     <button
                       type="submit"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-50"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-red-500 transition-colors hover:bg-red-50"
                     >
                       <svg
                         className="h-5 w-5"

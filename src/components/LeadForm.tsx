@@ -204,7 +204,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               name="customerName"
               required
               placeholder="Adınızı girin"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               value={form.customerName}
               onChange={handleChange}
             />
@@ -218,7 +218,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               name="customerEmail"
               required
               placeholder="ornek@email.com"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               value={form.customerEmail}
               onChange={handleChange}
             />
@@ -231,7 +231,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               type="tel"
               name="customerPhone"
               placeholder="05XX XXX XX XX"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               value={form.customerPhone}
               onChange={handleChange}
             />
@@ -247,7 +247,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             <input
               type="date"
               name="eventDate"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               value={form.eventDate}
               onChange={handleChange}
             />
@@ -261,7 +261,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               name="guestCount"
               min="1"
               placeholder="Örn: 50"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               value={form.guestCount}
               onChange={handleChange}
             />
@@ -279,7 +279,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               name="budgetMin"
               min="0"
               placeholder="TL"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               value={form.budgetMin}
               onChange={handleChange}
             />
@@ -293,7 +293,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               name="budgetMax"
               min="0"
               placeholder="TL"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               value={form.budgetMax}
               onChange={handleChange}
             />
@@ -307,7 +307,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
           </label>
           <select
             name="serviceStyle"
-            className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
             value={form.serviceStyle}
             onChange={handleChange}
           >
@@ -392,7 +392,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             name="notes"
             rows={3}
             placeholder="Özel istekleriniz, diyet gereksinimleri, alerjiler..."
-            className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
             value={form.notes}
             onChange={handleChange}
           />
