@@ -10,11 +10,28 @@ import type { Database } from "@/types/database";
 // Tip tanımları
 type Vendor = Database["public"]["Tables"]["vendors"]["Row"];
 
+interface Segment {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string | null;
+  segment_id: number | null;
+}
+
 interface VendorSettingsFormProps {
   vendor: Vendor;
   cities: { id: number; name: string }[];
   districts: { id: number; name: string }[];
-  categories: { id: number; name: string; slug: string; icon: string | null }[];
+  segments: Segment[];
+  selectedSegmentIds: number[];
+  categories: Category[];
   selectedCategoryIds: number[];
   serviceGroups: {
     id: number;
@@ -30,6 +47,8 @@ export default function VendorSettingsForm({
   vendor,
   cities,
   districts: initialDistricts,
+  segments,
+  selectedSegmentIds,
   categories,
   selectedCategoryIds,
   serviceGroups,
@@ -64,6 +83,8 @@ export default function VendorSettingsForm({
     logo_url: vendor.logo_url || "",
   });
 
+  const [selectedSegments, setSelectedSegments] =
+    useState<number[]>(selectedSegmentIds);
   const [selectedCategories, setSelectedCategories] =
     useState<number[]>(selectedCategoryIds);
   const [selectedServices, setSelectedServices] =
@@ -91,15 +112,21 @@ export default function VendorSettingsForm({
     }
   }, [formData.city_id, fetchDistricts]);
 
-  // ... (handleChange, toggleCategory, toggleService, toggleGroup aynı kalıyor)
-
-  const handleChange = (
+  function handleChange(
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
-  ) => {
+  ): void {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  }
+
+  const toggleSegment = (segmentId: number) => {
+    setSelectedSegments((prev) =>
+      prev.includes(segmentId)
+        ? prev.filter((id) => id !== segmentId)
+        : [...prev, segmentId]
+    );
   };
 
   const toggleCategory = (categoryId: number) => {
@@ -125,6 +152,11 @@ export default function VendorSettingsForm({
         : [...prev, groupId]
     );
   };
+
+  // Segment'e göre filtrelenmiş kategoriler
+  const filteredCategories = categories.filter(
+    (cat) => !cat.segment_id || selectedSegments.includes(cat.segment_id)
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,6 +193,20 @@ export default function VendorSettingsForm({
         .eq("id", vendor.id);
 
       if (vendorError) throw vendorError;
+
+      // Segmentleri güncelle
+      await supabase
+        .from("vendor_segments")
+        .delete()
+        .eq("vendor_id", vendor.id);
+      if (selectedSegments.length > 0) {
+        await supabase.from("vendor_segments").insert(
+          selectedSegments.map((segmentId) => ({
+            vendor_id: vendor.id,
+            segment_id: segmentId,
+          }))
+        );
+      }
 
       // Kategorileri güncelle
       await supabase
@@ -241,6 +287,25 @@ export default function VendorSettingsForm({
       ),
     },
     {
+      id: "segments",
+      label: "Müşteri Tipi",
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+        </svg>
+      ),
+    },
+    {
       id: "categories",
       label: "Kategoriler",
       icon: (
@@ -254,7 +319,7 @@ export default function VendorSettingsForm({
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
           />
         </svg>
       ),
@@ -273,7 +338,7 @@ export default function VendorSettingsForm({
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
           />
         </svg>
       ),
@@ -301,75 +366,45 @@ export default function VendorSettingsForm({
 
   return (
     <div>
-      {/* ... (message ve tabs kısmı aynı kalıyor) */}
+      {/* Mesaj */}
       {message && (
         <div
-          className={`mb-6 flex items-center gap-3 rounded-xl px-4 py-3 text-sm ${
+          className={`mb-6 rounded-xl px-4 py-3 ${
             message.type === "success"
-              ? "bg-green-50 text-green-700"
+              ? "bg-emerald-50 text-emerald-700"
               : "bg-red-50 text-red-700"
           }`}
         >
-          {message.type === "success" ? (
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          ) : (
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          )}
           {message.text}
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
+      {/* Tab Navigation */}
+      <div className="mb-6 flex flex-wrap gap-2">
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
               activeTab === tab.id
-                ? "bg-emerald-600 text-white shadow-md"
-                : "bg-white text-slate-600 hover:bg-slate-100"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
-            <span>{tab.icon}</span>
+            {tab.icon}
             {tab.label}
           </button>
         ))}
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* ... (general, contact, categories, services tab'ları aynı kalıyor) */}
-
         {/* Genel Bilgiler */}
         {activeTab === "general" && (
           <div className="space-y-6 rounded-2xl bg-white p-6 shadow-sm">
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                Firma Adı *
+                Firma Adı
               </label>
               <input
                 type="text"
@@ -383,95 +418,55 @@ export default function VendorSettingsForm({
 
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                Firma Açıklaması
+                Firma Tanıtımı
               </label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 rows={4}
-                placeholder="Firmanız hakkında detaylı bilgi verin..."
+                placeholder="Firmanızı kısaca tanıtın..."
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
               />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Şehir
-                </label>
-                <select
-                  name="city_id"
-                  value={formData.city_id}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                >
-                  <option value="">Seçin</option>
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.id}>
-                      {city.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  İlçe
-                </label>
-                <select
-                  name="district_id"
-                  value={formData.district_id}
-                  onChange={handleChange}
-                  disabled={!formData.city_id}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
-                >
-                  <option value="">Seçin</option>
-                  {districts.map((district) => (
-                    <option key={district.id} value={district.id}>
-                      {district.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Ort. Fiyat (TL/kişi)
+                  Kişi Başı Ortalama Fiyat (TL)
                 </label>
                 <input
                   type="number"
                   name="avg_price_per_person"
                   value={formData.avg_price_per_person}
                   onChange={handleChange}
-                  placeholder="Örn: 250"
+                  placeholder="150"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Min Kişi Sayısı
+                  Min. Kişi Sayısı
                 </label>
                 <input
                   type="number"
                   name="min_guest_count"
                   value={formData.min_guest_count}
                   onChange={handleChange}
-                  placeholder="Örn: 50"
+                  placeholder="20"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Max Kişi Sayısı
+                  Max. Kişi Sayısı
                 </label>
                 <input
                   type="number"
                   name="max_guest_count"
                   value={formData.max_guest_count}
                   onChange={handleChange}
-                  placeholder="Örn: 500"
+                  placeholder="500"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
@@ -492,7 +487,7 @@ export default function VendorSettingsForm({
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="0555 555 55 55"
+                  placeholder="05XX XXX XX XX"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
@@ -505,7 +500,7 @@ export default function VendorSettingsForm({
                   name="whatsapp"
                   value={formData.whatsapp}
                   onChange={handleChange}
-                  placeholder="905555555555"
+                  placeholder="05XX XXX XX XX"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
@@ -521,7 +516,7 @@ export default function VendorSettingsForm({
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="info@firma.com"
+                  placeholder="info@firmaniz.com"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
@@ -534,15 +529,55 @@ export default function VendorSettingsForm({
                   name="website_url"
                   value={formData.website_url}
                   onChange={handleChange}
-                  placeholder="https://www.firma.com"
+                  placeholder="https://firmaniz.com"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
             </div>
 
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Şehir
+                </label>
+                <select
+                  name="city_id"
+                  value={formData.city_id}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                >
+                  <option value="">Şehir seçin</option>
+                  {cities.map((city) => (
+                    <option key={city.id} value={city.id}>
+                      {city.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  İlçe
+                </label>
+                <select
+                  name="district_id"
+                  value={formData.district_id}
+                  onChange={handleChange}
+                  disabled={!formData.city_id}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
+                >
+                  <option value="">İlçe seçin</option>
+                  {districts.map((district) => (
+                    <option key={district.id} value={district.id}>
+                      {district.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                Adres
+                Açık Adres
               </label>
               <textarea
                 name="address_text"
@@ -556,47 +591,175 @@ export default function VendorSettingsForm({
           </div>
         )}
 
-        {/* Kategoriler */}
-        {activeTab === "categories" && (
+        {/* Müşteri Tipi / Segmentler */}
+        {activeTab === "segments" && (
           <div className="rounded-2xl bg-white p-6 shadow-sm">
             <p className="mb-4 text-sm text-slate-600">
-              Firmanızın hizmet verdiği etkinlik türlerini seçin.
+              Hangi müşteri tiplerine hizmet verdiğinizi seçin. Bu seçim,
+              firmanızın doğru müşterilere gösterilmesini sağlar.
             </p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {categories.map((category) => (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {segments.map((segment) => (
                 <button
-                  key={category.id}
+                  key={segment.id}
                   type="button"
-                  onClick={() => toggleCategory(category.id)}
-                  className={`flex flex-col items-center rounded-xl border-2 p-4 transition-all ${
-                    selectedCategories.includes(category.id)
-                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                  onClick={() => toggleSegment(segment.id)}
+                  className={`flex items-start gap-4 rounded-xl border-2 p-5 text-left transition-all ${
+                    selectedSegments.includes(segment.id)
+                      ? segment.slug === "kurumsal"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-emerald-500 bg-emerald-50"
+                      : "border-slate-200 bg-white hover:border-slate-300"
                   }`}
                 >
-                  {category.icon ? (
-                    <span className="text-2xl">{category.icon}</span>
-                  ) : (
-                    <svg
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-                      />
-                    </svg>
-                  )}
-                  <span className="mt-2 text-sm font-medium">
-                    {category.name}
-                  </span>
+                  <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl ${
+                      selectedSegments.includes(segment.id)
+                        ? segment.slug === "kurumsal"
+                          ? "bg-blue-100"
+                          : "bg-emerald-100"
+                        : "bg-slate-100"
+                    }`}
+                  >
+                    {segment.slug === "kurumsal" ? "🏢" : "🎉"}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-slate-900">
+                        {segment.name}
+                      </span>
+                      {selectedSegments.includes(segment.id) && (
+                        <svg
+                          className={`h-5 w-5 ${
+                            segment.slug === "kurumsal"
+                              ? "text-blue-600"
+                              : "text-emerald-600"
+                          }`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {segment.slug === "kurumsal"
+                        ? "Ofis yemekleri, toplantı ikramları, kurumsal etkinlikler"
+                        : "Düğün, doğum günü, ev partisi, özel kutlamalar"}
+                    </p>
+                  </div>
                 </button>
               ))}
             </div>
+            <p className="mt-4 text-xs text-slate-500">
+              Her iki müşteri tipini de seçebilirsiniz.
+            </p>
+          </div>
+        )}
+
+        {/* Kategoriler */}
+        {activeTab === "categories" && (
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            {selectedSegments.length === 0 ? (
+              <div className="rounded-xl bg-amber-50 p-4 text-center">
+                <p className="text-amber-700">
+                  Önce &quot;Müşteri Tipi&quot; sekmesinden en az bir segment
+                  seçin.
+                </p>
+              </div>
+            ) : (
+              <>
+                <p className="mb-4 text-sm text-slate-600">
+                  Firmanızın hizmet verdiği etkinlik türlerini seçin.
+                </p>
+
+                {/* Kurumsal Kategoriler */}
+                {selectedSegments.some(
+                  (id) => segments.find((s) => s.id === id)?.slug === "kurumsal"
+                ) && (
+                  <div className="mb-6">
+                    <h3 className="mb-3 flex items-center gap-2 font-medium text-slate-900">
+                      <span className="flex h-6 w-6 items-center justify-center rounded bg-blue-100 text-sm">
+                        🏢
+                      </span>
+                      Kurumsal Kategoriler
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                      {filteredCategories
+                        .filter(
+                          (c) =>
+                            c.segment_id ===
+                            segments.find((s) => s.slug === "kurumsal")?.id
+                        )
+                        .map((category) => (
+                          <button
+                            key={category.id}
+                            type="button"
+                            onClick={() => toggleCategory(category.id)}
+                            className={`flex flex-col items-center rounded-xl border-2 p-4 transition-all ${
+                              selectedCategories.includes(category.id)
+                                ? "border-blue-500 bg-blue-50 text-blue-700"
+                                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                            }`}
+                          >
+                            <span className="text-2xl">
+                              {category.icon || "📁"}
+                            </span>
+                            <span className="mt-2 text-center text-sm font-medium">
+                              {category.name}
+                            </span>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Bireysel Kategoriler */}
+                {selectedSegments.some(
+                  (id) => segments.find((s) => s.id === id)?.slug === "bireysel"
+                ) && (
+                  <div>
+                    <h3 className="mb-3 flex items-center gap-2 font-medium text-slate-900">
+                      <span className="flex h-6 w-6 items-center justify-center rounded bg-emerald-100 text-sm">
+                        🎉
+                      </span>
+                      Bireysel Kategoriler
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                      {filteredCategories
+                        .filter(
+                          (c) =>
+                            c.segment_id ===
+                            segments.find((s) => s.slug === "bireysel")?.id
+                        )
+                        .map((category) => (
+                          <button
+                            key={category.id}
+                            type="button"
+                            onClick={() => toggleCategory(category.id)}
+                            className={`flex flex-col items-center rounded-xl border-2 p-4 transition-all ${
+                              selectedCategories.includes(category.id)
+                                ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                            }`}
+                          >
+                            <span className="text-2xl">
+                              {category.icon || "📁"}
+                            </span>
+                            <span className="mt-2 text-center text-sm font-medium">
+                              {category.name}
+                            </span>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 
@@ -692,7 +855,7 @@ export default function VendorSettingsForm({
           </div>
         )}
 
-        {/* Medya - DÜZELTILDI */}
+        {/* Medya */}
         {activeTab === "media" && (
           <div className="space-y-6">
             {/* Logo */}

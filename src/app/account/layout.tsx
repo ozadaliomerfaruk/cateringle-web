@@ -29,6 +29,16 @@ export default async function AccountLayout({
     redirect("/");
   }
 
+  // Bekleyen teklif sayısı
+  const { count: pendingQuoteCount } = await supabase
+    .from("quotes")
+    .select(
+      "*, vendor_lead:vendor_leads!inner(lead:leads!inner(customer_profile_id))",
+      { count: "exact", head: true }
+    )
+    .eq("vendor_lead.lead.customer_profile_id", user.id)
+    .eq("status", "sent");
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Üst navigasyon */}
@@ -56,10 +66,15 @@ export default async function AccountLayout({
             </Link>
             <div className="hidden items-center gap-4 text-sm md:flex">
               <Link
-                href="/account"
-                className="text-slate-600 hover:text-slate-900"
+                href="/account/quotes"
+                className="relative text-slate-600 hover:text-slate-900"
               >
                 Tekliflerim
+                {(pendingQuoteCount || 0) > 0 && (
+                  <span className="absolute -right-3 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">
+                    {pendingQuoteCount}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/account/profile"
@@ -83,8 +98,16 @@ export default async function AccountLayout({
         </div>
         {/* Mobil menü */}
         <div className="flex items-center justify-center gap-4 border-t px-4 py-2 text-xs md:hidden">
-          <Link href="/account" className="text-slate-600 hover:text-slate-900">
+          <Link
+            href="/account/quotes"
+            className="relative text-slate-600 hover:text-slate-900"
+          >
             Tekliflerim
+            {(pendingQuoteCount || 0) > 0 && (
+              <span className="absolute -right-2 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-[8px] font-bold text-white">
+                {pendingQuoteCount}
+              </span>
+            )}
           </Link>
           <Link
             href="/account/profile"

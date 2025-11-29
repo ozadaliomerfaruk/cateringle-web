@@ -30,7 +30,7 @@ export default function MobileFilterButton({
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-emerald-700 hover:shadow-xl lg:hidden"
+        className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 bg-leaf-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-leaf-700 hover:shadow-xl lg:hidden"
       >
         <svg
           className="h-5 w-5"
@@ -47,7 +47,7 @@ export default function MobileFilterButton({
         </svg>
         Filtreler
         {activeFilterCount > 0 && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-emerald-600">
+          <span className="flex h-5 w-5 items-center justify-center bg-white text-xs font-bold text-leaf-600">
             {activeFilterCount}
           </span>
         )}
@@ -63,13 +63,13 @@ export default function MobileFilterButton({
 
       {/* Slide-up Panel */}
       <div
-        className={`fixed inset-x-0 bottom-0 z-50 max-h-[85vh] transform overflow-hidden rounded-t-3xl bg-slate-50 transition-transform duration-300 ease-out lg:hidden ${
+        className={`fixed inset-x-0 bottom-0 z-50 max-h-[85vh] transform overflow-hidden bg-slate-50 transition-transform duration-300 ease-out lg:hidden ${
           isOpen ? "translate-y-0" : "translate-y-full"
         }`}
       >
         {/* Handle */}
         <div className="sticky top-0 z-10 bg-slate-50 px-4 py-3">
-          <div className="mx-auto h-1.5 w-12 rounded-full bg-slate-300" />
+          <div className="mx-auto h-1 w-12 bg-slate-300" />
         </div>
 
         {/* Header */}
@@ -77,7 +77,7 @@ export default function MobileFilterButton({
           <h2 className="text-lg font-semibold text-slate-900">Filtreler</h2>
           <button
             onClick={() => setIsOpen(false)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition-colors hover:bg-slate-200"
+            className="flex h-10 w-10 items-center justify-center bg-slate-100 text-slate-600 transition-colors hover:bg-slate-200"
           >
             <svg
               className="h-5 w-5"
@@ -107,7 +107,7 @@ export default function MobileFilterButton({
         <div className="sticky bottom-0 border-t bg-white p-4">
           <button
             onClick={() => setIsOpen(false)}
-            className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+            className="w-full bg-leaf-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-leaf-700"
           >
             Sonuçları Gör
           </button>

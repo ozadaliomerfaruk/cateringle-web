@@ -60,10 +60,25 @@ export default async function VendorSettingsPage() {
     districts = data || [];
   }
 
-  // Kategoriler
+  // Segmentler
+  const { data: segments } = await supabase
+    .from("customer_segments")
+    .select("id, name, slug, description")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  // Vendor'ın segmentleri
+  const { data: vendorSegments } = await supabase
+    .from("vendor_segments")
+    .select("segment_id")
+    .eq("vendor_id", vendor.id);
+
+  const selectedSegmentIds = vendorSegments?.map((vs) => vs.segment_id) || [];
+
+  // Kategoriler (segment bilgisiyle)
   const { data: categories } = await supabase
     .from("service_categories")
-    .select("id, name, slug, icon")
+    .select("id, name, slug, icon, segment_id")
     .eq("is_active", true)
     .order("sort_order");
 
@@ -124,6 +139,8 @@ export default async function VendorSettingsPage() {
           vendor={vendor}
           cities={cities || []}
           districts={districts}
+          segments={segments || []}
+          selectedSegmentIds={selectedSegmentIds}
           categories={categories || []}
           selectedCategoryIds={selectedCategoryIds}
           serviceGroups={sortedServiceGroups}

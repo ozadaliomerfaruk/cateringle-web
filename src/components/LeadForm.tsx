@@ -1,8 +1,14 @@
-//src/app/components/LeadForm.tsx
+//src/components/LeadForm.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+
+interface Segment {
+  id: number;
+  name: string;
+  slug: string;
+}
 
 interface LeadFormProps {
   vendorId: string;
@@ -13,6 +19,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [segments, setSegments] = useState<Segment[]>([]);
   const [currentUser, setCurrentUser] = useState<{
     id: string;
     email: string;
@@ -24,6 +31,8 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
     customerName: "",
     customerEmail: "",
     customerPhone: "",
+    segmentId: "",
+    eventType: "",
     eventDate: "",
     guestCount: "",
     budgetMin: "",
@@ -37,16 +46,28 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
     notes: "",
   });
 
-  // Giriş yapmış kullanıcı varsa bilgilerini çek
+  // Segmentleri ve kullanıcı bilgilerini çek
   useEffect(() => {
-    async function fetchUser() {
+    async function fetchData() {
       const supabase = createBrowserSupabaseClient();
+
+      // Segmentleri çek
+      const { data: segmentData } = await supabase
+        .from("customer_segments")
+        .select("id, name, slug")
+        .eq("is_active", true)
+        .order("sort_order");
+
+      if (segmentData) {
+        setSegments(segmentData);
+      }
+
+      // Kullanıcı bilgilerini çek
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (user) {
-        // Profil bilgilerini çek
         const { data: profile } = await supabase
           .from("profiles")
           .select("full_name, phone")
@@ -60,7 +81,6 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
           phone: profile?.phone || "",
         });
 
-        // Formu otomatik doldur
         setForm((prev) => ({
           ...prev,
           customerName: profile?.full_name || "",
@@ -70,7 +90,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
       }
     }
 
-    fetchUser();
+    fetchData();
   }, []);
 
   const handleChange = (
@@ -83,6 +103,15 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
     setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  // Segment değiştiğinde etkinlik türünü sıfırla
+  const handleSegmentChange = (segmentId: string) => {
+    setForm((prev) => ({
+      ...prev,
+      segmentId,
+      eventType: "",
     }));
   };
 
@@ -101,6 +130,8 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
           customerName: form.customerName.trim(),
           customerEmail: form.customerEmail.trim(),
           customerPhone: form.customerPhone.trim() || null,
+          segmentId: form.segmentId ? parseInt(form.segmentId, 10) : null,
+          eventType: form.eventType || null,
           eventDate: form.eventDate || null,
           guestCount: form.guestCount || null,
           budgetMin: form.budgetMin || null,
@@ -127,6 +158,8 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
         customerName: currentUser?.fullName || "",
         customerEmail: currentUser?.email || "",
         customerPhone: currentUser?.phone || "",
+        segmentId: "",
+        eventType: "",
         eventDate: "",
         guestCount: "",
         budgetMin: "",
@@ -147,6 +180,34 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
     }
   };
 
+  // Etkinlik türleri segment'e göre
+  const eventTypes = {
+    kurumsal: [
+      { value: "ofis-ogle", label: "Ofis Öğle Yemeği" },
+      { value: "toplanti", label: "Toplantı İkramı" },
+      { value: "kahvalti", label: "Ofis Kahvaltısı" },
+      { value: "etkinlik", label: "Kurumsal Etkinlik" },
+      { value: "konferans", label: "Konferans / Seminer" },
+      { value: "fuar", label: "Fuar / Organizasyon" },
+    ],
+    bireysel: [
+      { value: "dugun", label: "Düğün / Nişan" },
+      { value: "dogum-gunu", label: "Doğum Günü" },
+      { value: "ev-partisi", label: "Ev Partisi" },
+      { value: "baby-shower", label: "Baby Shower / Mevlüt" },
+      { value: "mezuniyet", label: "Mezuniyet" },
+      { value: "yildonumu", label: "Yıldönümü / Özel Gün" },
+      { value: "piknik", label: "Piknik / Açık Hava" },
+    ],
+  };
+
+  const selectedSegment = segments.find(
+    (s) => s.id.toString() === form.segmentId
+  );
+  const currentEventTypes = selectedSegment
+    ? eventTypes[selectedSegment.slug as keyof typeof eventTypes] || []
+    : [];
+
   return (
     <div>
       <h2 className="mb-1 text-lg font-semibold text-slate-900">
@@ -156,7 +217,6 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
         {vendorName} size özel bir teklif hazırlasın
       </p>
 
-      {/* Giriş yapmış kullanıcı bilgisi */}
       {currentUser && (
         <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
           <span className="font-medium">
@@ -237,6 +297,54 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             />
           </div>
         </div>
+
+        {/* Segment Seçimi */}
+        <div>
+          <label className="mb-2 block text-xs font-medium text-slate-700">
+            Hizmet türü
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {segments.map((segment) => (
+              <button
+                key={segment.id}
+                type="button"
+                onClick={() => handleSegmentChange(segment.id.toString())}
+                className={`flex items-center justify-center gap-2 rounded-lg border-2 px-3 py-2.5 text-sm font-medium transition-all ${
+                  form.segmentId === segment.id.toString()
+                    ? segment.slug === "kurumsal"
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-emerald-500 bg-emerald-50 text-emerald-700"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                }`}
+              >
+                <span>{segment.slug === "kurumsal" ? "🏢" : "🎉"}</span>
+                {segment.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Etkinlik Türü - Segment seçildiyse göster */}
+        {form.segmentId && currentEventTypes.length > 0 && (
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-700">
+              Etkinlik türü
+            </label>
+            <select
+              name="eventType"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              value={form.eventType}
+              onChange={handleChange}
+            >
+              <option value="">Seçiniz</option>
+              {currentEventTypes.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Etkinlik Bilgileri */}
         <div className="grid grid-cols-2 gap-3">

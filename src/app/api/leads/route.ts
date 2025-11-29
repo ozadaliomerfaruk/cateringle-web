@@ -11,6 +11,8 @@ export async function POST(request: NextRequest) {
       customerName,
       customerEmail,
       customerPhone,
+      segmentId,
+      eventType,
       eventDate,
       guestCount,
       budgetMin,
@@ -38,6 +40,8 @@ export async function POST(request: NextRequest) {
         customer_name: customerName,
         customer_email: customerEmail,
         customer_phone: customerPhone || null,
+        segment_id: segmentId || null,
+        event_type: eventType || null,
         event_date: eventDate || null,
         guest_count: guestCount ? parseInt(guestCount, 10) : null,
         budget_min: budgetMin ? parseFloat(budgetMin) : null,
@@ -86,7 +90,18 @@ export async function POST(request: NextRequest) {
       .eq("id", vendorId)
       .single();
 
-    // 4) E-posta bildirimleri gönder (arka planda, hata olsa bile devam et)
+    // 4) Segment bilgisini çek (e-posta için)
+    let segmentName = "";
+    if (segmentId) {
+      const { data: segment } = await supabaseAdmin
+        .from("customer_segments")
+        .select("name")
+        .eq("id", segmentId)
+        .single();
+      segmentName = segment?.name || "";
+    }
+
+    // 5) E-posta bildirimleri gönder
     if (vendor?.email) {
       sendNewLeadNotification({
         vendorEmail: vendor.email,
@@ -97,6 +112,8 @@ export async function POST(request: NextRequest) {
         eventDate,
         guestCount: guestCount ? parseInt(guestCount, 10) : undefined,
         message: notes,
+        segmentName,
+        eventType,
       }).catch((err) => console.error("Vendor email error:", err));
     }
 

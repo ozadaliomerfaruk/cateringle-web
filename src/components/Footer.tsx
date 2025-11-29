@@ -1,4 +1,4 @@
-// src/app/components/Footer.tsx
+// src/components/Footer.tsx
 import Link from "next/link";
 
 export default function Footer() {
@@ -8,11 +8,11 @@ export default function Footer() {
     <footer className="border-t bg-slate-900 text-slate-300">
       {/* Main Footer */}
       <div className="mx-auto max-w-6xl px-4 py-12">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-emerald-500 to-teal-600 text-xl font-bold text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-xl font-bold text-white">
                 C
               </div>
               <span className="text-xl font-bold text-white">
@@ -20,13 +20,13 @@ export default function Footer() {
               </span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-slate-400">
-              Türkiye&apos;nin en kapsamlı catering platformu. Düğün, nişan,
-              kurumsal etkinlik ve özel günler için en uygun firmayı bulun.
+              Türkiye&apos;nin en kapsamlı catering platformu. Kurumsal ve
+              bireysel etkinlikleriniz için en uygun firmayı bulun.
             </p>
             {/* Social */}
             <div className="mt-6 flex gap-3">
               <a
-                href="https://instagram.com/cateringle"
+                href="https://instagram.com/cateringlecom"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 text-slate-400 transition-colors hover:bg-emerald-600 hover:text-white"
@@ -40,7 +40,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="https://twitter.com/cateringle"
+                href="https://twitter.com/cateringlecom"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 text-slate-400 transition-colors hover:bg-emerald-600 hover:text-white"
@@ -54,7 +54,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="https://linkedin.com/company/cateringle"
+                href="https://linkedin.com/company/cateringlecom"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 text-slate-400 transition-colors hover:bg-emerald-600 hover:text-white"
@@ -70,40 +70,89 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Keşfet */}
+          {/* Kurumsal Hizmetler */}
           <div>
-            <h3 className="font-semibold text-white">Keşfet</h3>
+            <h3 className="flex items-center gap-2 font-semibold text-white">
+              <span className="flex h-6 w-6 items-center justify-center rounded bg-blue-500/20 text-xs">
+                🏢
+              </span>
+              Kurumsal
+            </h3>
             <ul className="mt-4 space-y-3">
               <li>
                 <Link
-                  href="/vendors"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  href="/vendors?segment=kurumsal"
+                  className="text-sm text-slate-400 transition-colors hover:text-blue-400"
                 >
-                  Catering Firmaları
+                  Tüm Kurumsal Hizmetler
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/vendors?category=dugun"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  href="/vendors?segment=kurumsal&category=ofis-ogle-yemekleri"
+                  className="text-sm text-slate-400 transition-colors hover:text-blue-400"
                 >
-                  Düğün Catering
+                  Ofis Öğle Yemekleri
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/vendors?category=kurumsal-etkinlik"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  href="/vendors?segment=kurumsal&category=toplanti-ikramlari"
+                  className="text-sm text-slate-400 transition-colors hover:text-blue-400"
                 >
-                  Kurumsal Catering
+                  Toplantı İkramları
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/vendors?category=dogum-gunu"
+                  href="/vendors?segment=kurumsal&category=kurumsal-etkinlik"
+                  className="text-sm text-slate-400 transition-colors hover:text-blue-400"
+                >
+                  Kurumsal Etkinlik
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Bireysel Hizmetler */}
+          <div>
+            <h3 className="flex items-center gap-2 font-semibold text-white">
+              <span className="flex h-6 w-6 items-center justify-center rounded bg-emerald-500/20 text-xs">
+                🎉
+              </span>
+              Bireysel
+            </h3>
+            <ul className="mt-4 space-y-3">
+              <li>
+                <Link
+                  href="/vendors?segment=bireysel"
                   className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
                 >
-                  Doğum Günü Catering
+                  Tüm Bireysel Hizmetler
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/vendors?segment=bireysel&category=dugun-nisan"
+                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                >
+                  Düğün & Nişan
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/vendors?segment=bireysel&category=dogum-gunu"
+                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                >
+                  Doğum Günü
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/vendors?segment=bireysel&category=evde-sef-hizmeti"
+                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                >
+                  Evde Şef Hizmeti
                 </Link>
               </li>
             </ul>
@@ -137,12 +186,20 @@ export default function Footer() {
                   Neden Cateringle?
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/blog"
+                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                >
+                  Blog
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Kurumsal */}
+          {/* Yasal */}
           <div>
-            <h3 className="font-semibold text-white">Kurumsal</h3>
+            <h3 className="font-semibold text-white">Yasal</h3>
             <ul className="mt-4 space-y-3">
               <li>
                 <Link
@@ -182,14 +239,6 @@ export default function Footer() {
                   className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
                 >
                   KVKK
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/cerez-politikasi"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
-                >
-                  Çerez Politikası
                 </Link>
               </li>
             </ul>

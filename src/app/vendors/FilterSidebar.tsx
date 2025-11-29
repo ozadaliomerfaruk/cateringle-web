@@ -11,10 +11,18 @@ interface ServiceGroup {
   services: { id: number; name: string; slug: string }[];
 }
 
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string | null;
+}
+
 interface FilterSidebarProps {
   cities: { id: number; name: string }[];
   districts: { id: number; name: string }[];
   serviceGroups: ServiceGroup[];
+  categories?: Category[];
   currentParams: {
     city?: string;
     district?: string;
@@ -24,17 +32,60 @@ interface FilterSidebarProps {
     max_guest?: string;
     category?: string;
     services?: string;
+    segment?: string;
   };
+}
+
+// Accordion Section Component
+function FilterSection({
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border-b border-slate-200">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between py-4 text-left"
+      >
+        <span className="text-sm font-semibold text-slate-900">{title}</span>
+        <svg
+          className={`h-4 w-4 text-slate-500 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+      {isOpen && <div className="pb-4">{children}</div>}
+    </div>
+  );
 }
 
 export default function FilterSidebar({
   cities,
   districts,
   serviceGroups,
+  categories = [],
   currentParams,
 }: FilterSidebarProps) {
   const router = useRouter();
-  const [expandedGroups, setExpandedGroups] = useState<number[]>([]);
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   const selectedServices = currentParams.services
     ? currentParams.services.split(",")
@@ -50,14 +101,14 @@ export default function FilterSidebar({
     return `/vendors${queryString ? `?${queryString}` : ""}`;
   }
 
-  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleCityChange = (cityId: string) => {
     router.push(
-      buildFilterUrl({ city: e.target.value || undefined, district: undefined })
+      buildFilterUrl({ city: cityId || undefined, district: undefined })
     );
   };
 
-  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    router.push(buildFilterUrl({ district: e.target.value || undefined }));
+  const handleDistrictChange = (districtId: string) => {
+    router.push(buildFilterUrl({ district: districtId || undefined }));
   };
 
   const handleServiceToggle = (serviceSlug: string) => {
@@ -74,23 +125,17 @@ export default function FilterSidebar({
     );
   };
 
-  const toggleGroup = (groupId: number) => {
-    setExpandedGroups((prev) =>
-      prev.includes(groupId)
-        ? prev.filter((id) => id !== groupId)
-        : [...prev, groupId]
-    );
+  const handleCategoryToggle = (categorySlug: string) => {
+    const newCategory =
+      currentParams.category === categorySlug ? undefined : categorySlug;
+    router.push(buildFilterUrl({ category: newCategory }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  const handleGuestChange = (min: string, max: string) => {
     router.push(
       buildFilterUrl({
-        min_price: (formData.get("min_price") as string) || undefined,
-        max_price: (formData.get("max_price") as string) || undefined,
-        min_guest: (formData.get("min_guest") as string) || undefined,
-        max_guest: (formData.get("max_guest") as string) || undefined,
+        min_guest: min || undefined,
+        max_guest: max || undefined,
       })
     );
   };
@@ -102,223 +147,196 @@ export default function FilterSidebar({
     currentParams.max_price ||
     currentParams.min_guest ||
     currentParams.max_guest ||
-    currentParams.services;
+    currentParams.services ||
+    currentParams.category;
+
+  const displayedCategories = showAllCategories
+    ? categories
+    : categories.slice(0, 6);
 
   return (
-    <div className="space-y-6">
-      {/* Temel Filtreler */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <h3 className="flex items-center gap-2 font-semibold text-slate-900">
-          <svg
-            className="h-5 w-5 text-emerald-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+    <div className="space-y-0">
+      {/* Clear Filters */}
+      {hasFilters && (
+        <div className="border-b border-slate-200 pb-4">
+          <Link
+            href={
+              currentParams.segment
+                ? `/vendors?segment=${currentParams.segment}`
+                : "/vendors"
+            }
+            className="text-sm font-medium text-leaf-600 hover:text-leaf-700"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-            />
-          </svg>
-          Filtreler
-        </h3>
+            Filtreleri Temizle
+          </Link>
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit} className="mt-5 space-y-5">
-          {/* Şehir */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Şehir
-            </label>
+      {/* Teslimat Şekli / Konum */}
+      <FilterSection title="Konum" defaultOpen={true}>
+        <div className="space-y-3">
+          <select
+            value={currentParams.city || ""}
+            onChange={(e) => handleCityChange(e.target.value)}
+            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none"
+          >
+            <option value="">Tüm Şehirler</option>
+            {cities.map((city) => (
+              <option key={city.id} value={city.id}>
+                {city.name}
+              </option>
+            ))}
+          </select>
+
+          {districts.length > 0 && (
             <select
-              name="city"
-              defaultValue={currentParams.city || ""}
-              onChange={handleCityChange}
-              className="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              value={currentParams.district || ""}
+              onChange={(e) => handleDistrictChange(e.target.value)}
+              className="w-full border border-slate-200 bg-white px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none"
             >
-              <option value="">Tüm şehirler</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.id}>
-                  {city.name}
+              <option value="">Tüm İlçeler</option>
+              {districts.map((district) => (
+                <option key={district.id} value={district.id}>
+                  {district.name}
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* İlçe */}
-          {districts.length > 0 && (
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                İlçe
-              </label>
-              <select
-                name="district"
-                defaultValue={currentParams.district || ""}
-                onChange={handleDistrictChange}
-                className="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-              >
-                <option value="">Tüm ilçeler</option>
-                {districts.map((district) => (
-                  <option key={district.id} value={district.id}>
-                    {district.name}
-                  </option>
-                ))}
-              </select>
-            </div>
           )}
-
-          {/* Fiyat */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Kişi Başı Fiyat (TL)
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                name="min_price"
-                placeholder="Min"
-                defaultValue={currentParams.min_price || ""}
-                className="w-full rounded-xl border-slate-200 bg-slate-50 px-3 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-              />
-              <input
-                type="number"
-                name="max_price"
-                placeholder="Max"
-                defaultValue={currentParams.max_price || ""}
-                className="w-full rounded-xl border-slate-200 bg-slate-50 px-3 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-              />
-            </div>
-          </div>
-
-          {/* Kişi Sayısı */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Kişi Sayısı
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                name="min_guest"
-                placeholder="Min"
-                defaultValue={currentParams.min_guest || ""}
-                className="w-full rounded-xl border-slate-200 bg-slate-50 px-3 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-              />
-              <input
-                type="number"
-                name="max_guest"
-                placeholder="Max"
-                defaultValue={currentParams.max_guest || ""}
-                className="w-full rounded-xl border-slate-200 bg-slate-50 px-3 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
-          >
-            Uygula
-          </button>
-
-          {hasFilters && (
-            <Link
-              href="/vendors"
-              className="block text-center text-sm text-slate-500 hover:text-emerald-600"
-            >
-              Filtreleri temizle
-            </Link>
-          )}
-        </form>
-      </div>
-
-      {/* Hizmet Filtreleri */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <h3 className="flex items-center gap-2 font-semibold text-slate-900">
-          <svg
-            className="h-5 w-5 text-emerald-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-            />
-          </svg>
-          Ek Hizmetler
-        </h3>
-
-        <div className="mt-4 space-y-2">
-          {serviceGroups.map((group) => {
-            const isExpanded = expandedGroups.includes(group.id);
-            const groupSelectedCount = group.services.filter((s) =>
-              selectedServices.includes(s.slug)
-            ).length;
-
-            return (
-              <div
-                key={group.id}
-                className="overflow-hidden rounded-xl border border-slate-200"
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(group.id)}
-                  className="flex w-full items-center justify-between bg-slate-50 px-4 py-3 text-left transition-colors hover:bg-slate-100"
-                >
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    <span>{group.icon}</span>
-                    {group.name}
-                    {groupSelectedCount > 0 && (
-                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-                        {groupSelectedCount}
-                      </span>
-                    )}
-                  </span>
-                  <svg
-                    className={`h-4 w-4 text-slate-400 transition-transform ${
-                      isExpanded ? "rotate-180" : ""
-                    }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-
-                {isExpanded && (
-                  <div className="space-y-1 bg-white p-3">
-                    {group.services.map((service) => (
-                      <label
-                        key={service.id}
-                        className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-slate-50"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedServices.includes(service.slug)}
-                          onChange={() => handleServiceToggle(service.slug)}
-                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                        />
-                        <span className="text-sm text-slate-700">
-                          {service.name}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
         </div>
-      </div>
+      </FilterSection>
+
+      {/* Etkinlik Türü / Kategoriler */}
+      {categories.length > 0 && (
+        <FilterSection title="Etkinlik Türü" defaultOpen={true}>
+          <div className="space-y-2">
+            {displayedCategories.map((category) => (
+              <label
+                key={category.id}
+                className="flex cursor-pointer items-center gap-3 py-1"
+              >
+                <input
+                  type="checkbox"
+                  checked={currentParams.category === category.slug}
+                  onChange={() => handleCategoryToggle(category.slug)}
+                  className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                />
+                <span className="text-sm text-slate-700">{category.name}</span>
+              </label>
+            ))}
+            {categories.length > 6 && (
+              <button
+                type="button"
+                onClick={() => setShowAllCategories(!showAllCategories)}
+                className="mt-2 text-sm font-medium text-leaf-600 hover:text-leaf-700"
+              >
+                {showAllCategories
+                  ? "Daha az göster"
+                  : `+${categories.length - 6} daha fazla göster`}
+              </button>
+            )}
+          </div>
+        </FilterSection>
+      )}
+
+      {/* Mutfak Türü / Hizmetler */}
+      {serviceGroups.map((group) => (
+        <FilterSection key={group.id} title={group.name}>
+          <div className="space-y-2">
+            {group.services
+              .slice(0, showAllCategories ? undefined : 5)
+              .map((service) => (
+                <label
+                  key={service.id}
+                  className="flex cursor-pointer items-center gap-3 py-1"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedServices.includes(service.slug)}
+                    onChange={() => handleServiceToggle(service.slug)}
+                    className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                  />
+                  <span className="text-sm text-slate-700">{service.name}</span>
+                </label>
+              ))}
+            {group.services.length > 5 && (
+              <button
+                type="button"
+                onClick={() => setShowAllCategories(!showAllCategories)}
+                className="mt-1 text-sm font-medium text-leaf-600 hover:text-leaf-700"
+              >
+                {showAllCategories ? "Daha az göster" : "Daha fazla göster"}
+              </button>
+            )}
+          </div>
+        </FilterSection>
+      ))}
+
+      {/* Kişi Sayısı */}
+      <FilterSection title="Kişi Sayısı">
+        <div className="space-y-2">
+          {[
+            { label: "1-25 kişi", min: "1", max: "25" },
+            { label: "26-50 kişi", min: "26", max: "50" },
+            { label: "51-100 kişi", min: "51", max: "100" },
+            { label: "101-250 kişi", min: "101", max: "250" },
+            { label: "250+ kişi", min: "250", max: "" },
+          ].map((range) => (
+            <label
+              key={range.label}
+              className="flex cursor-pointer items-center gap-3 py-1"
+            >
+              <input
+                type="checkbox"
+                checked={
+                  currentParams.min_guest === range.min &&
+                  currentParams.max_guest === range.max
+                }
+                onChange={() => {
+                  if (
+                    currentParams.min_guest === range.min &&
+                    currentParams.max_guest === range.max
+                  ) {
+                    handleGuestChange("", "");
+                  } else {
+                    handleGuestChange(range.min, range.max);
+                  }
+                }}
+                className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
+              />
+              <span className="text-sm text-slate-700">{range.label}</span>
+            </label>
+          ))}
+        </div>
+      </FilterSection>
+
+      {/* Fiyat Aralığı */}
+      <FilterSection title="Fiyat Aralığı (TL/kişi)">
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            placeholder="Min"
+            defaultValue={currentParams.min_price || ""}
+            onBlur={(e) =>
+              router.push(
+                buildFilterUrl({ min_price: e.target.value || undefined })
+              )
+            }
+            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none"
+          />
+          <span className="text-slate-400">-</span>
+          <input
+            type="number"
+            placeholder="Max"
+            defaultValue={currentParams.max_price || ""}
+            onBlur={(e) =>
+              router.push(
+                buildFilterUrl({ max_price: e.target.value || undefined })
+              )
+            }
+            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none"
+          />
+        </div>
+      </FilterSection>
     </div>
   );
 }

@@ -23,6 +23,13 @@ export default async function VendorRegisterPage({
     .select("id, name")
     .order("name");
 
+  // Segmentleri çek
+  const { data: segments } = await supabase
+    .from("customer_segments")
+    .select("id, name, slug, description")
+    .eq("is_active", true)
+    .order("sort_order");
+
   async function handleRegister(formData: FormData) {
     "use server";
 
@@ -31,9 +38,13 @@ export default async function VendorRegisterPage({
       data: { user },
     } = await supabase.auth.getUser();
 
-    // city_id'yi number'a çevir
+    // Form verilerini al
     const cityIdStr = formData.get("city_id") as string;
     const cityId = cityIdStr ? parseInt(cityIdStr, 10) : null;
+
+    // Segment ID'lerini al (checkbox'lardan)
+    const selectedSegments = formData.getAll("segments") as string[];
+    const segmentIds = selectedSegments.map((s) => parseInt(s, 10));
 
     // Auth kontrolü
     if (!user) {
@@ -71,8 +82,49 @@ export default async function VendorRegisterPage({
         });
 
         // Vendor kaydı
-        const { error: vendorError } = await supabase.from("vendors").insert({
-          owner_id: authData.user.id,
+        const { data: vendor, error: vendorError } = await supabase
+          .from("vendors")
+          .insert({
+            owner_id: authData.user.id,
+            business_name: formData.get("business_name") as string,
+            slug:
+              (formData.get("business_name") as string)
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/(^-|-$)/g, "") +
+              "-" +
+              Date.now(),
+            description: (formData.get("description") as string) || null,
+            phone: (formData.get("phone") as string) || null,
+            city_id: cityId,
+            status: "pending",
+          })
+          .select("id")
+          .single();
+
+        if (vendorError) {
+          redirect(
+            "/auth/register?error=" + encodeURIComponent(vendorError.message)
+          );
+        }
+
+        // Vendor segment ilişkilerini kaydet
+        if (vendor && segmentIds.length > 0) {
+          const segmentInserts = segmentIds.map((segmentId) => ({
+            vendor_id: vendor.id,
+            segment_id: segmentId,
+          }));
+          await supabase.from("vendor_segments").insert(segmentInserts);
+        }
+
+        redirect("/auth/register?success=1");
+      }
+    } else {
+      // Mevcut kullanıcı için vendor kaydı
+      const { data: vendor, error: vendorError } = await supabase
+        .from("vendors")
+        .insert({
+          owner_id: user.id,
           business_name: formData.get("business_name") as string,
           slug:
             (formData.get("business_name") as string)
@@ -85,38 +137,23 @@ export default async function VendorRegisterPage({
           phone: (formData.get("phone") as string) || null,
           city_id: cityId,
           status: "pending",
-        });
-
-        if (vendorError) {
-          redirect(
-            "/auth/register?error=" + encodeURIComponent(vendorError.message)
-          );
-        }
-
-        redirect("/auth/register?success=1");
-      }
-    } else {
-      // Mevcut kullanıcı için vendor kaydı
-      const { error: vendorError } = await supabase.from("vendors").insert({
-        owner_id: user.id,
-        business_name: formData.get("business_name") as string,
-        slug:
-          (formData.get("business_name") as string)
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/(^-|-$)/g, "") +
-          "-" +
-          Date.now(),
-        description: (formData.get("description") as string) || null,
-        phone: (formData.get("phone") as string) || null,
-        city_id: cityId,
-        status: "pending",
-      });
+        })
+        .select("id")
+        .single();
 
       if (vendorError) {
         redirect(
           "/auth/register?error=" + encodeURIComponent(vendorError.message)
         );
+      }
+
+      // Vendor segment ilişkilerini kaydet
+      if (vendor && segmentIds.length > 0) {
+        const segmentInserts = segmentIds.map((segmentId) => ({
+          vendor_id: vendor.id,
+          segment_id: segmentId,
+        }));
+        await supabase.from("vendor_segments").insert(segmentInserts);
       }
 
       // Rolü güncelle
@@ -195,22 +232,22 @@ export default async function VendorRegisterPage({
                     },
                     {
                       step: "2",
-                      title: "Onayınızı bekleyin",
+                      title: "Onay bekleyin",
                       desc: "Ekibimiz başvurunuzu inceler",
                     },
                     {
                       step: "3",
-                      title: "Profilinizi zenginleştirin",
-                      desc: "Menü, fotoğraf ve detayları ekleyin",
+                      title: "Profilinizi tamamlayın",
+                      desc: "Menü ve fotoğraf ekleyin",
                     },
                     {
                       step: "4",
                       title: "Teklif almaya başlayın",
-                      desc: "Müşterilerden talepler gelmeye başlar",
+                      desc: "Müşterilerle iletişime geçin",
                     },
-                  ].map((item, i) => (
-                    <li key={i} className="flex gap-3">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
+                  ].map((item) => (
+                    <li key={item.step} className="flex gap-3">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700">
                         {item.step}
                       </span>
                       <div>
@@ -226,15 +263,14 @@ export default async function VendorRegisterPage({
             </div>
           </div>
 
-          {/* Sağ - Form / Success */}
+          {/* Sağ - Form */}
           <div className="lg:col-span-3">
-            <div className="rounded-2xl bg-white p-6 shadow-xl sm:p-8">
-              {/* Success */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               {params.success ? (
-                <div className="text-center">
-                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+                <div className="py-8 text-center">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
                     <svg
-                      className="h-10 w-10 text-green-600"
+                      className="h-8 w-8 text-emerald-600"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -247,36 +283,22 @@ export default async function VendorRegisterPage({
                       />
                     </svg>
                   </div>
-                  <h2 className="mt-6 text-2xl font-bold text-slate-900">
+                  <h2 className="mt-4 text-xl font-bold text-slate-900">
                     Başvurunuz alındı!
                   </h2>
-                  <p className="mt-3 text-slate-600">
-                    Başvurunuzu inceleyip en kısa sürede size dönüş yapacağız.
-                    E-posta adresinizi kontrol etmeyi unutmayın.
+                  <p className="mt-2 text-slate-600">
+                    E-posta adresinize gelen doğrulama linkine tıklayın.
+                    Başvurunuz onaylandığında size bildireceğiz.
                   </p>
-                  <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                    <Link
-                      href="/"
-                      className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-                    >
-                      Ana Sayfaya Dön
-                    </Link>
-                  </div>
+                  <Link
+                    href="/"
+                    className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-medium text-white hover:bg-emerald-700"
+                  >
+                    Ana Sayfaya Dön
+                  </Link>
                 </div>
               ) : (
                 <>
-                  <div className="mb-6">
-                    <h2 className="text-xl font-bold text-slate-900">
-                      Firmanızı tanıyalım
-                    </h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {user
-                        ? "Firma bilgilerinizi doldurun"
-                        : "Birkaç dakika içinde başvurunuzu tamamlayın"}
-                    </p>
-                  </div>
-
-                  {/* Error */}
                   {params.error && (
                     <div className="mb-6 flex items-center gap-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
                       <svg
@@ -397,6 +419,46 @@ export default async function VendorRegisterPage({
                             ))}
                           </select>
                         </div>
+                      </div>
+
+                      {/* Segment Seçimi */}
+                      <div>
+                        <label className="mb-3 block text-sm font-medium text-slate-700">
+                          Hangi müşteri segmentlerine hizmet veriyorsunuz?
+                        </label>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {segments?.map((segment) => (
+                            <label
+                              key={segment.id}
+                              className="group relative flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 transition-all hover:border-emerald-300 hover:bg-emerald-50/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50"
+                            >
+                              <input
+                                type="checkbox"
+                                name="segments"
+                                value={segment.id}
+                                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">
+                                    {segment.slug === "kurumsal" ? "🏢" : "🎉"}
+                                  </span>
+                                  <span className="font-medium text-slate-900">
+                                    {segment.name}
+                                  </span>
+                                </div>
+                                <p className="mt-1 text-xs text-slate-500">
+                                  {segment.slug === "kurumsal"
+                                    ? "Ofis yemekleri, toplantı ikramları, kurumsal etkinlikler"
+                                    : "Düğün, doğum günü, ev partisi, özel kutlamalar"}
+                                </p>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                        <p className="mt-2 text-xs text-slate-500">
+                          Her iki segmenti de seçebilirsiniz
+                        </p>
                       </div>
 
                       <div>
