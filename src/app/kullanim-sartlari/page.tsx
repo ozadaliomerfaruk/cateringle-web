@@ -55,7 +55,7 @@ export default function TermsPage() {
 
             <div className="mt-10">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   1
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">Tanımlar</h2>
@@ -86,7 +86,7 @@ export default function TermsPage() {
 
             <div className="mt-10">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   2
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -106,7 +106,7 @@ export default function TermsPage() {
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-slate-600">
                     <svg
-                      className="mt-1 h-5 w-5 shrink-0 text-emerald-500"
+                      className="mt-1 h-5 w-5 shrink-0 text-leaf-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -127,7 +127,7 @@ export default function TermsPage() {
 
             <div className="mt-10">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   3
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -165,7 +165,7 @@ export default function TermsPage() {
 
             <div className="mt-10">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   4
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -205,7 +205,7 @@ export default function TermsPage() {
 
             <div className="mt-10">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   5
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -235,7 +235,7 @@ export default function TermsPage() {
 
             <div className="mt-10">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   6
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -251,7 +251,7 @@ export default function TermsPage() {
 
             <div className="mt-10">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   7
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -264,7 +264,7 @@ export default function TermsPage() {
               </p>
             </div>
 
-            <div className="mt-10 rounded-xl bg-emerald-50 p-6">
+            <div className="mt-10 rounded-xl bg-leaf-50 p-6">
               <h3 className="font-semibold text-slate-900">İletişim</h3>
               <p className="mt-2 text-slate-600">
                 Kullanım şartları hakkında sorularınız için:{" "}

@@ -20,6 +20,14 @@ interface VendorsPageProps {
     category?: string;
     segment?: string;
     services?: string;
+    // Yeni filtreler
+    cuisines?: string;
+    delivery_models?: string;
+    tags?: string;
+    lead_time?: string;
+    available_24_7?: string;
+    has_refrigerated?: string;
+    serves_outside_city?: string;
   }>;
 }
 
@@ -48,6 +56,10 @@ interface VendorWithRelations extends Vendor {
   vendor_ratings:
     | { avg_rating: number | null; review_count: number | null }[]
     | null;
+  // Yeni ilişkiler
+  vendor_cuisines?: { cuisine_type_id: number }[];
+  vendor_delivery_models?: { delivery_model_id: number }[];
+  vendor_tags?: { tag_id: number }[];
 }
 
 // Segment başlık ve açıklamaları
@@ -149,6 +161,36 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
     districts = districtData || [];
   }
 
+  // ========== YENİ KATEGORİ SİSTEMİ VERİLERİ ==========
+
+  // Mutfak Türleri
+  const { data: cuisineTypes } = await supabase
+    .from("cuisine_types")
+    .select("id, name, slug, category, icon")
+    .eq("is_active", true)
+    .order("category")
+    .order("sort_order");
+
+  // Teslimat Modelleri
+  const { data: deliveryModels } = await supabase
+    .from("delivery_models")
+    .select("id, name, slug, icon")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  // Etiket Grupları ve Etiketler
+  const { data: tagGroups } = await supabase
+    .from("tag_groups")
+    .select("id, name, slug, icon")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  const { data: tags } = await supabase
+    .from("tags")
+    .select("id, name, slug, group_id, icon")
+    .eq("is_active", true)
+    .order("sort_order");
+
   // Vendor sorgusu - vendor_segments ile birlikte
   let query = supabase
     .from("vendors")
@@ -162,12 +204,19 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
       avg_price_per_person,
       min_guest_count,
       max_guest_count,
+      lead_time_type,
+      available_24_7,
+      has_refrigerated_vehicle,
+      serves_outside_city,
       city:cities(name),
       district:districts(name),
       vendor_categories(category_id),
       vendor_services(service_id, service:services(slug)),
       vendor_segments(segment_id),
-      vendor_ratings(avg_rating, review_count)
+      vendor_ratings(avg_rating, review_count),
+      vendor_cuisines(cuisine_type_id),
+      vendor_delivery_models(delivery_model_id),
+      vendor_tags(tag_id)
     `
     )
     .eq("status", "approved");
@@ -219,6 +268,89 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
     );
   }
 
+  // ========== YENİ FİLTRELER ==========
+
+  // Mutfak türü filtresi
+  if (params.cuisines) {
+    const cuisineSlugs = params.cuisines.split(",");
+    const cuisineIds =
+      cuisineTypes
+        ?.filter((c) => cuisineSlugs.includes(c.slug))
+        .map((c) => c.id) || [];
+
+    if (cuisineIds.length > 0) {
+      filteredVendors = filteredVendors.filter((v) =>
+        v.vendor_cuisines?.some((vc) => cuisineIds.includes(vc.cuisine_type_id))
+      );
+    }
+  }
+
+  // Teslimat modeli filtresi
+  if (params.delivery_models) {
+    const modelSlugs = params.delivery_models.split(",");
+    const modelIds =
+      deliveryModels
+        ?.filter((m) => modelSlugs.includes(m.slug))
+        .map((m) => m.id) || [];
+
+    if (modelIds.length > 0) {
+      filteredVendors = filteredVendors.filter((v) =>
+        v.vendor_delivery_models?.some((vdm) =>
+          modelIds.includes(vdm.delivery_model_id)
+        )
+      );
+    }
+  }
+
+  // Etiket filtresi
+  if (params.tags) {
+    const tagSlugs = params.tags.split(",");
+    const tagIds =
+      tags?.filter((t) => tagSlugs.includes(t.slug)).map((t) => t.id) || [];
+
+    if (tagIds.length > 0) {
+      filteredVendors = filteredVendors.filter((v) =>
+        v.vendor_tags?.some((vt) => tagIds.includes(vt.tag_id))
+      );
+    }
+  }
+
+  // Lead time filtresi
+  if (params.lead_time) {
+    filteredVendors = filteredVendors.filter(
+      (v) =>
+        (v as VendorWithRelations & { lead_time_type?: string })
+          .lead_time_type === params.lead_time
+    );
+  }
+
+  // 7/24 hizmet filtresi
+  if (params.available_24_7 === "true") {
+    filteredVendors = filteredVendors.filter(
+      (v) =>
+        (v as VendorWithRelations & { available_24_7?: boolean })
+          .available_24_7 === true
+    );
+  }
+
+  // Frigorifik araç filtresi
+  if (params.has_refrigerated === "true") {
+    filteredVendors = filteredVendors.filter(
+      (v) =>
+        (v as VendorWithRelations & { has_refrigerated_vehicle?: boolean })
+          .has_refrigerated_vehicle === true
+    );
+  }
+
+  // Şehir dışı hizmet filtresi
+  if (params.serves_outside_city === "true") {
+    filteredVendors = filteredVendors.filter(
+      (v) =>
+        (v as VendorWithRelations & { serves_outside_city?: boolean })
+          .serves_outside_city === true
+    );
+  }
+
   // Aktif filtre sayısı
   const activeFilterCount = [
     params.city,
@@ -228,6 +360,13 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
     params.min_guest,
     params.max_guest,
     params.services,
+    params.cuisines,
+    params.delivery_models,
+    params.tags,
+    params.lead_time,
+    params.available_24_7,
+    params.has_refrigerated,
+    params.serves_outside_city,
   ].filter(Boolean).length;
 
   // Seçili kategori
@@ -278,18 +417,18 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen">
       {/* Header */}
-      <div className="border-b bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="bg-[#F5F3FF]">
+        <div className="mx-auto max-w-7xl px-4 py-12 lg:px-6">
           {/* Segment Seçici */}
-          <div className="mb-6 flex flex-wrap items-center gap-2">
+          <div className="mb-8 flex flex-wrap items-center gap-3">
             <Link
               href="/vendors"
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold transition-colors ${
                 !params.segment
                   ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
               }`}
             >
               Tümü
@@ -298,12 +437,12 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
               <Link
                 key={segment.id}
                 href={buildUrl({ segment: segment.slug, category: undefined })}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold transition-colors ${
                   params.segment === segment.slug
                     ? segment.slug === "kurumsal"
-                      ? "bg-blue-600 text-white"
-                      : "bg-emerald-600 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      ? "bg-leaf-500 text-white"
+                      : "bg-grape-500 text-white"
+                    : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
                 }`}
               >
                 {segment.slug === "kurumsal" ? (
@@ -341,15 +480,17 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
           </div>
 
           {/* Başlık */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                 {getPageTitle()}
               </h1>
-              <p className="mt-1 text-slate-500">{getPageDescription()}</p>
+              <p className="mt-2 text-lg text-slate-600">
+                {getPageDescription()}
+              </p>
             </div>
-            <div className="text-sm text-slate-500">
-              <span className="font-semibold text-slate-900">
+            <div className="text-slate-600">
+              <span className="text-2xl font-bold text-slate-900">
                 {filteredVendors.length}
               </span>{" "}
               firma bulundu
@@ -358,16 +499,16 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
 
           {/* Kategori Filtreleri - Segment seçiliyse göster */}
           {categories && categories.length > 0 && (
-            <div className="mt-6 flex flex-wrap gap-2">
+            <div className="mt-8 flex flex-wrap gap-2">
               {params.segment && (
                 <Link
                   href={buildUrl({ category: undefined })}
-                  className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
                     !params.category
                       ? params.segment === "kurumsal"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-emerald-100 text-emerald-700"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        ? "bg-leaf-100 text-leaf-700"
+                        : "bg-grape-100 text-grape-700"
+                      : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
                   }`}
                 >
                   Tüm Kategoriler
@@ -386,12 +527,12 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                         ? "bireysel"
                         : undefined),
                   })}
-                  className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
                     params.category === category.slug
                       ? params.segment === "kurumsal"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-emerald-100 text-emerald-700"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        ? "bg-leaf-100 text-leaf-700"
+                        : "bg-grape-100 text-grape-700"
+                      : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
                   }`}
                 >
                   {category.name}
@@ -403,25 +544,30 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
       </div>
 
       {/* Content */}
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <div className="flex gap-8">
-          {/* Sidebar - Desktop */}
-          <aside className="hidden w-64 shrink-0 lg:block">
-            <div className="sticky top-24">
-              <FilterSidebar
-                cities={cities || []}
-                districts={districts}
-                serviceGroups={sortedServiceGroups}
-                currentParams={params}
-              />
-            </div>
-          </aside>
-
+      <div className="bg-white py-12 lg:py-16">
+        <div className="mx-auto max-w-7xl px-4 lg:px-6">
+          <div className="flex gap-10">
+            {/* Sidebar - Desktop */}
+            <aside className="hidden w-72 shrink-0 lg:block">
+              <div className="sticky top-24">
+                <FilterSidebar
+                  cities={cities || []}
+                  districts={districts}
+                  serviceGroups={sortedServiceGroups}
+                  cuisineTypes={cuisineTypes || []}
+                  deliveryModels={deliveryModels || []}
+                  tagGroups={tagGroups || []}
+                  tags={tags || []}
+                  currentParams={params}
+                />
+              </div>
+            </aside>
+          </div>
           {/* Vendor Grid */}
           <div className="flex-1">
             {filteredVendors.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+              <div className="border border-dashed border-slate-300 bg-slate-50 p-16 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center bg-slate-200">
                   <svg
                     className="h-8 w-8 text-slate-400"
                     fill="none"
@@ -439,13 +585,13 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                 <h3 className="text-lg font-semibold text-slate-900">
                   Firma bulunamadı
                 </h3>
-                <p className="mt-2 text-slate-500">
+                <p className="mt-2 text-slate-600">
                   Arama kriterlerinize uygun firma bulunamadı. Filtreleri
                   değiştirmeyi deneyin.
                 </p>
                 <Link
                   href="/vendors"
-                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                  className="mt-6 inline-flex items-center gap-2 bg-leaf-500 px-6 py-3 font-semibold text-white hover:bg-leaf-600"
                 >
                   Filtreleri Temizle
                 </Link>
@@ -466,10 +612,10 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
 
                       <Link
                         href={`/vendors/${vendor.slug}`}
-                        className="block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-lg"
+                        className="block overflow-hidden border border-slate-200 bg-white transition-all hover:border-leaf-300 hover:shadow-lg"
                       >
                         {/* Görsel Alanı */}
-                        <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
+                        <div className="aspect-4/3 overflow-hidden bg-slate-100">
                           {vendor.logo_url ? (
                             <div className="relative h-full w-full">
                               <Image
@@ -482,7 +628,7 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                           ) : (
                             <div className="flex h-full items-center justify-center">
                               <svg
-                                className="h-16 w-16 text-emerald-300"
+                                className="h-16 w-16 text-slate-300"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -502,11 +648,11 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                         <div className="p-5">
                           {/* Başlık ve Rating */}
                           <div className="flex items-start justify-between gap-2">
-                            <h2 className="text-lg font-semibold text-slate-900 transition-colors group-hover:text-emerald-600">
+                            <h2 className="text-lg font-semibold text-slate-900 transition-colors group-hover:text-leaf-600">
                               {vendor.business_name}
                             </h2>
                             {hasRating && (
-                              <div className="flex shrink-0 items-center gap-1 rounded-lg bg-amber-50 px-2 py-1">
+                              <div className="flex shrink-0 items-center gap-1 bg-amber-50 px-2 py-1">
                                 <svg
                                   className="h-4 w-4 text-amber-400"
                                   viewBox="0 0 20 20"
@@ -560,14 +706,14 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                           <div className="mt-4 flex flex-wrap items-center gap-2">
                             {typeof vendor.avg_price_per_person ===
                               "number" && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+                              <span className="inline-flex items-center gap-1 bg-leaf-50 px-3 py-1 text-sm font-medium text-leaf-700">
                                 {Math.round(vendor.avg_price_per_person)}{" "}
                                 TL/kişi
                               </span>
                             )}
                             {vendor.min_guest_count &&
                               vendor.max_guest_count && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600">
+                                <span className="inline-flex items-center gap-1 bg-slate-100 px-3 py-1 text-sm text-slate-600">
                                   {vendor.min_guest_count}-
                                   {vendor.max_guest_count} kişi
                                 </span>
@@ -575,7 +721,7 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                             {hasRating &&
                               rating.review_count &&
                               rating.review_count > 0 && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600">
+                                <span className="inline-flex items-center gap-1 bg-slate-100 px-3 py-1 text-sm text-slate-600">
                                   {rating.review_count} yorum
                                 </span>
                               )}
@@ -583,11 +729,11 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
 
                           {/* CTA */}
                           <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4">
-                            <span className="text-sm font-medium text-emerald-600 transition-colors group-hover:text-emerald-700">
+                            <span className="text-sm font-semibold text-leaf-600 transition-colors group-hover:text-leaf-700">
                               İncele ve Teklif Al
                             </span>
                             <svg
-                              className="h-5 w-5 text-emerald-600 transition-transform group-hover:translate-x-1"
+                              className="h-5 w-5 text-leaf-600 transition-transform group-hover:translate-x-1"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -601,6 +747,9 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                             </svg>
                           </div>
                         </div>
+
+                        {/* Alt çizgi animasyonu */}
+                        <div className="absolute bottom-0 left-0 h-1 w-full origin-left scale-x-0 bg-leaf-500 transition-transform group-hover:scale-x-100" />
                       </Link>
                     </div>
                   );
@@ -617,6 +766,10 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
           cities={cities || []}
           districts={districts}
           serviceGroups={sortedServiceGroups}
+          cuisineTypes={cuisineTypes || []}
+          deliveryModels={deliveryModels || []}
+          tagGroups={tagGroups || []}
+          tags={tags || []}
           currentParams={params}
         />
       </MobileFilterButton>

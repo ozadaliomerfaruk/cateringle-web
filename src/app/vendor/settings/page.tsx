@@ -122,6 +122,62 @@ export default async function VendorSettingsPage() {
     .eq("vendor_id", vendor.id)
     .order("sort_order");
 
+  // ========== YENİ KATEGORİ SİSTEMİ ==========
+
+  // Mutfak Türleri
+  const { data: cuisineTypes } = await supabase
+    .from("cuisine_types")
+    .select("id, name, slug, category, description, icon, sort_order")
+    .eq("is_active", true)
+    .order("category")
+    .order("sort_order");
+
+  // Vendor'ın mutfak türleri
+  const { data: vendorCuisines } = await supabase
+    .from("vendor_cuisines")
+    .select("cuisine_type_id")
+    .eq("vendor_id", vendor.id);
+
+  const selectedCuisineIds =
+    vendorCuisines?.map((vc) => vc.cuisine_type_id) || [];
+
+  // Teslimat Modelleri
+  const { data: deliveryModels } = await supabase
+    .from("delivery_models")
+    .select("id, name, slug, description, icon, sort_order")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  // Vendor'ın teslimat modelleri
+  const { data: vendorDeliveryModels } = await supabase
+    .from("vendor_delivery_models")
+    .select("delivery_model_id")
+    .eq("vendor_id", vendor.id);
+
+  const selectedDeliveryModelIds =
+    vendorDeliveryModels?.map((vdm) => vdm.delivery_model_id) || [];
+
+  // Etiket Grupları ve Etiketler
+  const { data: tagGroups } = await supabase
+    .from("tag_groups")
+    .select("id, name, slug, icon, sort_order")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  const { data: tags } = await supabase
+    .from("tags")
+    .select("id, name, slug, group_id, icon, sort_order")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  // Vendor'ın etiketleri
+  const { data: vendorTags } = await supabase
+    .from("vendor_tags")
+    .select("tag_id")
+    .eq("vendor_id", vendor.id);
+
+  const selectedTagIds = vendorTags?.map((vt) => vt.tag_id) || [];
+
   return (
     <main className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -146,6 +202,13 @@ export default async function VendorSettingsPage() {
           serviceGroups={sortedServiceGroups}
           selectedServiceIds={selectedServiceIds}
           images={images || []}
+          cuisineTypes={cuisineTypes || []}
+          selectedCuisineIds={selectedCuisineIds}
+          deliveryModels={deliveryModels || []}
+          selectedDeliveryModelIds={selectedDeliveryModelIds}
+          tagGroups={tagGroups || []}
+          tags={tags || []}
+          selectedTagIds={selectedTagIds}
         />
       </div>
     </main>

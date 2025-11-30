@@ -53,6 +53,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
         customer_email,
         customer_phone,
         event_date,
+        event_type,
         guest_count,
         budget_min,
         budget_max,
@@ -63,6 +64,9 @@ export default async function LeadDetailPage({ params }: PageProps) {
         needs_tables_chairs,
         wants_real_tableware,
         wants_disposable_tableware,
+        cuisine_preference,
+        delivery_model,
+        dietary_requirements,
         created_at,
         segment:customer_segments (id, name, slug),
         city:cities (name),
@@ -102,6 +106,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
     customer_email: string;
     customer_phone: string | null;
     event_date: string | null;
+    event_type: string | null;
     guest_count: number | null;
     budget_min: number | null;
     budget_max: number | null;
@@ -112,6 +117,9 @@ export default async function LeadDetailPage({ params }: PageProps) {
     needs_tables_chairs: boolean | null;
     wants_real_tableware: boolean | null;
     wants_disposable_tableware: boolean | null;
+    cuisine_preference: string | null;
+    delivery_model: string | null;
+    dietary_requirements: string[] | null;
     created_at: string;
     segment: { id: number; name: string; slug: string } | null;
     city: { name: string } | null;
@@ -175,6 +183,41 @@ export default async function LeadDetailPage({ params }: PageProps) {
     self_service: "Self Servis",
   };
 
+  const cuisineLabels: Record<string, string> = {
+    "turk-mutfagi": "Türk Mutfağı",
+    "osmanli-saray": "Osmanlı / Saray Mutfağı",
+    "ege-akdeniz": "Ege & Akdeniz",
+    "guneydogu-antep": "Güneydoğu / Antep",
+    karadeniz: "Karadeniz",
+    italyan: "İtalyan",
+    fransiz: "Fransız",
+    asya: "Asya (Uzakdoğu)",
+    meksika: "Meksika",
+    hint: "Hint",
+    "fine-dining": "Fine Dining",
+    fusion: "Fusion",
+    "vegan-raw": "Vegan / Raw",
+    "saglikli-diyet": "Sağlıklı / Diyet",
+    "street-food": "Street Food",
+  };
+
+  const deliveryLabels: Record<string, string> = {
+    "drop-off": "Drop-off (Kapıda Teslimat)",
+    "hot-delivery": "Sıcak Teslimat",
+    "full-service": "Full Service (Servis Dahil)",
+    "live-cooking": "Live Cooking / Show Kitchen",
+    pickup: "Gel-Al (Pickup)",
+  };
+
+  const dietaryLabels: Record<string, string> = {
+    vejetaryen: "Vejetaryen",
+    vegan: "Vegan",
+    glutensiz: "Glütensiz",
+    laktozsuz: "Laktozsuz",
+    "dusuk-karbonhidrat": "Düşük Karbonhidrat",
+    "cocuk-menusu": "Çocuk Menüsü",
+  };
+
   const quoteStatusLabels: Record<string, { label: string; color: string }> = {
     draft: { label: "Taslak", color: "bg-slate-100 text-slate-600" },
     sent: { label: "Gönderildi", color: "bg-blue-100 text-blue-700" },
@@ -219,7 +262,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
                     className={`rounded-full px-3 py-1 text-sm font-medium ${
                       lead.segment.slug === "kurumsal"
                         ? "bg-blue-100 text-blue-700"
-                        : "bg-emerald-100 text-emerald-700"
+                        : "bg-leaf-100 text-leaf-700"
                     }`}
                   >
                     {lead.segment.slug === "kurumsal" ? "🏢" : "🎉"}{" "}
@@ -316,30 +359,88 @@ export default async function LeadDetailPage({ params }: PageProps) {
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {lead.needs_service_staff && (
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-700">
+                    <span className="rounded-full bg-leaf-100 px-3 py-1 text-sm text-leaf-700">
                       ✓ Servis Personeli
                     </span>
                   )}
                   {lead.needs_cleanup && (
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-700">
+                    <span className="rounded-full bg-leaf-100 px-3 py-1 text-sm text-leaf-700">
                       ✓ Temizlik
                     </span>
                   )}
                   {lead.needs_tables_chairs && (
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-700">
+                    <span className="rounded-full bg-leaf-100 px-3 py-1 text-sm text-leaf-700">
                       ✓ Masa & Sandalye
                     </span>
                   )}
                   {lead.wants_real_tableware && (
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-700">
+                    <span className="rounded-full bg-leaf-100 px-3 py-1 text-sm text-leaf-700">
                       ✓ Porselen Tabak
                     </span>
                   )}
                   {lead.wants_disposable_tableware && (
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-700">
+                    <span className="rounded-full bg-leaf-100 px-3 py-1 text-sm text-leaf-700">
                       ✓ Tek Kullanımlık
                     </span>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* Müşteri Tercihleri */}
+            {(lead.cuisine_preference ||
+              lead.delivery_model ||
+              (lead.dietary_requirements &&
+                lead.dietary_requirements.length > 0)) && (
+              <div className="rounded-xl bg-white p-6 shadow-sm">
+                <h2 className="mb-4 font-semibold text-slate-900">
+                  Müşteri Tercihleri
+                </h2>
+                <div className="space-y-4">
+                  {lead.cuisine_preference && (
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">🍽️</span>
+                      <div>
+                        <p className="text-xs text-slate-500">Mutfak Tercihi</p>
+                        <p className="font-medium text-slate-900">
+                          {cuisineLabels[lead.cuisine_preference] ||
+                            lead.cuisine_preference}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {lead.delivery_model && (
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">🚚</span>
+                      <div>
+                        <p className="text-xs text-slate-500">
+                          Teslimat Tercihi
+                        </p>
+                        <p className="font-medium text-slate-900">
+                          {deliveryLabels[lead.delivery_model] ||
+                            lead.delivery_model}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {lead.dietary_requirements &&
+                    lead.dietary_requirements.length > 0 && (
+                      <div>
+                        <p className="mb-2 text-xs text-slate-500">
+                          Diyet Gereksinimleri
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {lead.dietary_requirements.map((req, i) => (
+                            <span
+                              key={i}
+                              className="rounded-full bg-violet-100 px-3 py-1 text-sm text-violet-700"
+                            >
+                              {dietaryLabels[req] || req}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
             )}
@@ -501,10 +602,10 @@ export default async function LeadDetailPage({ params }: PageProps) {
                 sendQuoteAction={sendQuote}
               />
             ) : (
-              <div className="rounded-xl bg-emerald-50 p-6">
+              <div className="rounded-xl bg-leaf-50 p-6">
                 <div className="flex items-center gap-3">
                   <svg
-                    className="h-8 w-8 text-emerald-600"
+                    className="h-8 w-8 text-leaf-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -517,10 +618,10 @@ export default async function LeadDetailPage({ params }: PageProps) {
                     />
                   </svg>
                   <div>
-                    <p className="font-semibold text-emerald-900">
+                    <p className="font-semibold text-leaf-900">
                       Teklif Gönderildi
                     </p>
-                    <p className="text-sm text-emerald-700">
+                    <p className="text-sm text-leaf-700">
                       {activeQuote.total_price.toLocaleString("tr-TR")} ₺
                     </p>
                   </div>

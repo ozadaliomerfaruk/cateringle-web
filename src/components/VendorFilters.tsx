@@ -132,7 +132,7 @@ export default function VendorFilters({
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-slate-900">Filtreler</h2>
         {activeFilters > 0 && (
-          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+          <span className="rounded-full bg-leaf-100 px-2 py-0.5 text-xs font-medium text-leaf-700">
             {activeFilters} aktif
           </span>
         )}
@@ -151,7 +151,7 @@ export default function VendorFilters({
           name="city"
           value={currentCity}
           onChange={(e) => handleCityChange(e.target.value)}
-          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-leaf--500 focus:ring-1 focus:ring-leaf--500"
         >
           <option value="">Tüm şehirler</option>
           {cities.map((city) => (
@@ -176,7 +176,7 @@ export default function VendorFilters({
           value={currentDistrict}
           onChange={(e) => handleDistrictChange(e.target.value)}
           disabled={!currentCity || loadingDistricts}
-          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-leaf--500 focus:ring-1 focus:ring-leaf--500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
         >
           <option value="">Tüm ilçeler</option>
           {districts.map((district) => (
@@ -226,7 +226,7 @@ export default function VendorFilters({
           min="1"
           defaultValue={currentMinGuests}
           placeholder="Örn: 50"
-          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-leaf--500 focus:ring-1 focus:ring-leaf--500"
         />
       </div>
 
@@ -245,7 +245,7 @@ export default function VendorFilters({
           min="0"
           defaultValue={currentMaxPrice}
           placeholder="Örn: 500"
-          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-leaf--500 focus:ring-1 focus:ring-leaf--500"
         />
       </div>
 
@@ -253,7 +253,7 @@ export default function VendorFilters({
       <div className="flex gap-2">
         <button
           type="submit"
-          className="flex-1 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
+          className="flex-1 rounded-md bg-leaf-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-leaf-700"
         >
           Filtrele
         </button>

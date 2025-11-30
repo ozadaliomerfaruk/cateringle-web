@@ -19,7 +19,7 @@ export default async function AdminBlogsPage() {
         </div>
         <Link
           href="/panel/blogs/new"
-          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+          className="inline-flex items-center gap-2 rounded-xl bg-leaf-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-leaf-700"
         >
           <svg
             className="h-5 w-5"
@@ -160,7 +160,7 @@ export default async function AdminBlogsPage() {
             </p>
             <Link
               href="/panel/blogs/new"
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-leaf-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-leaf-700"
             >
               Yeni Yazı Oluştur
             </Link>

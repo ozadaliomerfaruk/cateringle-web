@@ -115,7 +115,7 @@ export default function ReviewList({
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
                 {/* Avatar */}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-semibold text-emerald-700">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-leaf-100 font-semibold text-leaf-700">
                   {review.customer_name.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -124,7 +124,7 @@ export default function ReviewList({
                       {review.customer_name}
                     </span>
                     {review.is_verified && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-leaf-100 px-2 py-0.5 text-[10px] font-medium text-leaf-700">
                         <svg
                           className="h-3 w-3"
                           fill="none"
@@ -179,7 +179,7 @@ export default function ReviewList({
       {/* Daha fazla yorum varsa */}
       {reviewCount > reviews.length && (
         <div className="text-center">
-          <button className="text-sm font-medium text-emerald-600 hover:text-emerald-700">
+          <button className="text-sm font-medium text-leaf-600 hover:text-leaf-700">
             Tüm yorumları gör ({reviewCount})
           </button>
         </div>

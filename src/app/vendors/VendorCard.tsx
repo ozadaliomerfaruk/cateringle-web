@@ -59,7 +59,7 @@ export default function VendorCard({
       </div>
 
       {/* Hero Image */}
-      <div className="aspect-[16/9] overflow-hidden bg-slate-100">
+      <div className="aspect-video overflow-hidden bg-slate-100">
         {vendor.logo_url ? (
           <Image
             src={vendor.logo_url}

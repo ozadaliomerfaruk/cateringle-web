@@ -175,7 +175,7 @@ export default async function VendorRegisterPage({
       <div className="mx-auto max-w-4xl px-4">
         {/* Header */}
         <div className="mb-8 text-center">
-          <span className="inline-block rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-medium text-emerald-700">
+          <span className="inline-block rounded-full bg-leaf-100 px-4 py-1.5 text-sm font-medium text-leaf-700">
             Ücretsiz Başvuru
           </span>
           <h1 className="mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">
@@ -190,7 +190,7 @@ export default async function VendorRegisterPage({
           {/* Sol - Avantajlar */}
           <div className="lg:col-span-2">
             <div className="sticky top-24 space-y-4">
-              <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-600 p-6 text-white">
+              <div className="rounded-2xl bg-gradient-to-br from-leaf--600 to-teal-600 p-6 text-white">
                 <h2 className="text-lg font-semibold">Neden Cateringle?</h2>
                 <ul className="mt-4 space-y-3">
                   {[
@@ -203,7 +203,7 @@ export default async function VendorRegisterPage({
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-3">
                       <svg
-                        className="h-5 w-5 shrink-0 text-emerald-200"
+                        className="h-5 w-5 shrink-0 text-leaf-200"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -215,7 +215,7 @@ export default async function VendorRegisterPage({
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      <span className="text-emerald-50">{item.text}</span>
+                      <span className="text-leaf-50">{item.text}</span>
                     </li>
                   ))}
                 </ul>
@@ -247,7 +247,7 @@ export default async function VendorRegisterPage({
                     },
                   ].map((item) => (
                     <li key={item.step} className="flex gap-3">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-leaf-100 text-sm font-semibold text-leaf-700">
                         {item.step}
                       </span>
                       <div>
@@ -268,9 +268,9 @@ export default async function VendorRegisterPage({
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               {params.success ? (
                 <div className="py-8 text-center">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-leaf-100">
                     <svg
-                      className="h-8 w-8 text-emerald-600"
+                      className="h-8 w-8 text-leaf-600"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -292,7 +292,7 @@ export default async function VendorRegisterPage({
                   </p>
                   <Link
                     href="/"
-                    className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-medium text-white hover:bg-emerald-700"
+                    className="mt-6 inline-flex items-center gap-2 rounded-xl bg-leaf-600 px-6 py-3 font-medium text-white hover:bg-leaf-700"
                   >
                     Ana Sayfaya Dön
                   </Link>
@@ -335,7 +335,7 @@ export default async function VendorRegisterPage({
                             type="text"
                             required
                             placeholder="İsminizi girin"
-                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                           />
                         </div>
 
@@ -349,7 +349,7 @@ export default async function VendorRegisterPage({
                               type="email"
                               required
                               placeholder="ornek@email.com"
-                              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                             />
                           </div>
                           <div>
@@ -362,7 +362,7 @@ export default async function VendorRegisterPage({
                               required
                               minLength={6}
                               placeholder="En az 6 karakter"
-                              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                             />
                           </div>
                         </div>
@@ -384,7 +384,7 @@ export default async function VendorRegisterPage({
                           type="text"
                           required
                           placeholder="Firmanızın tam adını girin"
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-leaf--500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                         />
                       </div>
 
@@ -400,7 +400,7 @@ export default async function VendorRegisterPage({
                             name="phone"
                             type="tel"
                             placeholder="05XX XXX XX XX"
-                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-leaf--500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                           />
                         </div>
                         <div>
@@ -409,7 +409,7 @@ export default async function VendorRegisterPage({
                           </label>
                           <select
                             name="city_id"
-                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-leaf--500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                           >
                             <option value="">Bir şehir seçin</option>
                             {cities?.map((city) => (
@@ -430,13 +430,13 @@ export default async function VendorRegisterPage({
                           {segments?.map((segment) => (
                             <label
                               key={segment.id}
-                              className="group relative flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 transition-all hover:border-emerald-300 hover:bg-emerald-50/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50"
+                              className="group relative flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 transition-all hover:border-leaf--300 hover:bg-leaf-50/50 has-[:checked]:border-leaf--500 has-[:checked]:bg-leaf-50"
                             >
                               <input
                                 type="checkbox"
                                 name="segments"
                                 value={segment.id}
-                                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
                               />
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
@@ -470,7 +470,7 @@ export default async function VendorRegisterPage({
                           name="description"
                           rows={4}
                           placeholder="Hangi tür etkinliklere hizmet veriyorsunuz? Öne çıkan özellikleriniz neler?"
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-leaf--500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                         />
                       </div>
                     </div>
@@ -482,19 +482,19 @@ export default async function VendorRegisterPage({
                         name="terms"
                         type="checkbox"
                         required
-                        className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        className="mt-1 h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
                       />
                       <label htmlFor="terms" className="text-sm text-slate-600">
                         <Link
                           href="/kullanim-sartlari"
-                          className="text-emerald-600 hover:underline"
+                          className="text-leaf-600 hover:underline"
                         >
                           Kullanım şartlarını
                         </Link>{" "}
                         ve{" "}
                         <Link
                           href="/gizlilik-politikasi"
-                          className="text-emerald-600 hover:underline"
+                          className="text-leaf-600 hover:underline"
                         >
                           gizlilik politikasını
                         </Link>{" "}
@@ -504,7 +504,7 @@ export default async function VendorRegisterPage({
 
                     <button
                       type="submit"
-                      className="w-full rounded-xl bg-emerald-600 py-4 text-base font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md"
+                      className="w-full rounded-xl bg-leaf-600 py-4 text-base font-semibold text-white shadow-sm transition-all hover:bg-leaf-700 hover:shadow-md"
                     >
                       Ücretsiz Başvur
                     </button>
@@ -519,7 +519,7 @@ export default async function VendorRegisterPage({
                       Zaten hesabınız var mı?{" "}
                       <Link
                         href="/auth/login"
-                        className="font-semibold text-emerald-600 hover:text-emerald-700"
+                        className="font-semibold text-leaf-600 hover:text-leaf-700"
                       >
                         Giriş yapın
                       </Link>

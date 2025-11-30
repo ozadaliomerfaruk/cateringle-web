@@ -14,10 +14,14 @@ interface Lead {
   customer_email: string;
   customer_phone: string | null;
   event_date: string | null;
+  event_type: string | null;
   guest_count: number | null;
   budget_min: number | null;
   budget_max: number | null;
   service_style: string | null;
+  cuisine_preference: string | null;
+  delivery_model: string | null;
+  dietary_requirements: string[] | null;
   notes: string | null;
   created_at: string;
   segment?: { name: string; slug: string } | null;
@@ -69,10 +73,14 @@ export default async function VendorLeadsPage() {
         customer_email,
         customer_phone,
         event_date,
+        event_type,
         guest_count,
         budget_min,
         budget_max,
         service_style,
+        cuisine_preference,
+        delivery_model,
+        dietary_requirements,
         notes,
         created_at,
         segment:customer_segments (name, slug)
@@ -109,7 +117,7 @@ export default async function VendorLeadsPage() {
     viewed: { label: "Görüldü", color: "bg-yellow-100 text-yellow-700" },
     quoted: {
       label: "Teklif Verildi",
-      color: "bg-emerald-100 text-emerald-700",
+      color: "bg-leaf-100 text-leaf-700",
     },
     accepted: { label: "Kabul Edildi", color: "bg-green-100 text-green-700" },
     rejected: { label: "Reddedildi", color: "bg-red-100 text-red-700" },
@@ -162,7 +170,7 @@ export default async function VendorLeadsPage() {
           </div>
           <div className="rounded-xl bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">Teklif Verildi</p>
-            <p className="mt-1 text-3xl font-bold text-emerald-600">
+            <p className="mt-1 text-3xl font-bold text-leaf-600">
               {stats.quoted}
             </p>
           </div>
@@ -186,7 +194,7 @@ export default async function VendorLeadsPage() {
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     {/* Sol - Müşteri bilgileri */}
                     <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-lg font-semibold text-emerald-700">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-leaf-100 text-lg font-semibold text-leaf-700">
                         {lead.customer_name?.charAt(0)?.toUpperCase() || "?"}
                       </div>
                       <div>
@@ -204,7 +212,7 @@ export default async function VendorLeadsPage() {
                               className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                                 lead.segment.slug === "kurumsal"
                                   ? "bg-blue-50 text-blue-600"
-                                  : "bg-emerald-50 text-emerald-600"
+                                  : "bg-leaf-50 text-leaf-600"
                               }`}
                             >
                               {lead.segment.slug === "kurumsal" ? "🏢" : "🎉"}{" "}
@@ -235,6 +243,17 @@ export default async function VendorLeadsPage() {
                               )}
                             </span>
                           )}
+                          {lead.cuisine_preference && (
+                            <span className="rounded bg-orange-50 px-1.5 py-0.5 text-xs text-orange-600">
+                              🍽️ {lead.cuisine_preference.replace(/-/g, " ")}
+                            </span>
+                          )}
+                          {lead.dietary_requirements &&
+                            lead.dietary_requirements.length > 0 && (
+                              <span className="rounded bg-violet-50 px-1.5 py-0.5 text-xs text-violet-600">
+                                🥗 {lead.dietary_requirements.length} diyet
+                              </span>
+                            )}
                         </div>
                         {lead.budget_min && lead.budget_max && (
                           <p className="mt-1 text-sm text-slate-500">
@@ -248,9 +267,9 @@ export default async function VendorLeadsPage() {
                     {/* Sağ - Teklif & Tarih */}
                     <div className="flex items-center gap-4 sm:text-right">
                       {quote && (
-                        <div className="rounded-lg bg-emerald-50 px-3 py-2">
-                          <p className="text-xs text-emerald-600">Teklifiniz</p>
-                          <p className="font-semibold text-emerald-700">
+                        <div className="rounded-lg bg-leaf-50 px-3 py-2">
+                          <p className="text-xs text-leaf-600">Teklifiniz</p>
+                          <p className="font-semibold text-leaf-700">
                             {quote.total_price.toLocaleString("tr-TR")} ₺
                           </p>
                         </div>

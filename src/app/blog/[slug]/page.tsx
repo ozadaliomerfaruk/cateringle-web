@@ -54,7 +54,7 @@ function parseMarkdown(content: string): string {
       // Links
       .replace(
         /\[([^\]]+)\]\(([^)]+)\)/g,
-        '<a href="$2" class="text-emerald-600 hover:underline" target="_blank" rel="noopener">$1</a>'
+        '<a href="$2" class="text-leaf-600 hover:underline" target="_blank" rel="noopener">$1</a>'
       )
       // Unordered lists
       .replace(/^\- (.*$)/gim, '<li class="ml-4">$1</li>')
@@ -93,11 +93,11 @@ export default async function BlogDetailPage({ params }: Props) {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800">
+      <div className="bg-gradient-to-br from-leaf--600 via-leaf--700 to-teal-800">
         <div className="mx-auto max-w-4xl px-4 py-16 text-center">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-sm text-emerald-200 hover:text-white"
+            className="inline-flex items-center gap-2 text-sm text-leaf-200 hover:text-white"
           >
             <svg
               className="h-4 w-4"
@@ -117,7 +117,7 @@ export default async function BlogDetailPage({ params }: Props) {
           <h1 className="mt-6 text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
             {blog.title}
           </h1>
-          <div className="mt-6 flex items-center justify-center gap-4 text-emerald-100">
+          <div className="mt-6 flex items-center justify-center gap-4 text-leaf-100">
             {blog.author?.full_name && (
               <span className="flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-sm font-medium text-white">
@@ -160,7 +160,7 @@ export default async function BlogDetailPage({ params }: Props) {
       {/* Content */}
       <article className="mx-auto max-w-3xl px-4 py-12">
         <div
-          className="prose prose-lg prose-slate max-w-none prose-headings:text-slate-900 prose-a:text-emerald-600 prose-strong:text-slate-900"
+          className="prose prose-lg prose-slate max-w-none prose-headings:text-slate-900 prose-a:text-leaf-600 prose-strong:text-slate-900"
           dangerouslySetInnerHTML={{
             __html: `<p class="mt-4">${contentHtml}</p>`,
           }}
@@ -179,7 +179,7 @@ export default async function BlogDetailPage({ params }: Props) {
                   href={`/blog/${post.slug}`}
                   className="group overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <div className="aspect-video overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-50">
+                  <div className="aspect-video overflow-hidden bg-gradient-to-br from-leaf--100 to-teal-50">
                     {post.cover_image_url ? (
                       <Image
                         src={post.cover_image_url}
@@ -191,7 +191,7 @@ export default async function BlogDetailPage({ params }: Props) {
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         <svg
-                          className="h-10 w-10 text-emerald-300"
+                          className="h-10 w-10 text-leaf-300"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -207,7 +207,7 @@ export default async function BlogDetailPage({ params }: Props) {
                     )}
                   </div>
                   <div className="p-5">
-                    <h3 className="font-semibold text-slate-900 group-hover:text-emerald-600">
+                    <h3 className="font-semibold text-slate-900 group-hover:text-leaf-600">
                       {post.title}
                     </h3>
                   </div>

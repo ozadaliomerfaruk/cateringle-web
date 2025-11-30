@@ -134,7 +134,7 @@ export default async function VendorLayout({
                   className="h-10 w-10 rounded-lg object-cover"
                 />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-600 font-bold text-white">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-leaf-600 font-bold text-white">
                   {vendor.business_name?.charAt(0)?.toUpperCase()}
                 </div>
               )}
@@ -149,7 +149,7 @@ export default async function VendorLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                  className="relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-leaf-50 hover:text-leaf-700"
                 >
                   {item.icon}
                   <span className="hidden sm:inline">{item.label}</span>

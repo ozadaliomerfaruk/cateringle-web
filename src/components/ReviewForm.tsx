@@ -101,7 +101,7 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
       <div className="rounded-lg border bg-white p-4">
         <div className="flex items-center justify-center gap-2 py-4">
           <svg
-            className="h-5 w-5 animate-spin text-emerald-600"
+            className="h-5 w-5 animate-spin text-leaf-600"
             fill="none"
             viewBox="0 0 24 24"
           >
@@ -135,7 +135,7 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
 
         <a
           href={`/auth/login?redirect=/vendors/${vendorId}`}
-          className="mt-2 inline-block text-sm font-medium text-emerald-600 hover:underline"
+          className="mt-2 inline-block text-sm font-medium text-leaf-600 hover:underline"
         >
           Giriş Yap
         </a>
@@ -145,10 +145,10 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
 
   if (success) {
     return (
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+      <div className="rounded-lg border border-leaf--200 bg-leaf-50 p-4">
         <div className="flex items-center gap-2">
           <svg
-            className="h-5 w-5 text-emerald-600"
+            className="h-5 w-5 text-leaf-600"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -160,18 +160,18 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <p className="text-sm font-medium text-emerald-700">
+          <p className="text-sm font-medium text-leaf-700">
             Yorumunuz gönderildi!
           </p>
         </div>
-        <p className="mt-1 text-xs text-emerald-600">
+        <p className="mt-1 text-xs text-leaf-600">
           <span className="font-medium">{vendorName}</span> için yorumunuz
           incelendikten sonra yayınlanacaktır.
         </p>
         <button
           type="button"
           onClick={() => setSuccess(false)}
-          className="mt-3 text-xs font-medium text-emerald-700 hover:underline"
+          className="mt-3 text-xs font-medium text-leaf-700 hover:underline"
         >
           Başka bir yorum yap
         </button>
@@ -259,7 +259,7 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
           rows={3}
           maxLength={1000}
           placeholder={`${vendorName} ile deneyiminizi paylaşın...`}
-          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-leaf--500 focus:ring-1 focus:ring-leaf--500"
         />
         <p className="mt-1 text-right text-xs text-slate-400">
           {comment.length}/1000
@@ -269,7 +269,7 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
       <button
         type="submit"
         disabled={loading || rating === 0}
-        className="w-full rounded-md bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-md bg-leaf-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-leaf-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? (
           <span className="flex items-center justify-center gap-2">

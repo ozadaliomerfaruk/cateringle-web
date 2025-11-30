@@ -118,7 +118,7 @@ export default async function EditBlogPage({
                 type="text"
                 required
                 defaultValue={blog.title}
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
               />
             </div>
 
@@ -144,7 +144,7 @@ export default async function EditBlogPage({
                 rows={2}
                 defaultValue={blog.excerpt || ""}
                 placeholder="Kısa açıklama"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
               />
             </div>
 
@@ -157,7 +157,7 @@ export default async function EditBlogPage({
                 type="url"
                 defaultValue={blog.cover_image_url || ""}
                 placeholder="https://..."
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
               />
             </div>
 
@@ -170,7 +170,7 @@ export default async function EditBlogPage({
                 rows={15}
                 required
                 defaultValue={blog.content}
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm transition-all focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
               />
             </div>
 
@@ -181,7 +181,7 @@ export default async function EditBlogPage({
               <select
                 name="status"
                 defaultValue={blog.status}
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
               >
                 <option value="draft">Taslak</option>
                 <option value="published">Yayında</option>
@@ -219,7 +219,7 @@ export default async function EditBlogPage({
             </Link>
             <button
               type="submit"
-              className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+              className="rounded-xl bg-leaf-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-leaf-700"
             >
               Güncelle
             </button>

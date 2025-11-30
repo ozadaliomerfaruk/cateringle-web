@@ -183,7 +183,7 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <span className="text-2xl font-bold text-emerald-600">
+                <span className="text-2xl font-bold text-leaf-600">
                   {vendor?.business_name?.charAt(0)?.toUpperCase()}
                 </span>
               )}
@@ -213,7 +213,7 @@ export default async function QuoteDetailPage({ params }: PageProps) {
         {/* Fiyat */}
         <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="text-sm font-medium text-slate-500">Teklif Tutarı</h2>
-          <p className="mt-2 text-4xl font-bold text-emerald-600">
+          <p className="mt-2 text-4xl font-bold text-leaf-600">
             {quote.total_price.toLocaleString("tr-TR")} ₺
           </p>
           {quote.price_per_person && (

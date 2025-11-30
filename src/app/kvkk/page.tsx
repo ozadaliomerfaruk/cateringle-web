@@ -39,19 +39,19 @@ export default function KVKKPage() {
 
       <div className="mx-auto max-w-4xl px-4 py-12">
         {/* Veri Sorumlusu Bilgisi */}
-        <div className="mb-8 rounded-2xl bg-linear-to-r from-emerald-600 to-teal-600 p-6 text-white">
+        <div className="mb-8 rounded-2xl bg-linear-to-r from-leaf--600 to-teal-600 p-6 text-white">
           <h2 className="text-lg font-semibold">Veri Sorumlusu</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             <div>
-              <p className="text-sm text-emerald-100">Şirket Adı</p>
+              <p className="text-sm text-leaf-100">Şirket Adı</p>
               <p className="font-medium">Cateringle Teknoloji A.Ş.</p>
             </div>
             <div>
-              <p className="text-sm text-emerald-100">Adres</p>
+              <p className="text-sm text-leaf-100">Adres</p>
               <p className="font-medium">İstanbul, Türkiye</p>
             </div>
             <div>
-              <p className="text-sm text-emerald-100">E-posta</p>
+              <p className="text-sm text-leaf-100">E-posta</p>
               <p className="font-medium">kvkk@cateringle.com</p>
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function KVKKPage() {
 
             <div className="mt-10">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg">
                   🎯
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -126,7 +126,7 @@ export default function KVKKPage() {
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-slate-600">
                     <svg
-                      className="mt-1 h-5 w-5 shrink-0 text-emerald-500"
+                      className="mt-1 h-5 w-5 shrink-0 text-leaf-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -242,7 +242,7 @@ export default function KVKKPage() {
                     key={i}
                     className="flex items-start gap-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-600"
                   >
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-leaf-100 text-xs font-bold text-leaf-700">
                       {i + 1}
                     </span>
                     {item}
@@ -251,7 +251,7 @@ export default function KVKKPage() {
               </div>
             </div>
 
-            <div className="mt-10 rounded-xl bg-emerald-50 p-6">
+            <div className="mt-10 rounded-xl bg-leaf-50 p-6">
               <h3 className="font-semibold text-slate-900">Başvuru Yöntemi</h3>
               <p className="mt-2 text-slate-600">
                 Yukarıda belirtilen haklarınızı kullanmak için aşağıdaki
@@ -260,7 +260,7 @@ export default function KVKKPage() {
               <div className="mt-4 flex flex-wrap gap-4">
                 <div className="flex items-center gap-2 rounded-lg bg-white px-4 py-2">
                   <svg
-                    className="h-5 w-5 text-emerald-600"
+                    className="h-5 w-5 text-leaf-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

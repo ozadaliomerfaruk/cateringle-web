@@ -100,9 +100,9 @@ export default async function AdminDashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-leaf-100">
                 <svg
-                  className="h-6 w-6 text-emerald-600"
+                  className="h-6 w-6 text-leaf-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -231,7 +231,7 @@ export default async function AdminDashboardPage() {
                   label: "Firma Başvuruları",
                   icon: (
                     <svg
-                      className="h-5 w-5 text-emerald-600"
+                      className="h-5 w-5 text-leaf-600"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -327,7 +327,7 @@ export default async function AdminDashboardPage() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-emerald-50"
+                  className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-leaf-50"
                 >
                   <span className="flex items-center gap-3">
                     {item.icon}
@@ -365,7 +365,7 @@ export default async function AdminDashboardPage() {
               <h2 className="font-semibold text-slate-900">Son Başvurular</h2>
               <Link
                 href="/panel/vendor-applications"
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                className="text-sm font-medium text-leaf-600 hover:text-leaf-700"
               >
                 Tümü
               </Link>
@@ -416,7 +416,7 @@ export default async function AdminDashboardPage() {
               <h2 className="font-semibold text-slate-900">Son Yorumlar</h2>
               <Link
                 href="/panel/reviews"
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                className="text-sm font-medium text-leaf-600 hover:text-leaf-700"
               >
                 Tümü
               </Link>

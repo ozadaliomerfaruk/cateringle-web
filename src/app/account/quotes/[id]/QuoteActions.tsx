@@ -43,7 +43,7 @@ export default function QuoteActions({
         <button
           onClick={handleAccept}
           disabled={loading}
-          className="flex-1 rounded-xl bg-emerald-600 py-4 text-center font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+          className="flex-1 rounded-xl bg-leaf-600 py-4 text-center font-semibold text-white transition-colors hover:bg-leaf-700 disabled:opacity-50"
         >
           {loading ? "İşleniyor..." : "✓ Teklifi Kabul Et"}
         </button>
@@ -72,7 +72,7 @@ export default function QuoteActions({
               onChange={(e) => setRejectNote(e.target.value)}
               placeholder="İsteğe bağlı not... (örn: bütçemiz uygun değil)"
               rows={3}
-              className="mt-4 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="mt-4 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-leaf--500 focus:outline-none focus:ring-1 focus:ring-leaf--500"
             />
             <div className="mt-4 flex gap-3">
               <button

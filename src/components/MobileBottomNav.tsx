@@ -65,9 +65,7 @@ export default function MobileBottomNav() {
       label: "Ana Sayfa",
       icon: (active: boolean) => (
         <svg
-          className={`h-6 w-6 ${
-            active ? "text-emerald-600" : "text-slate-400"
-          }`}
+          className={`h-6 w-6 ${active ? "text-leaf-600" : "text-slate-400"}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -86,9 +84,7 @@ export default function MobileBottomNav() {
       label: "Firmalar",
       icon: (active: boolean) => (
         <svg
-          className={`h-6 w-6 ${
-            active ? "text-emerald-600" : "text-slate-400"
-          }`}
+          className={`h-6 w-6 ${active ? "text-leaf-600" : "text-slate-400"}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -108,7 +104,7 @@ export default function MobileBottomNav() {
       icon: (active: boolean) => (
         <svg
           className={`h-6 w-6 ${
-            active ? "text-emerald-600 fill-emerald-600" : "text-slate-400"
+            active ? "text-leaf-600 fill-leaf--600" : "text-slate-400"
           }`}
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -128,9 +124,7 @@ export default function MobileBottomNav() {
       label: isLoggedIn ? "Hesabım" : "Giriş",
       icon: (active: boolean) => (
         <svg
-          className={`h-6 w-6 ${
-            active ? "text-emerald-600" : "text-slate-400"
-          }`}
+          className={`h-6 w-6 ${active ? "text-leaf-600" : "text-slate-400"}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -167,13 +161,13 @@ export default function MobileBottomNav() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors ${
-                  active ? "text-emerald-600" : "text-slate-500"
+                  active ? "text-leaf-600" : "text-slate-500"
                 }`}
               >
                 {item.icon(active)}
                 <span
                   className={`text-[10px] font-medium ${
-                    active ? "text-emerald-600" : "text-slate-500"
+                    active ? "text-leaf-600" : "text-slate-500"
                   }`}
                 >
                   {item.label}

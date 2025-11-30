@@ -59,7 +59,7 @@ export default function CookiePolicyPage() {
 
             <div className="mt-10">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg">
                   📋
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -72,7 +72,7 @@ export default function CookiePolicyPage() {
                   {
                     type: "Zorunlu Çerezler",
                     icon: "🔒",
-                    color: "emerald",
+                    color: "leaf-",
                     desc: "Web sitesinin düzgün çalışması için gereklidir. Oturum yönetimi, güvenlik ve temel işlevler için kullanılır. Bu çerezler devre dışı bırakılamaz.",
                   },
                   {
@@ -193,16 +193,14 @@ export default function CookiePolicyPage() {
                       <p className="font-medium text-slate-900">
                         {browser.name}
                       </p>
-                      <p className="text-sm text-emerald-600">
-                        Çerez ayarları →
-                      </p>
+                      <p className="text-sm text-leaf-600">Çerez ayarları →</p>
                     </div>
                   </a>
                 ))}
               </div>
             </div>
 
-            <div className="mt-10 rounded-xl bg-emerald-50 p-6">
+            <div className="mt-10 rounded-xl bg-leaf-50 p-6">
               <h3 className="font-semibold text-slate-900">İletişim</h3>
               <p className="mt-2 text-slate-600">
                 Çerez politikamız hakkında sorularınız için:{" "}

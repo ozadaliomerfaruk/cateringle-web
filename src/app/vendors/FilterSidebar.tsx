@@ -18,11 +18,45 @@ interface Category {
   icon: string | null;
 }
 
+interface CuisineType {
+  id: number;
+  name: string;
+  slug: string;
+  category: string | null;
+  icon: string | null;
+}
+
+interface DeliveryModel {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string | null;
+}
+
+interface TagGroup {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string | null;
+}
+
+interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+  group_id: number;
+  icon: string | null;
+}
+
 interface FilterSidebarProps {
   cities: { id: number; name: string }[];
   districts: { id: number; name: string }[];
   serviceGroups: ServiceGroup[];
   categories?: Category[];
+  cuisineTypes: CuisineType[];
+  deliveryModels: DeliveryModel[];
+  tagGroups: TagGroup[];
+  tags: Tag[];
   currentParams: {
     city?: string;
     district?: string;
@@ -33,6 +67,13 @@ interface FilterSidebarProps {
     category?: string;
     services?: string;
     segment?: string;
+    cuisines?: string;
+    delivery_models?: string;
+    tags?: string;
+    lead_time?: string;
+    available_24_7?: string;
+    has_refrigerated?: string;
+    serves_outside_city?: string;
   };
 }
 
@@ -82,6 +123,10 @@ export default function FilterSidebar({
   districts,
   serviceGroups,
   categories = [],
+  cuisineTypes,
+  deliveryModels,
+  tagGroups,
+  tags,
   currentParams,
 }: FilterSidebarProps) {
   const router = useRouter();
@@ -90,6 +135,16 @@ export default function FilterSidebar({
   const selectedServices = currentParams.services
     ? currentParams.services.split(",")
     : [];
+
+  const selectedCuisines = currentParams.cuisines
+    ? currentParams.cuisines.split(",")
+    : [];
+
+  const selectedDeliveryModels = currentParams.delivery_models
+    ? currentParams.delivery_models.split(",")
+    : [];
+
+  const selectedTags = currentParams.tags ? currentParams.tags.split(",") : [];
 
   function buildFilterUrl(newParams: Record<string, string | undefined>) {
     const merged = { ...currentParams, ...newParams };
@@ -131,6 +186,56 @@ export default function FilterSidebar({
     router.push(buildFilterUrl({ category: newCategory }));
   };
 
+  const handleCuisineToggle = (cuisineSlug: string) => {
+    let newCuisines: string[];
+    if (selectedCuisines.includes(cuisineSlug)) {
+      newCuisines = selectedCuisines.filter((s) => s !== cuisineSlug);
+    } else {
+      newCuisines = [...selectedCuisines, cuisineSlug];
+    }
+    router.push(
+      buildFilterUrl({
+        cuisines: newCuisines.length > 0 ? newCuisines.join(",") : undefined,
+      })
+    );
+  };
+
+  const handleDeliveryModelToggle = (modelSlug: string) => {
+    let newModels: string[];
+    if (selectedDeliveryModels.includes(modelSlug)) {
+      newModels = selectedDeliveryModels.filter((s) => s !== modelSlug);
+    } else {
+      newModels = [...selectedDeliveryModels, modelSlug];
+    }
+    router.push(
+      buildFilterUrl({
+        delivery_models: newModels.length > 0 ? newModels.join(",") : undefined,
+      })
+    );
+  };
+
+  const handleTagToggle = (tagSlug: string) => {
+    let newTags: string[];
+    if (selectedTags.includes(tagSlug)) {
+      newTags = selectedTags.filter((s) => s !== tagSlug);
+    } else {
+      newTags = [...selectedTags, tagSlug];
+    }
+    router.push(
+      buildFilterUrl({
+        tags: newTags.length > 0 ? newTags.join(",") : undefined,
+      })
+    );
+  };
+
+  const handleBooleanToggle = (paramName: string, currentValue?: string) => {
+    router.push(
+      buildFilterUrl({
+        [paramName]: currentValue === "true" ? undefined : "true",
+      })
+    );
+  };
+
   const handleGuestChange = (min: string, max: string) => {
     router.push(
       buildFilterUrl({
@@ -148,7 +253,14 @@ export default function FilterSidebar({
     currentParams.min_guest ||
     currentParams.max_guest ||
     currentParams.services ||
-    currentParams.category;
+    currentParams.category ||
+    currentParams.cuisines ||
+    currentParams.delivery_models ||
+    currentParams.tags ||
+    currentParams.lead_time ||
+    currentParams.available_24_7 ||
+    currentParams.has_refrigerated ||
+    currentParams.serves_outside_city;
 
   const displayedCategories = showAllCategories
     ? categories
@@ -335,6 +447,151 @@ export default function FilterSidebar({
             }
             className="w-full border border-slate-200 bg-white px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none"
           />
+        </div>
+      </FilterSection>
+
+      {/* Mutfak Türü */}
+      {cuisineTypes.length > 0 && (
+        <FilterSection title="Mutfak Türü">
+          <div className="space-y-2">
+            {cuisineTypes
+              .slice(0, showAllCategories ? undefined : 6)
+              .map((cuisine) => (
+                <label
+                  key={cuisine.id}
+                  className="flex cursor-pointer items-center gap-3 py-1"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCuisines.includes(cuisine.slug)}
+                    onChange={() => handleCuisineToggle(cuisine.slug)}
+                    className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                  />
+                  <span className="flex items-center gap-1.5 text-sm text-slate-700">
+                    {cuisine.icon && <span>{cuisine.icon}</span>}
+                    {cuisine.name}
+                  </span>
+                </label>
+              ))}
+            {cuisineTypes.length > 6 && (
+              <button
+                type="button"
+                onClick={() => setShowAllCategories(!showAllCategories)}
+                className="mt-2 text-sm font-medium text-leaf-600 hover:text-leaf-700"
+              >
+                {showAllCategories
+                  ? "Daha az göster"
+                  : `+${cuisineTypes.length - 6} daha fazla göster`}
+              </button>
+            )}
+          </div>
+        </FilterSection>
+      )}
+
+      {/* Teslimat Modeli */}
+      {deliveryModels.length > 0 && (
+        <FilterSection title="Teslimat Şekli">
+          <div className="space-y-2">
+            {deliveryModels.map((model) => (
+              <label
+                key={model.id}
+                className="flex cursor-pointer items-center gap-3 py-1"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedDeliveryModels.includes(model.slug)}
+                  onChange={() => handleDeliveryModelToggle(model.slug)}
+                  className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                />
+                <span className="flex items-center gap-1.5 text-sm text-slate-700">
+                  {model.icon && <span>{model.icon}</span>}
+                  {model.name}
+                </span>
+              </label>
+            ))}
+          </div>
+        </FilterSection>
+      )}
+
+      {/* Etiketler */}
+      {tagGroups.map((group) => {
+        const groupTags = tags.filter((t) => t.group_id === group.id);
+        if (groupTags.length === 0) return null;
+
+        return (
+          <FilterSection key={group.id} title={group.name}>
+            <div className="space-y-2">
+              {groupTags.map((tag) => (
+                <label
+                  key={tag.id}
+                  className="flex cursor-pointer items-center gap-3 py-1"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedTags.includes(tag.slug)}
+                    onChange={() => handleTagToggle(tag.slug)}
+                    className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                  />
+                  <span className="flex items-center gap-1.5 text-sm text-slate-700">
+                    {tag.icon && <span>{tag.icon}</span>}
+                    {tag.name}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </FilterSection>
+        );
+      })}
+
+      {/* Operasyonel Özellikler */}
+      <FilterSection title="Diğer Özellikler">
+        <div className="space-y-2">
+          <label className="flex cursor-pointer items-center gap-3 py-1">
+            <input
+              type="checkbox"
+              checked={currentParams.available_24_7 === "true"}
+              onChange={() =>
+                handleBooleanToggle(
+                  "available_24_7",
+                  currentParams.available_24_7
+                )
+              }
+              className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
+            />
+            <span className="text-sm text-slate-700">🕐 7/24 Hizmet</span>
+          </label>
+
+          <label className="flex cursor-pointer items-center gap-3 py-1">
+            <input
+              type="checkbox"
+              checked={currentParams.has_refrigerated === "true"}
+              onChange={() =>
+                handleBooleanToggle(
+                  "has_refrigerated",
+                  currentParams.has_refrigerated
+                )
+              }
+              className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
+            />
+            <span className="text-sm text-slate-700">🚛 Frigorifik Araç</span>
+          </label>
+
+          <label className="flex cursor-pointer items-center gap-3 py-1">
+            <input
+              type="checkbox"
+              checked={currentParams.serves_outside_city === "true"}
+              onChange={() =>
+                handleBooleanToggle(
+                  "serves_outside_city",
+                  currentParams.serves_outside_city
+                )
+              }
+              className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
+            />
+            <span className="text-sm text-slate-700">
+              🗺️ Şehir Dışı Teslimat
+            </span>
+          </label>
         </div>
       </FilterSection>
     </div>

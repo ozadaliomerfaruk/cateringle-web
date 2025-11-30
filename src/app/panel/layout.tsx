@@ -188,7 +188,7 @@ export default async function AdminLayout({
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-4">
             <Link href="/panel" className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-sm font-bold text-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-leaf-600 text-sm font-bold text-white">
                 C
               </span>
               <span className="hidden font-bold text-slate-900 sm:block">
@@ -205,7 +205,7 @@ export default async function AdminLayout({
               Siteyi Gör
             </Link>
             <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-leaf-600 text-xs font-bold text-white">
                 {profile.full_name?.charAt(0)?.toUpperCase() || "A"}
               </span>
               <span className="hidden text-sm font-medium text-slate-700 sm:block">
@@ -222,7 +222,7 @@ export default async function AdminLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-leaf-50 hover:text-leaf-700"
               >
                 {item.icon}
                 {item.label}

@@ -117,7 +117,7 @@ export default function CategorySelector({
         <div
           className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm ${
             status.type === "success"
-              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+              ? "border border-leaf--200 bg-leaf-50 text-leaf-700"
               : "border border-red-200 bg-red-50 text-red-700"
           }`}
         >
@@ -164,7 +164,7 @@ export default function CategorySelector({
               onClick={() => handleToggle(category.id)}
               className={`flex items-center gap-2 rounded-lg border p-3 text-left transition-all ${
                 isSelected
-                  ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500"
+                  ? "border-leaf--500 bg-leaf-50 ring-1 ring-leaf--500"
                   : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
               }`}
             >
@@ -174,7 +174,7 @@ export default function CategorySelector({
               </span>
               {isSelected && (
                 <svg
-                  className="h-5 w-5 text-emerald-600"
+                  className="h-5 w-5 text-leaf-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -196,7 +196,7 @@ export default function CategorySelector({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg bg-leaf-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-leaf-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {saving && (
             <svg

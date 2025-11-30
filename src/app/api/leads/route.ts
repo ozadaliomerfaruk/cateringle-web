@@ -23,6 +23,10 @@ export async function POST(request: NextRequest) {
       needsTablesChairs,
       wantsRealTableware,
       wantsDisposableTableware,
+      // Yeni alanlar
+      cuisinePreference,
+      deliveryModel,
+      dietaryRequirements,
       notes,
     } = body;
 
@@ -52,6 +56,10 @@ export async function POST(request: NextRequest) {
         needs_tables_chairs: needsTablesChairs || false,
         wants_real_tableware: wantsRealTableware || false,
         wants_disposable_tableware: wantsDisposableTableware || false,
+        // Yeni alanlar
+        cuisine_preference: cuisinePreference || null,
+        delivery_model: deliveryModel || null,
+        dietary_requirements: dietaryRequirements || null,
         notes: notes || null,
         source: "vendor_page_form",
       })

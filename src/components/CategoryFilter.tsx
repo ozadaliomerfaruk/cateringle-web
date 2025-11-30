@@ -47,7 +47,7 @@ export default function CategoryFilter({
         <select
           value={currentCategory || ""}
           onChange={handleMobileChange}
-          className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-3 pr-10 text-sm font-medium text-slate-700 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-3 pr-10 text-sm font-medium text-slate-700 shadow-sm focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
         >
           <option value="">Tüm Kategoriler</option>
           {categories.map((cat) => (
@@ -81,8 +81,8 @@ export default function CategoryFilter({
             href={buildFilterUrl({ category: undefined })}
             className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
               !currentCategory
-                ? "bg-emerald-600 text-white shadow-md"
-                : "border border-slate-200 bg-white text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                ? "bg-leaf-600 text-white shadow-md"
+                : "border border-slate-200 bg-white text-slate-700 hover:border-leaf--300 hover:bg-leaf-50"
             }`}
           >
             Tümü
@@ -93,8 +93,8 @@ export default function CategoryFilter({
               href={buildFilterUrl({ category: cat.slug })}
               className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 currentCategory === cat.slug
-                  ? "bg-emerald-600 text-white shadow-md"
-                  : "border border-slate-200 bg-white text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                  ? "bg-leaf-600 text-white shadow-md"
+                  : "border border-slate-200 bg-white text-slate-700 hover:border-leaf--300 hover:bg-leaf-50"
               }`}
             >
               {cat.name}

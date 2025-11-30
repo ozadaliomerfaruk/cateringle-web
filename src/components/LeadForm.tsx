@@ -10,6 +10,27 @@ interface Segment {
   slug: string;
 }
 
+interface CuisineType {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string | null;
+}
+
+interface DeliveryModel {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string | null;
+}
+
+interface DietaryTag {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string | null;
+}
+
 interface LeadFormProps {
   vendorId: string;
   vendorName: string;
@@ -20,6 +41,9 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
   const [success, setSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [segments, setSegments] = useState<Segment[]>([]);
+  const [cuisineTypes, setCuisineTypes] = useState<CuisineType[]>([]);
+  const [deliveryModels, setDeliveryModels] = useState<DeliveryModel[]>([]);
+  const [dietaryTags, setDietaryTags] = useState<DietaryTag[]>([]);
   const [currentUser, setCurrentUser] = useState<{
     id: string;
     email: string;
@@ -43,6 +67,10 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
     needsTablesChairs: false,
     wantsRealTableware: false,
     wantsDisposableTableware: false,
+    // Yeni alanlar
+    cuisinePreference: "",
+    deliveryModel: "",
+    dietaryRequirements: [] as string[],
     notes: "",
   });
 
@@ -60,6 +88,47 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
 
       if (segmentData) {
         setSegments(segmentData);
+      }
+
+      // Mutfak türlerini çek
+      const { data: cuisineData } = await supabase
+        .from("cuisine_types")
+        .select("id, name, slug, icon")
+        .eq("is_active", true)
+        .order("sort_order");
+
+      if (cuisineData) {
+        setCuisineTypes(cuisineData);
+      }
+
+      // Teslimat modellerini çek
+      const { data: deliveryData } = await supabase
+        .from("delivery_models")
+        .select("id, name, slug, icon")
+        .eq("is_active", true)
+        .order("sort_order");
+
+      if (deliveryData) {
+        setDeliveryModels(deliveryData);
+      }
+
+      // Diyet etiketlerini çek (Diyet/Menü grubundan)
+      const { data: tagData } = await supabase
+        .from("tags")
+        .select("id, name, slug, icon, group:tag_groups!inner(slug)")
+        .eq("is_active", true)
+        .eq("tag_groups.slug", "diyet-menu")
+        .order("sort_order");
+
+      if (tagData) {
+        setDietaryTags(
+          tagData.map((t) => ({
+            id: t.id,
+            name: t.name,
+            slug: t.slug,
+            icon: t.icon,
+          }))
+        );
       }
 
       // Kullanıcı bilgilerini çek
@@ -106,6 +175,16 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
     }));
   };
 
+  // Diyet gereksinimleri toggle
+  const handleDietaryToggle = (slug: string) => {
+    setForm((prev) => ({
+      ...prev,
+      dietaryRequirements: prev.dietaryRequirements.includes(slug)
+        ? prev.dietaryRequirements.filter((s) => s !== slug)
+        : [...prev.dietaryRequirements, slug],
+    }));
+  };
+
   // Segment değiştiğinde etkinlik türünü sıfırla
   const handleSegmentChange = (segmentId: string) => {
     setForm((prev) => ({
@@ -142,6 +221,13 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
           needsTablesChairs: form.needsTablesChairs,
           wantsRealTableware: form.wantsRealTableware,
           wantsDisposableTableware: form.wantsDisposableTableware,
+          // Yeni alanlar
+          cuisinePreference: form.cuisinePreference || null,
+          deliveryModel: form.deliveryModel || null,
+          dietaryRequirements:
+            form.dietaryRequirements.length > 0
+              ? form.dietaryRequirements
+              : null,
           notes: form.notes.trim() || null,
         }),
       });
@@ -170,6 +256,9 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
         needsTablesChairs: false,
         wantsRealTableware: false,
         wantsDisposableTableware: false,
+        cuisinePreference: "",
+        deliveryModel: "",
+        dietaryRequirements: [],
         notes: "",
       });
     } catch (error) {
@@ -218,7 +307,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
       </p>
 
       {currentUser && (
-        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <div className="mb-4 rounded-lg border border-leaf--200 bg-leaf-50 px-3 py-2 text-sm text-leaf-700">
           <span className="font-medium">
             {currentUser.fullName || currentUser.email}
           </span>{" "}
@@ -227,16 +316,16 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
       )}
 
       {success && (
-        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div className="mb-4 rounded-lg border border-leaf--200 bg-leaf-50 px-4 py-3 text-sm text-leaf-700">
           <p className="font-medium">Talebiniz iletildi!</p>
-          <p className="mt-1 text-emerald-600">
+          <p className="mt-1 text-leaf-600">
             Firma en kısa sürede sizinle iletişime geçecek.
           </p>
           {currentUser && (
             <p className="mt-2">
               <a
                 href="/account"
-                className="font-medium underline hover:text-emerald-800"
+                className="font-medium underline hover:text-leaf-800"
               >
                 Hesabınızdan
               </a>{" "}
@@ -264,7 +353,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               name="customerName"
               required
               placeholder="Adınızı girin"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.customerName}
               onChange={handleChange}
             />
@@ -278,7 +367,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               name="customerEmail"
               required
               placeholder="ornek@email.com"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.customerEmail}
               onChange={handleChange}
             />
@@ -291,7 +380,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               type="tel"
               name="customerPhone"
               placeholder="05XX XXX XX XX"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.customerPhone}
               onChange={handleChange}
             />
@@ -313,7 +402,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
                   form.segmentId === segment.id.toString()
                     ? segment.slug === "kurumsal"
                       ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-emerald-500 bg-emerald-50 text-emerald-700"
+                      : "border-leaf--500 bg-leaf-50 text-leaf-700"
                     : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                 }`}
               >
@@ -332,7 +421,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             </label>
             <select
               name="eventType"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.eventType}
               onChange={handleChange}
             >
@@ -355,7 +444,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             <input
               type="date"
               name="eventDate"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.eventDate}
               onChange={handleChange}
             />
@@ -369,7 +458,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               name="guestCount"
               min="1"
               placeholder="Örn: 50"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.guestCount}
               onChange={handleChange}
             />
@@ -387,7 +476,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               name="budgetMin"
               min="0"
               placeholder="TL"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.budgetMin}
               onChange={handleChange}
             />
@@ -401,7 +490,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               name="budgetMax"
               min="0"
               placeholder="TL"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.budgetMax}
               onChange={handleChange}
             />
@@ -415,7 +504,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
           </label>
           <select
             name="serviceStyle"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
             value={form.serviceStyle}
             onChange={handleChange}
           >
@@ -428,6 +517,79 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
           </select>
         </div>
 
+        {/* Mutfak Tercihi */}
+        {cuisineTypes.length > 0 && (
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-700">
+              Mutfak Tercihi{" "}
+              <span className="text-slate-400">(isteğe bağlı)</span>
+            </label>
+            <select
+              name="cuisinePreference"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
+              value={form.cuisinePreference}
+              onChange={handleChange}
+            >
+              <option value="">Fark etmez</option>
+              {cuisineTypes.map((cuisine) => (
+                <option key={cuisine.id} value={cuisine.slug}>
+                  {cuisine.icon} {cuisine.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Teslimat Modeli */}
+        {deliveryModels.length > 0 && (
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-700">
+              Teslimat Tercihi{" "}
+              <span className="text-slate-400">(isteğe bağlı)</span>
+            </label>
+            <select
+              name="deliveryModel"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
+              value={form.deliveryModel}
+              onChange={handleChange}
+            >
+              <option value="">Fark etmez</option>
+              {deliveryModels.map((model) => (
+                <option key={model.id} value={model.slug}>
+                  {model.icon} {model.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Diyet Gereksinimleri */}
+        {dietaryTags.length > 0 && (
+          <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-medium text-slate-700">
+              Diyet gereksinimleri{" "}
+              <span className="text-slate-400">(varsa seçin)</span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {dietaryTags.map((tag) => (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => handleDietaryToggle(tag.slug)}
+                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                    form.dietaryRequirements.includes(tag.slug)
+                      ? "bg-leaf-100 text-leaf-700 ring-2 ring-leaf--500"
+                      : "bg-white text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  {tag.icon && <span>{tag.icon}</span>}
+                  {tag.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Ek Hizmetler */}
         <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs font-medium text-slate-700">
@@ -437,7 +599,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             <input
               type="checkbox"
               name="needsServiceStaff"
-              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
               checked={form.needsServiceStaff}
               onChange={handleChange}
             />
@@ -447,7 +609,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             <input
               type="checkbox"
               name="needsCleanup"
-              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
               checked={form.needsCleanup}
               onChange={handleChange}
             />
@@ -457,7 +619,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             <input
               type="checkbox"
               name="needsTablesChairs"
-              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
               checked={form.needsTablesChairs}
               onChange={handleChange}
             />
@@ -472,7 +634,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             <input
               type="checkbox"
               name="wantsRealTableware"
-              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
               checked={form.wantsRealTableware}
               onChange={handleChange}
             />
@@ -482,7 +644,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             <input
               type="checkbox"
               name="wantsDisposableTableware"
-              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
               checked={form.wantsDisposableTableware}
               onChange={handleChange}
             />
@@ -500,7 +662,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             name="notes"
             rows={3}
             placeholder="Özel istekleriniz, diyet gereksinimleri, alerjiler..."
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
             value={form.notes}
             onChange={handleChange}
           />
@@ -509,7 +671,7 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow disabled:opacity-60"
+          className="w-full rounded-xl bg-leaf-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-leaf-700 hover:shadow disabled:opacity-60"
         >
           {loading ? "Gönderiliyor..." : "Ücretsiz Teklif İste"}
         </button>

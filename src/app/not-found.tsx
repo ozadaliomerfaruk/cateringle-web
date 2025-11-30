@@ -36,7 +36,7 @@ export default function NotFound() {
           </div>
           {/* 404 Text on plate */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-4xl font-bold text-emerald-600">404</span>
+            <span className="text-4xl font-bold text-leaf-600">404</span>
           </div>
         </div>
 
@@ -53,7 +53,7 @@ export default function NotFound() {
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-leaf-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-leaf-700 hover:shadow-md"
           >
             <svg
               className="h-5 w-5"
@@ -96,7 +96,7 @@ export default function NotFound() {
           Yardıma mı ihtiyacınız var?{" "}
           <Link
             href="/iletisim"
-            className="font-medium text-emerald-600 hover:text-emerald-700"
+            className="font-medium text-leaf-600 hover:text-leaf-700"
           >
             Bize ulaşın
           </Link>

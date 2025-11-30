@@ -12,11 +12,11 @@ export default function Footer() {
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-xl font-bold text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-leaf--500 to-teal-600 text-xl font-bold text-white">
                 C
               </div>
               <span className="text-xl font-bold text-white">
-                Cater<span className="text-emerald-400">ingle</span>
+                Cater<span className="text-leaf-400">ingle</span>
               </span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-slate-400">
@@ -29,7 +29,7 @@ export default function Footer() {
                 href="https://instagram.com/cateringlecom"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 text-slate-400 transition-colors hover:bg-emerald-600 hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 text-slate-400 transition-colors hover:bg-leaf-600 hover:text-white"
               >
                 <svg
                   className="h-5 w-5"
@@ -43,7 +43,7 @@ export default function Footer() {
                 href="https://twitter.com/cateringlecom"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 text-slate-400 transition-colors hover:bg-emerald-600 hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 text-slate-400 transition-colors hover:bg-leaf-600 hover:text-white"
               >
                 <svg
                   className="h-5 w-5"
@@ -57,7 +57,7 @@ export default function Footer() {
                 href="https://linkedin.com/company/cateringlecom"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 text-slate-400 transition-colors hover:bg-emerald-600 hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 text-slate-400 transition-colors hover:bg-leaf-600 hover:text-white"
               >
                 <svg
                   className="h-5 w-5"
@@ -117,7 +117,7 @@ export default function Footer() {
           {/* Bireysel Hizmetler */}
           <div>
             <h3 className="flex items-center gap-2 font-semibold text-white">
-              <span className="flex h-6 w-6 items-center justify-center rounded bg-emerald-500/20 text-xs">
+              <span className="flex h-6 w-6 items-center justify-center rounded bg-leaf-500/20 text-xs">
                 🎉
               </span>
               Bireysel
@@ -126,7 +126,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/vendors?segment=bireysel"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   Tüm Bireysel Hizmetler
                 </Link>
@@ -134,7 +134,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/vendors?segment=bireysel&category=dugun-nisan"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   Düğün & Nişan
                 </Link>
@@ -142,7 +142,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/vendors?segment=bireysel&category=dogum-gunu"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   Doğum Günü
                 </Link>
@@ -150,7 +150,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/vendors?segment=bireysel&category=evde-sef-hizmeti"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   Evde Şef Hizmeti
                 </Link>
@@ -165,7 +165,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/auth/register"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   Tedarikçi Ol
                 </Link>
@@ -173,7 +173,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/auth/login"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   Firma Girişi
                 </Link>
@@ -181,7 +181,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/hakkimizda"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   Neden Cateringle?
                 </Link>
@@ -189,7 +189,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/blog"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   Blog
                 </Link>
@@ -204,7 +204,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/hakkimizda"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   Hakkımızda
                 </Link>
@@ -212,7 +212,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/iletisim"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   İletişim
                 </Link>
@@ -220,7 +220,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/gizlilik-politikasi"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   Gizlilik Politikası
                 </Link>
@@ -228,7 +228,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/kullanim-sartlari"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   Kullanım Şartları
                 </Link>
@@ -236,7 +236,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/kvkk"
-                  className="text-sm text-slate-400 transition-colors hover:text-emerald-400"
+                  className="text-sm text-slate-400 transition-colors hover:text-leaf-400"
                 >
                   KVKK
                 </Link>

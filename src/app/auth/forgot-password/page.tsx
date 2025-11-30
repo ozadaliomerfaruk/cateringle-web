@@ -42,7 +42,7 @@ export default async function ForgotPasswordPage({
         {/* Card */}
         <div className="overflow-hidden rounded-2xl bg-white shadow-xl">
           {/* Header */}
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-8 text-center">
+          <div className="bg-gradient-to-r from-leaf--600 to-teal-600 px-8 py-8 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
               <svg
                 className="h-8 w-8 text-white"
@@ -61,7 +61,7 @@ export default async function ForgotPasswordPage({
             <h1 className="mt-4 text-2xl font-bold text-white">
               Şifremi Unuttum
             </h1>
-            <p className="mt-1 text-emerald-100">Şifrenizi sıfırlayın</p>
+            <p className="mt-1 text-leaf-100">Şifrenizi sıfırlayın</p>
           </div>
 
           {/* Form */}
@@ -149,14 +149,14 @@ export default async function ForgotPasswordPage({
                         type="email"
                         required
                         placeholder="ornek@mail.com"
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm transition-all placeholder:text-slate-400 focus:border-leaf--500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                       />
                     </div>
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md"
+                    className="w-full rounded-xl bg-leaf-600 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-leaf-700 hover:shadow-md"
                   >
                     Şifre Sıfırlama Linki Gönder
                   </button>
@@ -169,7 +169,7 @@ export default async function ForgotPasswordPage({
           <div className="border-t bg-slate-50 px-8 py-5 text-center">
             <Link
               href="/auth/login"
-              className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-emerald-600"
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-leaf-600"
             >
               <svg
                 className="h-4 w-4"

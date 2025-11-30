@@ -86,7 +86,7 @@ export default async function FavoritesPage() {
           <p className="mt-3 text-slate-600">Henüz favori eklemediniz.</p>
           <Link
             href="/vendors"
-            className="mt-3 inline-block text-sm font-medium text-emerald-600 hover:underline"
+            className="mt-3 inline-block text-sm font-medium text-leaf-600 hover:underline"
           >
             Firmaları keşfedin
           </Link>
@@ -106,7 +106,7 @@ export default async function FavoritesPage() {
               <Link href={`/vendors/${fav.vendor.slug}`} className="block">
                 <div className="flex gap-3">
                   {/* Logo */}
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-emerald-50">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-leaf-50">
                     {fav.vendor.logo_url ? (
                       <Image
                         src={fav.vendor.logo_url}
@@ -119,7 +119,7 @@ export default async function FavoritesPage() {
                       />
                     ) : (
                       <svg
-                        className="h-6 w-6 text-emerald-600"
+                        className="h-6 w-6 text-leaf-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -135,7 +135,7 @@ export default async function FavoritesPage() {
                   </div>
                   {/* Bilgiler */}
                   <div className="flex-1 pr-8">
-                    <h3 className="font-semibold hover:text-emerald-600">
+                    <h3 className="font-semibold hover:text-leaf-600">
                       {fav.vendor.business_name}
                     </h3>
                     {fav.vendor.city?.name && (
@@ -164,7 +164,7 @@ export default async function FavoritesPage() {
                     )}
                     <div className="mt-1 flex flex-wrap gap-2">
                       {fav.vendor.avg_price_per_person && (
-                        <span className="rounded bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">
+                        <span className="rounded bg-leaf-50 px-2 py-0.5 text-xs text-leaf-700">
                           ≈ {Math.round(fav.vendor.avg_price_per_person)}{" "}
                           TL/kişi
                         </span>

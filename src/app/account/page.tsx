@@ -52,7 +52,7 @@ export default async function AccountPage() {
       <div className="border-b bg-white">
         <div className="mx-auto max-w-4xl px-4 py-8">
           <div className="flex items-center gap-5">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-3xl font-bold text-white shadow-lg">
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-leaf--500 to-teal-600 text-3xl font-bold text-white shadow-lg">
               {profile?.full_name?.charAt(0)?.toUpperCase() ||
                 user.email?.charAt(0)?.toUpperCase()}
             </div>
@@ -81,7 +81,7 @@ export default async function AccountPage() {
             <div className="mt-4 space-y-2">
               <Link
                 href="/account/favorites"
-                className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-emerald-50"
+                className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-leaf-50"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
@@ -117,7 +117,7 @@ export default async function AccountPage() {
 
               <Link
                 href="/account/profile"
-                className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-emerald-50"
+                className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-leaf-50"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
@@ -161,12 +161,12 @@ export default async function AccountPage() {
 
               <Link
                 href="/vendors"
-                className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-emerald-50"
+                className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-leaf-50"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-leaf-100">
                     <svg
-                      className="h-5 w-5 text-emerald-600"
+                      className="h-5 w-5 text-leaf-600"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -210,7 +210,7 @@ export default async function AccountPage() {
               {(favoriteCount || 0) > 3 && (
                 <Link
                   href="/account/favorites"
-                  className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                  className="text-sm font-medium text-leaf-600 hover:text-leaf-700"
                 >
                   Tümünü gör
                 </Link>
@@ -231,7 +231,7 @@ export default async function AccountPage() {
                       href={`/vendors/${vendor.slug}`}
                       className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 transition-colors hover:bg-slate-100"
                     >
-                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg bg-emerald-100">
+                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg bg-leaf-100">
                         {vendor.logo_url ? (
                           <div className="relative h-full w-full">
                             <Image
@@ -243,7 +243,7 @@ export default async function AccountPage() {
                           </div>
                         ) : (
                           <svg
-                            className="h-6 w-6 text-emerald-600"
+                            className="h-6 w-6 text-leaf-600"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -294,7 +294,7 @@ export default async function AccountPage() {
                 </p>
                 <Link
                   href="/vendors"
-                  className="mt-3 text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                  className="mt-3 text-sm font-medium text-leaf-600 hover:text-leaf-700"
                 >
                   Firmaları keşfet →
                 </Link>

@@ -138,7 +138,7 @@ export default function ServiceSelector({
                 <span className="text-lg">{group.icon}</span>
                 <span className="font-medium text-slate-900">{group.name}</span>
                 {selectedCount > 0 && (
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                  <span className="rounded-full bg-leaf-100 px-2 py-0.5 text-xs font-semibold text-leaf-700">
                     {selectedCount}
                   </span>
                 )}
@@ -167,7 +167,7 @@ export default function ServiceSelector({
                     type="checkbox"
                     checked={allSelected}
                     onChange={() => toggleAllInGroup(group)}
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
                   />
                   <span className="text-sm font-medium text-slate-700">
                     Tümünü Seç
@@ -184,7 +184,7 @@ export default function ServiceSelector({
                         type="checkbox"
                         checked={selectedServices.includes(service.id)}
                         onChange={() => toggleService(service.id)}
-                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
                       />
                       <span className="text-sm text-slate-700">
                         {service.name}

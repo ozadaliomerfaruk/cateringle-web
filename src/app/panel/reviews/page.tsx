@@ -142,7 +142,7 @@ export default async function AdminReviewsPage() {
                     <input type="hidden" name="review_id" value={review.id} />
                     <button
                       type="submit"
-                      className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700"
+                      className="rounded bg-leaf-600 px-3 py-1 text-xs font-medium text-white hover:bg-leaf-700"
                     >
                       Onayla
                     </button>
@@ -169,7 +169,7 @@ export default async function AdminReviewsPage() {
 
       {/* Onaylı Yorumlar */}
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-emerald-700">
+        <h2 className="mb-3 text-sm font-semibold text-leaf-700">
           Onaylı Yorumlar (Son 20)
         </h2>
 

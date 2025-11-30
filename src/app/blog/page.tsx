@@ -43,7 +43,7 @@ export default async function BlogPage() {
                   className="group overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
                 >
                   {/* Cover Image */}
-                  <div className="aspect-video overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-50">
+                  <div className="aspect-video overflow-hidden bg-gradient-to-br from-leaf--100 to-teal-50">
                     {blog.cover_image_url ? (
                       <Image
                         src={blog.cover_image_url}
@@ -55,7 +55,7 @@ export default async function BlogPage() {
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         <svg
-                          className="h-12 w-12 text-emerald-300"
+                          className="h-12 w-12 text-leaf-300"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -85,7 +85,7 @@ export default async function BlogPage() {
                           )
                         : ""}
                     </p>
-                    <h2 className="mt-2 text-lg font-semibold text-slate-900 group-hover:text-emerald-600">
+                    <h2 className="mt-2 text-lg font-semibold text-slate-900 group-hover:text-leaf-600">
                       {blog.title}
                     </h2>
                     {blog.excerpt && (
@@ -93,7 +93,7 @@ export default async function BlogPage() {
                         {blog.excerpt}
                       </p>
                     )}
-                    <div className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-emerald-600">
+                    <div className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-leaf-600">
                       Devamını Oku
                       <svg
                         className="h-4 w-4 transition-transform group-hover:translate-x-1"
@@ -138,7 +138,7 @@ export default async function BlogPage() {
               </p>
               <Link
                 href="/"
-                className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-leaf-600 hover:text-leaf-700"
               >
                 <svg
                   className="h-4 w-4"

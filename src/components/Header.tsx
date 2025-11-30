@@ -14,22 +14,26 @@ interface UserProfile {
   role: UserRole;
 }
 
+// A-Z sıralı
 const corporateCategories = [
-  { name: "Ofis Öğle Yemekleri", slug: "ofis-ogle-yemekleri", icon: "🍽️" },
-  { name: "Toplantı İkramları", slug: "toplanti-ikramlari", icon: "☕" },
-  { name: "Ofis Kahvaltısı", slug: "ofis-kahvaltisi", icon: "🥐" },
-  { name: "Kurumsal Etkinlik", slug: "kurumsal-etkinlik", icon: "🎪" },
-  { name: "Konferans & Seminer", slug: "konferans-seminer", icon: "🎤" },
   { name: "Fuar & Organizasyon", slug: "fuar-organizasyon", icon: "🏢" },
+  { name: "Konferans & Seminer", slug: "konferans-seminer", icon: "🎤" },
+  {
+    name: "Kurumsal Atıştırma Paketleri",
+    slug: "kurumsal-atistirma-paketleri",
+    icon: "🍿",
+  },
+  { name: "Ofis Kahvaltısı", slug: "ofis-kahvaltisi", icon: "🥐" },
+  { name: "Ofis Öğle Yemekleri", slug: "ofis-ogle-yemekleri", icon: "🍽️" },
 ];
 
+// A-Z sıralı
 const individualCategories = [
-  { name: "Düğün & Nişan", slug: "dugun-nisan", icon: "💒" },
+  { name: "Baby Shower & Mevlüt", slug: "baby-shower-mevlut", icon: "👶" },
   { name: "Doğum Günü", slug: "dogum-gunu", icon: "🎂" },
+  { name: "Düğün & Nişan", slug: "dugun-nisan", icon: "💒" },
   { name: "Evde Şef Hizmeti", slug: "evde-sef-hizmeti", icon: "👨‍🍳" },
   { name: "Pasta & Tatlı", slug: "pasta-tatli", icon: "🧁" },
-  { name: "Baby Shower & Mevlüt", slug: "baby-shower-mevlut", icon: "👶" },
-  { name: "Ev Partisi", slug: "ev-partisi", icon: "🏠" },
 ];
 
 export default function Header() {

@@ -131,7 +131,7 @@ export default async function CategoriesPage() {
               className={`rounded-xl border p-5 ${
                 segment.slug === "kurumsal"
                   ? "border-blue-200 bg-blue-50"
-                  : "border-emerald-200 bg-emerald-50"
+                  : "border-leaf--200 bg-leaf-50"
               }`}
             >
               <div className="flex items-start justify-between">
@@ -227,11 +227,11 @@ export default async function CategoriesPage() {
       {/* Bireysel Kategoriler */}
       <div className="mb-8">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-lg">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-leaf-100 text-lg">
             🎉
           </span>
           Bireysel Kategoriler
-          <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+          <span className="ml-2 rounded-full bg-leaf-100 px-2 py-0.5 text-xs font-medium text-leaf-700">
             {categoriesBySegment.bireysel.length}
           </span>
         </h2>

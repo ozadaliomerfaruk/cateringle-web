@@ -11,12 +11,12 @@ export default function ContactPage() {
   return (
     <main className="min-h-screen bg-slate-50">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-emerald-600 to-teal-700 py-16">
+      <section className="bg-gradient-to-br from-leaf--600 to-teal-700 py-16">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <h1 className="text-3xl font-bold text-white sm:text-4xl">
             Size nasıl yardımcı olabiliriz?
           </h1>
-          <p className="mt-4 text-lg text-emerald-100">
+          <p className="mt-4 text-lg text-leaf-100">
             Sorularınız, önerileriniz veya geri bildirimleriniz için bize
             ulaşabilirsiniz.
           </p>
@@ -35,9 +35,9 @@ export default function ContactPage() {
                 </h2>
                 <div className="mt-6 space-y-5">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-leaf-100">
                       <svg
-                        className="h-6 w-6 text-emerald-600"
+                        className="h-6 w-6 text-leaf-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -54,7 +54,7 @@ export default function ContactPage() {
                       <p className="text-sm text-slate-500">E-posta</p>
                       <a
                         href="mailto:info@cateringle.com"
-                        className="font-medium text-slate-900 hover:text-emerald-600"
+                        className="font-medium text-slate-900 hover:text-leaf-600"
                       >
                         info@cateringle.com
                       </a>
@@ -169,14 +169,14 @@ export default function ContactPage() {
               </div>
 
               {/* Tedarikçi CTA */}
-              <div className="rounded-2xl bg-linear-to-br from-emerald-600 to-teal-600 p-6 text-white">
+              <div className="rounded-2xl bg-linear-to-br from-leaf--600 to-teal-600 p-6 text-white">
                 <h3 className="font-semibold">Catering Firması mısınız?</h3>
-                <p className="mt-2 text-sm text-emerald-100">
+                <p className="mt-2 text-sm text-leaf-100">
                   Platformumuza katılın, binlerce müşteriye ulaşın.
                 </p>
                 <Link
                   href="/auth/register"
-                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50"
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-leaf-700 transition-colors hover:bg-leaf-50"
                 >
                   Tedarikçi Ol
                   <svg
@@ -217,7 +217,7 @@ export default function ContactPage() {
                       type="text"
                       required
                       placeholder="Adınızı girin"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-leaf--500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                     />
                   </div>
                   <div>
@@ -228,7 +228,7 @@ export default function ContactPage() {
                       type="email"
                       required
                       placeholder="ornek@email.com"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-leaf--500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                     />
                   </div>
                 </div>
@@ -242,7 +242,7 @@ export default function ContactPage() {
                     <input
                       type="tel"
                       placeholder="05XX XXX XX XX"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-leaf--500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                     />
                   </div>
                   <div>
@@ -251,7 +251,7 @@ export default function ContactPage() {
                     </label>
                     <select
                       required
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-leaf--500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                     >
                       <option value="">Bir konu seçin</option>
                       <option value="general">Genel Soru</option>
@@ -272,13 +272,13 @@ export default function ContactPage() {
                     required
                     rows={5}
                     placeholder="Size nasıl yardımcı olabiliriz?"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-leaf--500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full rounded-xl bg-emerald-600 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md sm:w-auto sm:px-8"
+                  className="w-full rounded-xl bg-leaf-600 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-leaf-700 hover:shadow-md sm:w-auto sm:px-8"
                 >
                   Gönder
                 </button>

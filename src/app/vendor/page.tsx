@@ -343,9 +343,9 @@ export default async function VendorDashboardPage() {
 
           <div className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-leaf-100">
                 <svg
-                  className="h-6 w-6 text-emerald-600"
+                  className="h-6 w-6 text-leaf-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -376,7 +376,7 @@ export default async function VendorDashboardPage() {
               <div className="mt-4 space-y-2">
                 <Link
                   href="/vendor/settings"
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 transition-colors hover:bg-leaf-50 hover:text-leaf-700"
                 >
                   <svg
                     className="h-5 w-5"
@@ -401,7 +401,7 @@ export default async function VendorDashboardPage() {
                 </Link>
                 <Link
                   href="/vendor/menu"
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 transition-colors hover:bg-leaf-50 hover:text-leaf-700"
                 >
                   <svg
                     className="h-5 w-5"
@@ -564,7 +564,7 @@ export default async function VendorDashboardPage() {
                       className="flex items-center justify-between rounded-xl bg-slate-50 p-4"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 font-semibold text-emerald-700">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-100 font-semibold text-leaf-700">
                           {lead.customer_name?.charAt(0)?.toUpperCase() || "?"}
                         </div>
                         <div>

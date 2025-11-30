@@ -46,7 +46,7 @@ export default function CategoryRow({
             name="segment_id"
             defaultValue={category.segment_id?.toString() || ""}
             onChange={(e) => e.target.form?.requestSubmit()}
-            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm focus:border-leaf--500 focus:outline-none focus:ring-1 focus:ring-leaf--500"
           >
             <option value="">Segment Seç</option>
             {segments.map((seg) => (

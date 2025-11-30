@@ -25,6 +25,33 @@ type VendorService = {
   } | null;
 };
 
+type VendorCuisine = {
+  cuisine_type: {
+    name: string;
+    icon: string | null;
+    category: string | null;
+  } | null;
+};
+
+type VendorDeliveryModel = {
+  delivery_model: {
+    name: string;
+    icon: string | null;
+    description: string | null;
+  } | null;
+};
+
+type VendorTag = {
+  tag: {
+    name: string;
+    icon: string | null;
+    group: {
+      name: string;
+      icon: string | null;
+    } | null;
+  } | null;
+};
+
 type MenuItem = {
   id: string;
   name: string;
@@ -103,7 +130,11 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
       id, business_name, slug, description, logo_url,
       avg_price_per_person, min_guest_count, max_guest_count,
       phone, whatsapp, email, website_url, address_text,
-      city_id, district_id, status, created_at
+      city_id, district_id, status, created_at,
+      lead_time_hours, lead_time_type, accepts_last_minute,
+      weekend_surcharge_percent, holiday_surcharge_percent,
+      delivery_pricing_type, delivery_base_fee, delivery_notes,
+      has_refrigerated_vehicle, serves_outside_city, available_24_7
     `
     )
     .eq("slug", slug)
@@ -166,6 +197,26 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
     .select("service:services(name, group:service_groups(icon))")
     .eq("vendor_id", vendor.id);
 
+  // ========== YENİ KATEGORİ SİSTEMİ VERİLERİ ==========
+
+  // Mutfak Türleri
+  const { data: vendorCuisines } = await supabase
+    .from("vendor_cuisines")
+    .select("cuisine_type:cuisine_types(name, icon, category)")
+    .eq("vendor_id", vendor.id);
+
+  // Teslimat Modelleri
+  const { data: vendorDeliveryModels } = await supabase
+    .from("vendor_delivery_models")
+    .select("delivery_model:delivery_models(name, icon, description)")
+    .eq("vendor_id", vendor.id);
+
+  // Etiketler
+  const { data: vendorTags } = await supabase
+    .from("vendor_tags")
+    .select("tag:tags(name, icon, group:tag_groups(name, icon))")
+    .eq("vendor_id", vendor.id);
+
   // Şehir/İlçe
   let cityName = "";
   let districtName = "";
@@ -202,7 +253,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
           <nav className="mb-6">
             <ol className="flex items-center gap-2 text-sm text-slate-500">
               <li>
-                <Link href="/" className="hover:text-emerald-600">
+                <Link href="/" className="hover:text-leaf-600">
                   Ana Sayfa
                 </Link>
               </li>
@@ -222,7 +273,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                 </svg>
               </li>
               <li>
-                <Link href="/vendors" className="hover:text-emerald-600">
+                <Link href="/vendors" className="hover:text-leaf-600">
                   Firmalar
                 </Link>
               </li>
@@ -251,7 +302,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
               {/* Logo */}
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-50 shadow-sm">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-leaf--100 to-teal-50 shadow-sm">
                 {vendor.logo_url ? (
                   <Image
                     src={vendor.logo_url}
@@ -262,7 +313,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                   />
                 ) : (
                   <svg
-                    className="h-12 w-12 text-emerald-600"
+                    className="h-12 w-12 text-leaf-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -341,7 +392,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                 {/* Badges */}
                 <div className="mt-4 flex flex-wrap gap-2">
                   {typeof vendor.avg_price_per_person === "number" && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-medium text-emerald-700">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-leaf-100 px-4 py-1.5 text-sm font-medium text-leaf-700">
                       <svg
                         className="h-4 w-4"
                         fill="none"
@@ -448,7 +499,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
             <section className="rounded-2xl bg-white p-6 shadow-sm">
               <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
                 <svg
-                  className="h-5 w-5 text-emerald-600"
+                  className="h-5 w-5 text-leaf-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -477,7 +528,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
             <section className="rounded-2xl bg-white p-6 shadow-sm">
               <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
                 <svg
-                  className="h-5 w-5 text-emerald-600"
+                  className="h-5 w-5 text-leaf-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -539,7 +590,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
               <section className="rounded-2xl bg-white p-6 shadow-sm">
                 <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
                   <svg
-                    className="h-5 w-5 text-emerald-600"
+                    className="h-5 w-5 text-leaf-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -557,10 +608,10 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                   {vendorServices.map((vs: VendorService, i: number) => (
                     <span
                       key={i}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-sm text-emerald-700"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-leaf-50 px-3 py-1.5 text-sm text-leaf-700"
                     >
                       <svg
-                        className="h-4 w-4 text-emerald-500"
+                        className="h-4 w-4 text-leaf-500"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -579,12 +630,272 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
               </section>
             )}
 
+            {/* Mutfak Türleri */}
+            {vendorCuisines && vendorCuisines.length > 0 && (
+              <section className="rounded-2xl bg-white p-6 shadow-sm">
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+                  <svg
+                    className="h-5 w-5 text-leaf-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                    />
+                  </svg>
+                  Mutfak Türleri
+                </h2>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {vendorCuisines.map((vc: VendorCuisine, i: number) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1.5 text-sm text-orange-700"
+                    >
+                      {vc.cuisine_type?.icon && (
+                        <span>{vc.cuisine_type.icon}</span>
+                      )}
+                      {vc.cuisine_type?.name}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Teslimat Modelleri */}
+            {vendorDeliveryModels && vendorDeliveryModels.length > 0 && (
+              <section className="rounded-2xl bg-white p-6 shadow-sm">
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+                  <svg
+                    className="h-5 w-5 text-leaf-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"
+                    />
+                  </svg>
+                  Teslimat Seçenekleri
+                </h2>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {vendorDeliveryModels.map(
+                    (vdm: VendorDeliveryModel, i: number) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-3 rounded-xl bg-teal-50 p-4"
+                      >
+                        <span className="text-xl">
+                          {vdm.delivery_model?.icon || "📦"}
+                        </span>
+                        <div>
+                          <p className="font-medium text-teal-800">
+                            {vdm.delivery_model?.name}
+                          </p>
+                          {vdm.delivery_model?.description && (
+                            <p className="mt-0.5 text-xs text-teal-600">
+                              {vdm.delivery_model.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+
+                {/* Teslimat Ücret Bilgisi */}
+                {vendor.delivery_pricing_type && (
+                  <div className="mt-4 rounded-lg bg-slate-50 px-4 py-3">
+                    <p className="text-sm text-slate-600">
+                      <span className="font-medium">Teslimat Ücreti: </span>
+                      {vendor.delivery_pricing_type === "free" && "Ücretsiz"}
+                      {vendor.delivery_pricing_type === "fixed" &&
+                        `${vendor.delivery_base_fee} TL sabit`}
+                      {vendor.delivery_pricing_type === "per_km" &&
+                        `${vendor.delivery_base_fee} TL/km`}
+                      {vendor.delivery_pricing_type === "included" &&
+                        "Fiyata dahil"}
+                      {vendor.delivery_pricing_type === "contact" &&
+                        "İletişime geçin"}
+                    </p>
+                    {vendor.delivery_notes && (
+                      <p className="mt-1 text-xs text-slate-500">
+                        {vendor.delivery_notes}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Etiketler ve Sertifikalar */}
+            {vendorTags && vendorTags.length > 0 && (
+              <section className="rounded-2xl bg-white p-6 shadow-sm">
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+                  <svg
+                    className="h-5 w-5 text-leaf-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                    />
+                  </svg>
+                  Özellikler ve Sertifikalar
+                </h2>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {vendorTags.map((vt: VendorTag, i: number) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1.5 text-sm text-violet-700"
+                    >
+                      {vt.tag?.icon && <span>{vt.tag.icon}</span>}
+                      {vt.tag?.name}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Operasyonel Bilgiler */}
+            {(vendor.lead_time_type ||
+              vendor.available_24_7 ||
+              vendor.has_refrigerated_vehicle ||
+              vendor.serves_outside_city ||
+              vendor.accepts_last_minute) && (
+              <section className="rounded-2xl bg-white p-6 shadow-sm">
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+                  <svg
+                    className="h-5 w-5 text-leaf-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Operasyonel Bilgiler
+                </h2>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {vendor.lead_time_type && (
+                    <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4">
+                      <span className="text-xl">⏰</span>
+                      <div>
+                        <p className="text-xs text-slate-500">
+                          Minimum Sipariş Süresi
+                        </p>
+                        <p className="font-medium text-slate-900">
+                          {vendor.lead_time_type === "urgent" &&
+                            "Acil (24 saat içinde)"}
+                          {vendor.lead_time_type === "standard" &&
+                            "Standart (2-3 gün)"}
+                          {vendor.lead_time_type === "advance" &&
+                            "Önceden (1 hafta+)"}
+                          {vendor.lead_time_hours &&
+                            ` (min. ${vendor.lead_time_hours} saat)`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {vendor.available_24_7 && (
+                    <div className="flex items-center gap-3 rounded-xl bg-green-50 p-4">
+                      <span className="text-xl">🕐</span>
+                      <div>
+                        <p className="font-medium text-green-800">
+                          7/24 Hizmet
+                        </p>
+                        <p className="text-xs text-green-600">
+                          Her zaman ulaşılabilir
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {vendor.accepts_last_minute && (
+                    <div className="flex items-center gap-3 rounded-xl bg-amber-50 p-4">
+                      <span className="text-xl">⚡</span>
+                      <div>
+                        <p className="font-medium text-amber-800">
+                          Son Dakika Siparişleri
+                        </p>
+                        <p className="text-xs text-amber-600">
+                          Acil siparişler değerlendirilebilir
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {vendor.has_refrigerated_vehicle && (
+                    <div className="flex items-center gap-3 rounded-xl bg-blue-50 p-4">
+                      <span className="text-xl">🚛</span>
+                      <div>
+                        <p className="font-medium text-blue-800">
+                          Frigorifik Araç
+                        </p>
+                        <p className="text-xs text-blue-600">
+                          Soğuk zincir teslimatı
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {vendor.serves_outside_city && (
+                    <div className="flex items-center gap-3 rounded-xl bg-purple-50 p-4">
+                      <span className="text-xl">🗺️</span>
+                      <div>
+                        <p className="font-medium text-purple-800">
+                          Şehir Dışı Teslimat
+                        </p>
+                        <p className="text-xs text-purple-600">
+                          Şehir dışına hizmet verilir
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {(vendor.weekend_surcharge_percent ||
+                    vendor.holiday_surcharge_percent) && (
+                    <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4 sm:col-span-2">
+                      <span className="text-xl">💰</span>
+                      <div>
+                        <p className="text-xs text-slate-500">Ek Ücretler</p>
+                        <p className="font-medium text-slate-900">
+                          {vendor.weekend_surcharge_percent &&
+                            `Hafta sonu: +%${vendor.weekend_surcharge_percent}`}
+                          {vendor.weekend_surcharge_percent &&
+                            vendor.holiday_surcharge_percent &&
+                            " | "}
+                          {vendor.holiday_surcharge_percent &&
+                            `Tatil: +%${vendor.holiday_surcharge_percent}`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
             {/* Menüler */}
             {menuCategories && menuCategories.length > 0 && (
               <section className="rounded-2xl bg-white p-6 shadow-sm">
                 <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
                   <svg
-                    className="h-5 w-5 text-emerald-600"
+                    className="h-5 w-5 text-leaf-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -626,7 +937,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                               )}
                             </div>
                             {item.price_per_person && (
-                              <span className="text-lg font-semibold text-emerald-600">
+                              <span className="text-lg font-semibold text-leaf-600">
                                 {item.price_per_person} TL
                               </span>
                             )}
@@ -644,7 +955,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
               <section className="rounded-2xl bg-white p-6 shadow-sm">
                 <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
                   <svg
-                    className="h-5 w-5 text-emerald-600"
+                    className="h-5 w-5 text-leaf-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -662,13 +973,13 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                   {packages.map((pkg: Package) => (
                     <div
                       key={pkg.id}
-                      className="rounded-xl border-2 border-slate-100 bg-linear-to-br from-slate-50 to-white p-5 transition-all hover:border-emerald-200 hover:shadow-md"
+                      className="rounded-xl border-2 border-slate-100 bg-linear-to-br from-slate-50 to-white p-5 transition-all hover:border-leaf--200 hover:shadow-md"
                     >
                       <div className="flex items-start justify-between">
                         <h3 className="font-semibold text-slate-900">
                           {pkg.name}
                         </h3>
-                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700">
+                        <span className="rounded-full bg-leaf-100 px-3 py-1 text-sm font-bold text-leaf-700">
                           {pkg.price_per_person} TL
                         </span>
                       </div>
@@ -690,7 +1001,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                               className="flex items-center gap-2 text-sm text-slate-600"
                             >
                               <svg
-                                className="h-4 w-4 text-emerald-500"
+                                className="h-4 w-4 text-leaf-500"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -717,7 +1028,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
             <section className="rounded-2xl bg-white p-6 shadow-sm">
               <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
                 <svg
-                  className="h-5 w-5 text-emerald-600"
+                  className="h-5 w-5 text-leaf-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -734,9 +1045,9 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 {vendor.phone && (
                   <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-100">
                       <svg
-                        className="h-5 w-5 text-emerald-600"
+                        className="h-5 w-5 text-leaf-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -753,7 +1064,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                       <p className="text-xs text-slate-500">Telefon</p>
                       <a
                         href={`tel:${vendor.phone}`}
-                        className="font-medium text-slate-900 hover:text-emerald-600"
+                        className="font-medium text-slate-900 hover:text-leaf-600"
                       >
                         {vendor.phone}
                       </a>
@@ -762,9 +1073,9 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                 )}
                 {vendor.email && (
                   <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-100">
                       <svg
-                        className="h-5 w-5 text-emerald-600"
+                        className="h-5 w-5 text-leaf-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -781,7 +1092,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                       <p className="text-xs text-slate-500">E-posta</p>
                       <a
                         href={`mailto:${vendor.email}`}
-                        className="font-medium text-slate-900 hover:text-emerald-600"
+                        className="font-medium text-slate-900 hover:text-leaf-600"
                       >
                         {vendor.email}
                       </a>
@@ -790,9 +1101,9 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                 )}
                 {vendor.website_url && (
                   <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-100">
                       <svg
-                        className="h-5 w-5 text-emerald-600"
+                        className="h-5 w-5 text-leaf-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -811,7 +1122,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                         href={vendor.website_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="font-medium text-slate-900 hover:text-emerald-600"
+                        className="font-medium text-slate-900 hover:text-leaf-600"
                       >
                         {vendor.website_url.replace(/^https?:\/\//, "")}
                       </a>
@@ -820,9 +1131,9 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                 )}
                 {vendor.address_text && (
                   <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4 sm:col-span-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-100">
                       <svg
-                        className="h-5 w-5 text-emerald-600"
+                        className="h-5 w-5 text-leaf-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -856,7 +1167,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
             <section className="rounded-2xl bg-white p-6 shadow-sm">
               <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
                 <svg
-                  className="h-5 w-5 text-emerald-600"
+                  className="h-5 w-5 text-leaf-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -907,7 +1218,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
               </div>
 
               {/* Güvence */}
-              <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 p-5">
+              <div className="rounded-2xl bg-gradient-to-br from-leaf--50 to-teal-50 p-5">
                 <h3 className="font-semibold text-slate-900">
                   Neden Cateringle?
                 </h3>
@@ -915,7 +1226,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                   {[
                     "Bilgileriniz gizli tutulur",
                     "Teklif almak tamamen ücretsiz",
-                    "Firmadan hızlı geri dönüş",
+                    "Farklı firmalardan hızlıca teklif alın",
                     "Sorularınız için destek",
                   ].map((item, i) => (
                     <li
@@ -923,7 +1234,7 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                       className="flex items-center gap-2 text-sm text-slate-700"
                     >
                       <svg
-                        className="h-5 w-5 text-emerald-600"
+                        className="h-5 w-5 text-leaf-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"

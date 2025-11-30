@@ -117,7 +117,7 @@ export default async function QuotesPage() {
       >
         <div className="flex items-start gap-4">
           {/* Vendor Logo */}
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-emerald-100">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-leaf-100">
             {vendor?.logo_url ? (
               <Image
                 src={vendor.logo_url}
@@ -127,7 +127,7 @@ export default async function QuotesPage() {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <span className="text-xl font-bold text-emerald-600">
+              <span className="text-xl font-bold text-leaf-600">
                 {vendor?.business_name?.charAt(0)?.toUpperCase()}
               </span>
             )}
@@ -168,7 +168,7 @@ export default async function QuotesPage() {
             {/* Fiyat */}
             <div className="mt-3 flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-emerald-600">
+                <p className="text-2xl font-bold text-leaf-600">
                   {quote.total_price.toLocaleString("tr-TR")} ₺
                 </p>
                 {quote.price_per_person && (
@@ -278,7 +278,7 @@ export default async function QuotesPage() {
             </p>
             <Link
               href="/vendors"
-              className="mt-6 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+              className="mt-6 rounded-lg bg-leaf-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-leaf-700"
             >
               Firma Ara
             </Link>

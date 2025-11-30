@@ -175,7 +175,7 @@ export default async function HomePage() {
 
             {/* Right - Image */}
             <div className="relative">
-              <div className="relative aspect-[4/3] overflow-hidden bg-white shadow-2xl">
+              <div className="relative aspect-4/3 overflow-hidden bg-white shadow-2xl">
                 <Image
                   src="/hero-image.jpg"
                   alt="Catering servisi"

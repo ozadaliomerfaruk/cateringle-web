@@ -11,16 +11,16 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 py-20">
+      <section className="bg-gradient-to-br from-leaf--600 via-leaf--700 to-teal-800 py-20">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <h1 className="text-4xl font-bold text-white sm:text-5xl">
             Etkinlikleriniz için
             <br />
-            <span className="text-emerald-200">
+            <span className="text-leaf-200">
               doğru catering firmasını bulun
             </span>
           </h1>
-          <p className="mt-6 text-lg text-emerald-100">
+          <p className="mt-6 text-lg text-leaf-100">
             Düğün, nişan, kurumsal toplantı ve özel günler için catering
             firmalarını keşfedin, karşılaştırın ve kolayca teklif alın.
           </p>
@@ -58,8 +58,8 @@ export default function AboutPage() {
       <section className="bg-slate-50 py-16">
         <div className="mx-auto max-w-6xl px-4">
           <div className="grid gap-8 md:grid-cols-2">
-            <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 p-8">
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-600">
+            <div className="rounded-2xl bg-gradient-to-br from-leaf--50 to-teal-50 p-8">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-leaf-600">
                 <svg
                   className="h-7 w-7 text-white"
                   fill="none"
@@ -164,7 +164,7 @@ export default function AboutPage() {
                 ].map((text, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <svg
-                      className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500"
+                      className="mt-0.5 h-5 w-5 shrink-0 text-leaf-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -185,9 +185,9 @@ export default function AboutPage() {
             {/* Firmalar İçin */}
             <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-leaf-100">
                   <svg
-                    className="h-6 w-6 text-emerald-600"
+                    className="h-6 w-6 text-leaf-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -215,7 +215,7 @@ export default function AboutPage() {
                 ].map((text, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <svg
-                      className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500"
+                      className="mt-0.5 h-5 w-5 shrink-0 text-leaf-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -250,7 +250,7 @@ export default function AboutPage() {
               {
                 icon: (
                   <svg
-                    className="h-8 w-8 text-emerald-600"
+                    className="h-8 w-8 text-leaf-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -269,7 +269,7 @@ export default function AboutPage() {
               {
                 icon: (
                   <svg
-                    className="h-8 w-8 text-emerald-600"
+                    className="h-8 w-8 text-leaf-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -288,7 +288,7 @@ export default function AboutPage() {
               {
                 icon: (
                   <svg
-                    className="h-8 w-8 text-emerald-600"
+                    className="h-8 w-8 text-leaf-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -307,7 +307,7 @@ export default function AboutPage() {
               {
                 icon: (
                   <svg
-                    className="h-8 w-8 text-emerald-600"
+                    className="h-8 w-8 text-leaf-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -328,7 +328,7 @@ export default function AboutPage() {
                 key={i}
                 className="rounded-2xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-leaf-50">
                   {item.icon}
                 </div>
                 <h3 className="mt-4 font-semibold text-slate-900">
@@ -353,7 +353,7 @@ export default function AboutPage() {
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
               href="/vendors"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-emerald-700 hover:shadow-xl"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-leaf-600 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-leaf-700 hover:shadow-xl"
             >
               Firmaları Keşfedin
               <svg

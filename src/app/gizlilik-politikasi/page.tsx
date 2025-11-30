@@ -58,7 +58,7 @@ export default function PrivacyPolicyPage() {
               <a
                 key={i}
                 href={`#section-${i + 1}`}
-                className="rounded-full bg-slate-100 px-4 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
+                className="rounded-full bg-slate-100 px-4 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-leaf-100 hover:text-leaf-700"
               >
                 {item}
               </a>
@@ -78,7 +78,7 @@ export default function PrivacyPolicyPage() {
 
             <div id="section-1" className="mt-10 scroll-mt-24">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   1
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -101,7 +101,7 @@ export default function PrivacyPolicyPage() {
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-slate-600">
                     <svg
-                      className="mt-1 h-5 w-5 shrink-0 text-emerald-500"
+                      className="mt-1 h-5 w-5 shrink-0 text-leaf-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -121,7 +121,7 @@ export default function PrivacyPolicyPage() {
 
             <div id="section-2" className="mt-10 scroll-mt-24">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   2
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -143,7 +143,7 @@ export default function PrivacyPolicyPage() {
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-slate-600">
                     <svg
-                      className="mt-1 h-5 w-5 shrink-0 text-emerald-500"
+                      className="mt-1 h-5 w-5 shrink-0 text-leaf-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -163,7 +163,7 @@ export default function PrivacyPolicyPage() {
 
             <div id="section-3" className="mt-10 scroll-mt-24">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   3
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -182,7 +182,7 @@ export default function PrivacyPolicyPage() {
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-slate-600">
                     <svg
-                      className="mt-1 h-5 w-5 shrink-0 text-emerald-500"
+                      className="mt-1 h-5 w-5 shrink-0 text-leaf-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -202,7 +202,7 @@ export default function PrivacyPolicyPage() {
 
             <div id="section-4" className="mt-10 scroll-mt-24">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   4
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">
@@ -221,7 +221,7 @@ export default function PrivacyPolicyPage() {
 
             <div id="section-5" className="mt-10 scroll-mt-24">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   5
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">Çerezler</h2>
@@ -231,7 +231,7 @@ export default function PrivacyPolicyPage() {
                 kullanmaktadır. Çerez kullanımı hakkında detaylı bilgi için{" "}
                 <Link
                   href="/cerez-politikasi"
-                  className="font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
+                  className="font-medium text-leaf-600 hover:text-leaf-700 hover:underline"
                 >
                   Çerez Politikası
                 </Link>{" "}
@@ -241,7 +241,7 @@ export default function PrivacyPolicyPage() {
 
             <div id="section-6" className="mt-10 scroll-mt-24">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-100 text-lg font-bold text-leaf-700">
                   6
                 </span>
                 <h2 className="text-xl font-bold text-slate-900">Haklarınız</h2>
@@ -259,7 +259,7 @@ export default function PrivacyPolicyPage() {
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-slate-600">
                     <svg
-                      className="mt-1 h-5 w-5 shrink-0 text-emerald-500"
+                      className="mt-1 h-5 w-5 shrink-0 text-leaf-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -277,14 +277,14 @@ export default function PrivacyPolicyPage() {
               </ul>
             </div>
 
-            <div className="mt-10 rounded-xl bg-emerald-50 p-6">
+            <div className="mt-10 rounded-xl bg-leaf-50 p-6">
               <h3 className="font-semibold text-slate-900">İletişim</h3>
               <p className="mt-2 text-slate-600">
                 Bu haklarınızı kullanmak veya gizlilik politikamız hakkında
                 sorularınız için{" "}
                 <Link
                   href="/iletisim"
-                  className="font-medium text-emerald-600 hover:underline"
+                  className="font-medium text-leaf-600 hover:underline"
                 >
                   İletişim
                 </Link>{" "}

@@ -96,7 +96,7 @@ export default async function NewBlogPage() {
                 type="text"
                 required
                 placeholder="Blog yazısı başlığı"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
               />
             </div>
 
@@ -108,7 +108,7 @@ export default async function NewBlogPage() {
                 name="excerpt"
                 rows={2}
                 placeholder="Kısa açıklama (liste görünümünde gösterilir)"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
               />
             </div>
 
@@ -120,7 +120,7 @@ export default async function NewBlogPage() {
                 name="cover_image_url"
                 type="url"
                 placeholder="https://..."
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
               />
             </div>
 
@@ -133,7 +133,7 @@ export default async function NewBlogPage() {
                 rows={15}
                 required
                 placeholder="Blog içeriğini buraya yazın... (Markdown desteklenir)"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm transition-all focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
               />
               <p className="mt-2 text-xs text-slate-500">
                 Markdown formatını kullanabilirsiniz: **kalın**, *italik*, #
@@ -148,7 +148,7 @@ export default async function NewBlogPage() {
               <select
                 name="status"
                 defaultValue="draft"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-all focus:border-leaf--500 focus:outline-none focus:ring-2 focus:ring-leaf--500/20"
               >
                 <option value="draft">Taslak</option>
                 <option value="published">Yayınla</option>
@@ -166,7 +166,7 @@ export default async function NewBlogPage() {
           </Link>
           <button
             type="submit"
-            className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+            className="rounded-xl bg-leaf-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-leaf-700"
           >
             Kaydet
           </button>

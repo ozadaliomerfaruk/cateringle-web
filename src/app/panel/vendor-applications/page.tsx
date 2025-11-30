@@ -230,7 +230,7 @@ export default async function VendorApplicationsPage() {
                     app.status === "pending"
                       ? "bg-amber-100 text-amber-700"
                       : app.status === "approved"
-                      ? "bg-emerald-100 text-emerald-700"
+                      ? "bg-leaf-100 text-leaf-700"
                       : "bg-red-100 text-red-700"
                   }`}
                 >
@@ -261,7 +261,7 @@ export default async function VendorApplicationsPage() {
                   <span className="inline-flex items-center gap-1">
                     Var
                     <svg
-                      className="h-3.5 w-3.5 text-emerald-500"
+                      className="h-3.5 w-3.5 text-leaf-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -317,7 +317,7 @@ export default async function VendorApplicationsPage() {
                       <input type="hidden" name="id" value={app.id} />
                       <button
                         type="submit"
-                        className="rounded bg-emerald-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-emerald-700"
+                        className="rounded bg-leaf-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-leaf-700"
                       >
                         Tedarikçi Hesabı Oluştur
                       </button>
@@ -327,7 +327,7 @@ export default async function VendorApplicationsPage() {
               )}
 
               {app.created_vendor_id && (
-                <span className="flex items-center gap-1 text-[11px] text-emerald-600">
+                <span className="flex items-center gap-1 text-[11px] text-leaf-600">
                   <svg
                     className="h-3.5 w-3.5"
                     fill="none"

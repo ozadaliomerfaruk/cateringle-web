@@ -75,7 +75,7 @@ export default function QuoteForm({
                 value={pricePerPerson}
                 onChange={(e) => handlePricePerPersonChange(e.target.value)}
                 placeholder="150"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-leaf--500 focus:outline-none focus:ring-1 focus:ring-leaf--500"
               />
             </div>
             <div>
@@ -88,7 +88,7 @@ export default function QuoteForm({
                 onChange={(e) => handleTotalPriceChange(e.target.value)}
                 placeholder="15000"
                 required
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-leaf--500 focus:outline-none focus:ring-1 focus:ring-leaf--500"
               />
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function QuoteForm({
             onChange={(e) => setMessage(e.target.value)}
             rows={4}
             placeholder="Teklifiniz hakkında ek bilgi, menü detayları, özel notlar..."
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-leaf--500 focus:outline-none focus:ring-1 focus:ring-leaf--500"
           />
         </div>
 
@@ -123,7 +123,7 @@ export default function QuoteForm({
           <select
             value={validDays}
             onChange={(e) => setValidDays(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-leaf--500 focus:outline-none focus:ring-1 focus:ring-leaf--500"
           >
             <option value="3">3 gün</option>
             <option value="7">7 gün</option>
@@ -136,7 +136,7 @@ export default function QuoteForm({
         <button
           type="submit"
           disabled={loading || !totalPrice}
-          className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+          className="w-full rounded-lg bg-leaf-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-leaf-700 disabled:opacity-50"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">

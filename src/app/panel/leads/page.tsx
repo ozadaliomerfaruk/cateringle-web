@@ -75,7 +75,7 @@ export default async function AdminLeadsPage() {
       color: "bg-amber-100 text-amber-700",
     },
     quoted: { label: "Teklif Verildi", color: "bg-purple-100 text-purple-700" },
-    won: { label: "Kazanıldı", color: "bg-emerald-100 text-emerald-700" },
+    won: { label: "Kazanıldı", color: "bg-leaf-100 text-leaf-700" },
     lost: { label: "Kaybedildi", color: "bg-red-100 text-red-700" },
   };
 

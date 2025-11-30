@@ -143,12 +143,12 @@ export default function ImageUpload({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isDisabled}
-          className="flex aspect-square w-full items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-500 transition-colors hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex aspect-square w-full items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-500 transition-colors hover:border-leaf--500 hover:bg-leaf-50 hover:text-leaf-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {uploading ? (
             <div className="flex flex-col items-center">
               <svg
-                className="h-6 w-6 animate-spin text-emerald-600"
+                className="h-6 w-6 animate-spin text-leaf-600"
                 fill="none"
                 viewBox="0 0 24 24"
               >
@@ -267,12 +267,12 @@ export default function ImageUpload({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isDisabled}
-          className="flex h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-500 transition-colors hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-500 transition-colors hover:border-leaf--500 hover:bg-leaf-50 hover:text-leaf-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {uploading ? (
             <div className="flex flex-col items-center">
               <svg
-                className="h-5 w-5 animate-spin text-emerald-600"
+                className="h-5 w-5 animate-spin text-leaf-600"
                 fill="none"
                 viewBox="0 0 24 24"
               >

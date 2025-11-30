@@ -56,7 +56,7 @@ export default async function AdminUsersPage() {
     {
       value: "vendor_owner" as const,
       label: "Tedarikçi",
-      color: "bg-emerald-100 text-emerald-700",
+      color: "bg-leaf-100 text-leaf-700",
     },
     {
       value: "admin" as const,

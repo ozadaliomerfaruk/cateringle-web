@@ -86,7 +86,7 @@ export default async function ProfilePage() {
                 type="text"
                 name="full_name"
                 defaultValue={profile.full_name || ""}
-                className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500 focus:ring-1 focus:ring-leaf--500"
                 placeholder="Ad Soyad"
               />
             </div>
@@ -99,7 +99,7 @@ export default async function ProfilePage() {
                 type="tel"
                 name="phone"
                 defaultValue={profile.phone || ""}
-                className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500 focus:ring-1 focus:ring-leaf--500"
                 placeholder="+90 5XX XXX XX XX"
               />
             </div>
@@ -109,7 +109,7 @@ export default async function ProfilePage() {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="rounded-md bg-emerald-600 px-6 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+            className="rounded-md bg-leaf-600 px-6 py-2 text-sm font-medium text-white hover:bg-leaf-700"
           >
             Kaydet
           </button>

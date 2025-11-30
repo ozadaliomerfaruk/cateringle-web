@@ -92,7 +92,7 @@ export default async function AdminVendorsPage() {
     {
       value: "approved" as const,
       label: "Onaylı",
-      color: "bg-emerald-100 text-emerald-700",
+      color: "bg-leaf-100 text-leaf-700",
     },
     {
       value: "suspended" as const,
@@ -157,7 +157,7 @@ export default async function AdminVendorsPage() {
                       <Link
                         href={`/vendors/${vendor.slug}`}
                         target="_blank"
-                        className="font-medium text-emerald-700 hover:underline"
+                        className="font-medium text-leaf-700 hover:underline"
                       >
                         {vendor.business_name}
                       </Link>

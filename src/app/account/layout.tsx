@@ -47,7 +47,7 @@ export default async function AccountLayout({
           <div className="flex items-center gap-6">
             <Link
               href="/account"
-              className="text-lg font-semibold text-emerald-700"
+              className="text-lg font-semibold text-leaf-700"
             >
               Hesabım
             </Link>
@@ -71,7 +71,7 @@ export default async function AccountLayout({
               >
                 Tekliflerim
                 {(pendingQuoteCount || 0) > 0 && (
-                  <span className="absolute -right-3 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">
+                  <span className="absolute -right-3 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-leaf-500 text-[10px] font-bold text-white">
                     {pendingQuoteCount}
                   </span>
                 )}
@@ -90,7 +90,7 @@ export default async function AccountLayout({
             </span>
             <Link
               href="/vendors"
-              className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
+              className="rounded-md bg-leaf-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-leaf-700"
             >
               Firma Bul
             </Link>
@@ -104,7 +104,7 @@ export default async function AccountLayout({
           >
             Tekliflerim
             {(pendingQuoteCount || 0) > 0 && (
-              <span className="absolute -right-2 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-[8px] font-bold text-white">
+              <span className="absolute -right-2 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-leaf-500 text-[8px] font-bold text-white">
                 {pendingQuoteCount}
               </span>
             )}

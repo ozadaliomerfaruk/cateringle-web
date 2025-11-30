@@ -66,7 +66,7 @@ export default function MenuManager({
           onClick={() => setActiveTab("menu")}
           className={`px-4 py-2 text-sm font-medium ${
             activeTab === "menu"
-              ? "border-b-2 border-emerald-600 text-emerald-600"
+              ? "border-b-2 border-leaf--600 text-leaf-600"
               : "text-slate-600 hover:text-slate-900"
           }`}
         >
@@ -76,7 +76,7 @@ export default function MenuManager({
           onClick={() => setActiveTab("packages")}
           className={`px-4 py-2 text-sm font-medium ${
             activeTab === "packages"
-              ? "border-b-2 border-emerald-600 text-emerald-600"
+              ? "border-b-2 border-leaf--600 text-leaf-600"
               : "text-slate-600 hover:text-slate-900"
           }`}
         >
@@ -91,7 +91,7 @@ export default function MenuManager({
           <div className="flex justify-end">
             <button
               onClick={() => setShowCategoryForm(!showCategoryForm)}
-              className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              className="rounded-md bg-leaf-600 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-700"
             >
               + Kategori Ekle
             </button>
@@ -113,18 +113,18 @@ export default function MenuManager({
                   name="name"
                   required
                   placeholder="Kategori adı (örn: Düğün Menüsü)"
-                  className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                 />
                 <input
                   type="text"
                   name="description"
                   placeholder="Açıklama (opsiyonel)"
-                  className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                 />
                 <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                    className="rounded-md bg-leaf-600 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-700"
                   >
                     Kaydet
                   </button>
@@ -170,7 +170,7 @@ export default function MenuManager({
                           showItemForm === category.id ? null : category.id
                         )
                       }
-                      className="rounded bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-200"
+                      className="rounded bg-leaf-100 px-2 py-1 text-xs font-medium text-leaf-700 hover:bg-leaf-200"
                     >
                       + Öğe Ekle
                     </button>
@@ -197,7 +197,7 @@ export default function MenuManager({
                       await actions.addMenuItem(formData);
                       setShowItemForm(null);
                     }}
-                    className="border-b bg-emerald-50 p-4"
+                    className="border-b bg-leaf-50 p-4"
                   >
                     <input
                       type="hidden"
@@ -210,32 +210,32 @@ export default function MenuManager({
                         name="name"
                         required
                         placeholder="Öğe adı *"
-                        className="rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                        className="rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                       />
                       <input
                         type="number"
                         name="price"
                         step="0.01"
                         placeholder="Kişi başı fiyat (TL)"
-                        className="rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                        className="rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                       />
                       <input
                         type="text"
                         name="description"
                         placeholder="Açıklama"
-                        className="rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                        className="rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                       />
                       <input
                         type="number"
                         name="min_order"
                         placeholder="Min. sipariş adedi"
-                        className="rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                        className="rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                       />
                     </div>
                     <div className="mt-3 flex gap-2">
                       <button
                         type="submit"
-                        className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700"
+                        className="rounded-md bg-leaf-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-leaf-700"
                       >
                         Ekle
                       </button>
@@ -272,7 +272,7 @@ export default function MenuManager({
                         </div>
                         <div className="flex items-center gap-3">
                           {item.price_per_person && (
-                            <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                            <span className="rounded bg-leaf-100 px-2 py-0.5 text-xs font-medium text-leaf-700">
                               {item.price_per_person} TL/kişi
                             </span>
                           )}
@@ -307,7 +307,7 @@ export default function MenuManager({
           <div className="flex justify-end">
             <button
               onClick={() => setShowPackageForm(!showPackageForm)}
-              className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              className="rounded-md bg-leaf-600 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-700"
             >
               + Paket Ekle
             </button>
@@ -330,7 +330,7 @@ export default function MenuManager({
                     name="name"
                     required
                     placeholder="Paket adı (örn: Altın Paket) *"
-                    className="rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                    className="rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                   />
                   <input
                     type="number"
@@ -338,37 +338,37 @@ export default function MenuManager({
                     required
                     step="0.01"
                     placeholder="Kişi başı fiyat (TL) *"
-                    className="rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                    className="rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                   />
                   <input
                     type="number"
                     name="min_guests"
                     placeholder="Min. kişi sayısı"
-                    className="rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                    className="rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                   />
                   <input
                     type="number"
                     name="max_guests"
                     placeholder="Max. kişi sayısı"
-                    className="rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                    className="rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                   />
                 </div>
                 <textarea
                   name="description"
                   rows={2}
                   placeholder="Paket açıklaması"
-                  className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                 />
                 <textarea
                   name="includes"
                   rows={4}
                   placeholder="Dahil olan hizmetler (her satıra bir tane)&#10;Örn:&#10;3 çeşit meze&#10;Ana yemek&#10;Tatlı&#10;İçecek"
-                  className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-leaf--500"
                 />
                 <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                    className="rounded-md bg-leaf-600 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-700"
                   >
                     Kaydet
                   </button>
@@ -399,7 +399,7 @@ export default function MenuManager({
                   <div className="mb-3 flex items-start justify-between">
                     <div>
                       <h3 className="font-semibold">{pkg.name}</h3>
-                      <p className="text-lg font-bold text-emerald-600">
+                      <p className="text-lg font-bold text-leaf-600">
                         {pkg.price_per_person} TL
                         <span className="text-sm font-normal text-slate-500">
                           /kişi
@@ -442,7 +442,7 @@ export default function MenuManager({
                             className="flex items-center gap-2 text-sm"
                           >
                             <svg
-                              className="h-4 w-4 text-emerald-500"
+                              className="h-4 w-4 text-leaf-500"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
