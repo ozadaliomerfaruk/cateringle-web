@@ -44,7 +44,8 @@ export default async function HomePage() {
             {/* Left - Content */}
             <div>
               <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                Yemeğinizi <span className="text-leaf-600">Cateringle</span>'yin
+                Yemeğinizi <span className="text-leaf-600">Cateringle</span>
+                &apos;yin
               </h1>
 
               <p className="mt-6 text-lg text-slate-600">
@@ -435,7 +436,7 @@ export default async function HomePage() {
             Catering firması mısınız?
           </h2>
           <p className="mt-4 text-lg text-leaf-100">
-            Cateringle'ye katılın, binlerce potansiyel müşteriye ulaşın.
+            Cateringle&apos;ye katılın, binlerce potansiyel müşteriye ulaşın.
           </p>
           <Link
             href="/auth/register"

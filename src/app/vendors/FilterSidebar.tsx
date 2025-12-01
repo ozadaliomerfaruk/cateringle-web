@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -9,13 +8,6 @@ interface ServiceGroup {
   name: string;
   icon: string | null;
   services: { id: number; name: string; slug: string }[];
-}
-
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  icon: string | null;
 }
 
 interface CuisineType {
@@ -52,7 +44,6 @@ interface FilterSidebarProps {
   cities: { id: number; name: string }[];
   districts: { id: number; name: string }[];
   serviceGroups: ServiceGroup[];
-  categories?: Category[];
   cuisineTypes: CuisineType[];
   deliveryModels: DeliveryModel[];
   tagGroups: TagGroup[];
@@ -77,8 +68,8 @@ interface FilterSidebarProps {
   };
 }
 
-// Accordion Section Component
-function FilterSection({
+// Accordion bileşeni
+function FilterAccordion({
   title,
   defaultOpen = false,
   children,
@@ -90,15 +81,15 @@ function FilterSection({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-slate-200">
+    <div className="border-b border-slate-200 py-4">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between py-4 text-left"
+        className="flex w-full items-center justify-between text-left"
       >
         <span className="text-sm font-semibold text-slate-900">{title}</span>
         <svg
-          className={`h-4 w-4 text-slate-500 transition-transform ${
+          className={`h-5 w-5 text-slate-400 transition-transform ${
             isOpen ? "rotate-180" : ""
           }`}
           fill="none"
@@ -113,8 +104,36 @@ function FilterSection({
           />
         </svg>
       </button>
-      {isOpen && <div className="pb-4">{children}</div>}
+      {isOpen && <div className="mt-3">{children}</div>}
     </div>
+  );
+}
+
+// Checkbox bileşeni
+function FilterCheckbox({
+  label,
+  checked,
+  onChange,
+  count,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+  count?: number;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center gap-3 py-1.5 hover:bg-slate-50 -mx-2 px-2 rounded">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+      />
+      <span className="flex-1 text-sm text-slate-700">{label}</span>
+      {count !== undefined && (
+        <span className="text-xs text-slate-400">{count}</span>
+      )}
+    </label>
   );
 }
 
@@ -122,7 +141,6 @@ export default function FilterSidebar({
   cities,
   districts,
   serviceGroups,
-  categories = [],
   cuisineTypes,
   deliveryModels,
   tagGroups,
@@ -130,21 +148,12 @@ export default function FilterSidebar({
   currentParams,
 }: FilterSidebarProps) {
   const router = useRouter();
-  const [showAllCategories, setShowAllCategories] = useState(false);
 
-  const selectedServices = currentParams.services
-    ? currentParams.services.split(",")
-    : [];
-
-  const selectedCuisines = currentParams.cuisines
-    ? currentParams.cuisines.split(",")
-    : [];
-
-  const selectedDeliveryModels = currentParams.delivery_models
-    ? currentParams.delivery_models.split(",")
-    : [];
-
-  const selectedTags = currentParams.tags ? currentParams.tags.split(",") : [];
+  const selectedServices = currentParams.services?.split(",") || [];
+  const selectedCuisines = currentParams.cuisines?.split(",") || [];
+  const selectedDeliveryModels =
+    currentParams.delivery_models?.split(",") || [];
+  const selectedTags = currentParams.tags?.split(",") || [];
 
   function buildFilterUrl(newParams: Record<string, string | undefined>) {
     const merged = { ...currentParams, ...newParams };
@@ -156,236 +165,190 @@ export default function FilterSidebar({
     return `/vendors${queryString ? `?${queryString}` : ""}`;
   }
 
-  const handleCityChange = (cityId: string) => {
-    router.push(
-      buildFilterUrl({ city: cityId || undefined, district: undefined })
-    );
-  };
-
-  const handleDistrictChange = (districtId: string) => {
-    router.push(buildFilterUrl({ district: districtId || undefined }));
-  };
-
-  const handleServiceToggle = (serviceSlug: string) => {
-    let newServices: string[];
-    if (selectedServices.includes(serviceSlug)) {
-      newServices = selectedServices.filter((s) => s !== serviceSlug);
-    } else {
-      newServices = [...selectedServices, serviceSlug];
-    }
+  const toggleArrayFilter = (
+    currentArray: string[],
+    slug: string,
+    paramName: string
+  ) => {
+    const newArray = currentArray.includes(slug)
+      ? currentArray.filter((s) => s !== slug)
+      : [...currentArray, slug];
     router.push(
       buildFilterUrl({
-        services: newServices.length > 0 ? newServices.join(",") : undefined,
+        [paramName]: newArray.length ? newArray.join(",") : undefined,
       })
     );
   };
 
-  const handleCategoryToggle = (categorySlug: string) => {
-    const newCategory =
-      currentParams.category === categorySlug ? undefined : categorySlug;
-    router.push(buildFilterUrl({ category: newCategory }));
-  };
-
-  const handleCuisineToggle = (cuisineSlug: string) => {
-    let newCuisines: string[];
-    if (selectedCuisines.includes(cuisineSlug)) {
-      newCuisines = selectedCuisines.filter((s) => s !== cuisineSlug);
-    } else {
-      newCuisines = [...selectedCuisines, cuisineSlug];
-    }
-    router.push(
-      buildFilterUrl({
-        cuisines: newCuisines.length > 0 ? newCuisines.join(",") : undefined,
-      })
-    );
-  };
-
-  const handleDeliveryModelToggle = (modelSlug: string) => {
-    let newModels: string[];
-    if (selectedDeliveryModels.includes(modelSlug)) {
-      newModels = selectedDeliveryModels.filter((s) => s !== modelSlug);
-    } else {
-      newModels = [...selectedDeliveryModels, modelSlug];
-    }
-    router.push(
-      buildFilterUrl({
-        delivery_models: newModels.length > 0 ? newModels.join(",") : undefined,
-      })
-    );
-  };
-
-  const handleTagToggle = (tagSlug: string) => {
-    let newTags: string[];
-    if (selectedTags.includes(tagSlug)) {
-      newTags = selectedTags.filter((s) => s !== tagSlug);
-    } else {
-      newTags = [...selectedTags, tagSlug];
-    }
-    router.push(
-      buildFilterUrl({
-        tags: newTags.length > 0 ? newTags.join(",") : undefined,
-      })
-    );
-  };
-
-  const handleBooleanToggle = (paramName: string, currentValue?: string) => {
-    router.push(
-      buildFilterUrl({
-        [paramName]: currentValue === "true" ? undefined : "true",
-      })
-    );
-  };
-
-  const handleGuestChange = (min: string, max: string) => {
-    router.push(
-      buildFilterUrl({
-        min_guest: min || undefined,
-        max_guest: max || undefined,
-      })
-    );
-  };
-
-  const hasFilters =
-    currentParams.city ||
-    currentParams.district ||
-    currentParams.min_price ||
-    currentParams.max_price ||
-    currentParams.min_guest ||
-    currentParams.max_guest ||
-    currentParams.services ||
-    currentParams.category ||
-    currentParams.cuisines ||
-    currentParams.delivery_models ||
-    currentParams.tags ||
-    currentParams.lead_time ||
-    currentParams.available_24_7 ||
-    currentParams.has_refrigerated ||
-    currentParams.serves_outside_city;
-
-  const displayedCategories = showAllCategories
-    ? categories
-    : categories.slice(0, 6);
+  // Popüler filtreler
+  const popularFilters = [
+    { key: "available_24_7", label: "7/24 Hizmet", icon: "🕐" },
+    { key: "has_refrigerated", label: "Frigorifik Araç", icon: "🚛" },
+  ];
 
   return (
-    <div className="space-y-0">
-      {/* Clear Filters */}
-      {hasFilters && (
-        <div className="border-b border-slate-200 pb-4">
-          <Link
-            href={
-              currentParams.segment
-                ? `/vendors?segment=${currentParams.segment}`
-                : "/vendors"
+    <div className="divide-y divide-slate-200">
+      {/* Filtreleri Temizle */}
+      {(currentParams.city ||
+        currentParams.services ||
+        currentParams.cuisines ||
+        currentParams.delivery_models ||
+        currentParams.tags ||
+        currentParams.available_24_7 ||
+        currentParams.has_refrigerated ||
+        currentParams.serves_outside_city ||
+        currentParams.min_price ||
+        currentParams.max_price) && (
+        <div className="pb-4">
+          <button
+            onClick={() => router.push("/vendors")}
+            className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            Filtreleri temizle
+          </button>
+        </div>
+      )}
+
+      {/* Popüler Filtreler */}
+      <div className="py-4">
+        <h3 className="mb-3 text-sm font-semibold text-slate-900">
+          Popüler filtreler
+        </h3>
+        <div className="space-y-1">
+          {/* Ev Yemekleri - Mutfak türü olarak */}
+          <FilterCheckbox
+            label="🏠 Ev Yemekleri"
+            checked={selectedCuisines.includes("ev-yemekleri")}
+            onChange={() =>
+              toggleArrayFilter(selectedCuisines, "ev-yemekleri", "cuisines")
             }
-            className="text-sm font-medium text-leaf-600 hover:text-leaf-700"
-          >
-            Filtreleri Temizle
-          </Link>
+          />
+          {popularFilters.map((filter) => (
+            <FilterCheckbox
+              key={filter.key}
+              label={`${filter.icon} ${filter.label}`}
+              checked={
+                currentParams[filter.key as keyof typeof currentParams] ===
+                "true"
+              }
+              onChange={() =>
+                router.push(
+                  buildFilterUrl({
+                    [filter.key]:
+                      currentParams[
+                        filter.key as keyof typeof currentParams
+                      ] === "true"
+                        ? undefined
+                        : "true",
+                  })
+                )
+              }
+            />
+          ))}
+          {deliveryModels.slice(0, 3).map((model) => (
+            <FilterCheckbox
+              key={model.id}
+              label={`${model.icon || "📦"} ${model.name}`}
+              checked={selectedDeliveryModels.includes(model.slug)}
+              onChange={() =>
+                toggleArrayFilter(
+                  selectedDeliveryModels,
+                  model.slug,
+                  "delivery_models"
+                )
+              }
+            />
+          ))}
         </div>
-      )}
+      </div>
 
-      {/* Teslimat Şekli / Konum */}
-      <FilterSection title="Konum" defaultOpen={true}>
+      {/* Fiyat Aralığı */}
+      <FilterAccordion title="Kişi başı fiyat" defaultOpen={true}>
         <div className="space-y-3">
-          <select
-            value={currentParams.city || ""}
-            onChange={(e) => handleCityChange(e.target.value)}
-            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none"
-          >
-            <option value="">Tüm Şehirler</option>
-            {cities.map((city) => (
-              <option key={city.id} value={city.id}>
-                {city.name}
-              </option>
-            ))}
-          </select>
-
-          {districts.length > 0 && (
-            <select
-              value={currentParams.district || ""}
-              onChange={(e) => handleDistrictChange(e.target.value)}
-              className="w-full border border-slate-200 bg-white px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none"
-            >
-              <option value="">Tüm İlçeler</option>
-              {districts.map((district) => (
-                <option key={district.id} value={district.id}>
-                  {district.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-      </FilterSection>
-
-      {/* Etkinlik Türü / Kategoriler */}
-      {categories.length > 0 && (
-        <FilterSection title="Etkinlik Türü" defaultOpen={true}>
-          <div className="space-y-2">
-            {displayedCategories.map((category) => (
-              <label
-                key={category.id}
-                className="flex cursor-pointer items-center gap-3 py-1"
-              >
-                <input
-                  type="checkbox"
-                  checked={currentParams.category === category.slug}
-                  onChange={() => handleCategoryToggle(category.slug)}
-                  className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
-                />
-                <span className="text-sm text-slate-700">{category.name}</span>
-              </label>
-            ))}
-            {categories.length > 6 && (
-              <button
-                type="button"
-                onClick={() => setShowAllCategories(!showAllCategories)}
-                className="mt-2 text-sm font-medium text-leaf-600 hover:text-leaf-700"
-              >
-                {showAllCategories
-                  ? "Daha az göster"
-                  : `+${categories.length - 6} daha fazla göster`}
-              </button>
-            )}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+                ₺
+              </span>
+              <input
+                type="number"
+                placeholder="Min"
+                defaultValue={currentParams.min_price || ""}
+                onBlur={(e) =>
+                  router.push(
+                    buildFilterUrl({ min_price: e.target.value || undefined })
+                  )
+                }
+                className="w-full rounded-lg border border-slate-300 py-2 pl-7 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <span className="text-slate-400">—</span>
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+                ₺
+              </span>
+              <input
+                type="number"
+                placeholder="Max"
+                defaultValue={currentParams.max_price || ""}
+                onBlur={(e) =>
+                  router.push(
+                    buildFilterUrl({ max_price: e.target.value || undefined })
+                  )
+                }
+                className="w-full rounded-lg border border-slate-300 py-2 pl-7 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
           </div>
-        </FilterSection>
-      )}
-
-      {/* Mutfak Türü / Hizmetler */}
-      {serviceGroups.map((group) => (
-        <FilterSection key={group.id} title={group.name}>
-          <div className="space-y-2">
-            {group.services
-              .slice(0, showAllCategories ? undefined : 5)
-              .map((service) => (
-                <label
-                  key={service.id}
-                  className="flex cursor-pointer items-center gap-3 py-1"
+          {/* Hızlı fiyat seçenekleri */}
+          <div className="flex flex-wrap gap-2">
+            {[
+              { label: "₺0-500", min: "0", max: "500" },
+              { label: "₺500-1000", min: "500", max: "1000" },
+              { label: "₺1000-1500", min: "1000", max: "1500" },
+              { label: "₺1500+", min: "1500", max: "" },
+            ].map((range) => {
+              const isActive =
+                currentParams.min_price === range.min &&
+                (currentParams.max_price === range.max ||
+                  (!currentParams.max_price && !range.max));
+              return (
+                <button
+                  key={range.label}
+                  onClick={() => {
+                    if (isActive) {
+                      router.push(
+                        buildFilterUrl({
+                          min_price: undefined,
+                          max_price: undefined,
+                        })
+                      );
+                    } else {
+                      router.push(
+                        buildFilterUrl({
+                          min_price: range.min,
+                          max_price: range.max || undefined,
+                        })
+                      );
+                    }
+                  }}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    isActive
+                      ? "bg-blue-600 text-white"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedServices.includes(service.slug)}
-                    onChange={() => handleServiceToggle(service.slug)}
-                    className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
-                  />
-                  <span className="text-sm text-slate-700">{service.name}</span>
-                </label>
-              ))}
-            {group.services.length > 5 && (
-              <button
-                type="button"
-                onClick={() => setShowAllCategories(!showAllCategories)}
-                className="mt-1 text-sm font-medium text-leaf-600 hover:text-leaf-700"
-              >
-                {showAllCategories ? "Daha az göster" : "Daha fazla göster"}
-              </button>
-            )}
+                  {range.label}
+                </button>
+              );
+            })}
           </div>
-        </FilterSection>
-      ))}
+        </div>
+      </FilterAccordion>
 
       {/* Kişi Sayısı */}
-      <FilterSection title="Kişi Sayısı">
-        <div className="space-y-2">
+      <FilterAccordion title="Kişi sayısı" defaultOpen={false}>
+        <div className="space-y-1">
           {[
             { label: "1-25 kişi", min: "1", max: "25" },
             { label: "26-50 kişi", min: "26", max: "50" },
@@ -393,207 +356,151 @@ export default function FilterSidebar({
             { label: "101-250 kişi", min: "101", max: "250" },
             { label: "250+ kişi", min: "250", max: "" },
           ].map((range) => (
-            <label
+            <FilterCheckbox
               key={range.label}
-              className="flex cursor-pointer items-center gap-3 py-1"
-            >
-              <input
-                type="checkbox"
-                checked={
+              label={range.label}
+              checked={
+                currentParams.min_guest === range.min &&
+                (currentParams.max_guest === range.max ||
+                  (!currentParams.max_guest && !range.max))
+              }
+              onChange={() => {
+                const isActive =
                   currentParams.min_guest === range.min &&
-                  currentParams.max_guest === range.max
+                  (currentParams.max_guest === range.max ||
+                    (!currentParams.max_guest && !range.max));
+                if (isActive) {
+                  router.push(
+                    buildFilterUrl({
+                      min_guest: undefined,
+                      max_guest: undefined,
+                    })
+                  );
+                } else {
+                  router.push(
+                    buildFilterUrl({
+                      min_guest: range.min,
+                      max_guest: range.max || undefined,
+                    })
+                  );
                 }
-                onChange={() => {
-                  if (
-                    currentParams.min_guest === range.min &&
-                    currentParams.max_guest === range.max
-                  ) {
-                    handleGuestChange("", "");
-                  } else {
-                    handleGuestChange(range.min, range.max);
-                  }
-                }}
-                className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
-              />
-              <span className="text-sm text-slate-700">{range.label}</span>
-            </label>
+              }}
+            />
           ))}
         </div>
-      </FilterSection>
+      </FilterAccordion>
 
-      {/* Fiyat Aralığı */}
-      <FilterSection title="Fiyat Aralığı (TL/kişi)">
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            placeholder="Min"
-            defaultValue={currentParams.min_price || ""}
-            onBlur={(e) =>
-              router.push(
-                buildFilterUrl({ min_price: e.target.value || undefined })
-              )
-            }
-            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none"
-          />
-          <span className="text-slate-400">-</span>
-          <input
-            type="number"
-            placeholder="Max"
-            defaultValue={currentParams.max_price || ""}
-            onBlur={(e) =>
-              router.push(
-                buildFilterUrl({ max_price: e.target.value || undefined })
-              )
-            }
-            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none"
-          />
+      {/* İmkanlar ve Özellikler */}
+      <FilterAccordion title="İmkanlar ve özellikler" defaultOpen={false}>
+        <div className="space-y-1">
+          {popularFilters.map((filter) => (
+            <FilterCheckbox
+              key={filter.key}
+              label={`${filter.icon} ${filter.label}`}
+              checked={
+                currentParams[filter.key as keyof typeof currentParams] ===
+                "true"
+              }
+              onChange={() =>
+                router.push(
+                  buildFilterUrl({
+                    [filter.key]:
+                      currentParams[
+                        filter.key as keyof typeof currentParams
+                      ] === "true"
+                        ? undefined
+                        : "true",
+                  })
+                )
+              }
+            />
+          ))}
         </div>
-      </FilterSection>
+      </FilterAccordion>
+
+      {/* Teslimat Şekli */}
+      {deliveryModels.length > 0 && (
+        <FilterAccordion title="Teslimat şekli" defaultOpen={false}>
+          <div className="space-y-1">
+            {deliveryModels.map((model) => (
+              <FilterCheckbox
+                key={model.id}
+                label={`${model.icon || "📦"} ${model.name}`}
+                checked={selectedDeliveryModels.includes(model.slug)}
+                onChange={() =>
+                  toggleArrayFilter(
+                    selectedDeliveryModels,
+                    model.slug,
+                    "delivery_models"
+                  )
+                }
+              />
+            ))}
+          </div>
+        </FilterAccordion>
+      )}
 
       {/* Mutfak Türü */}
       {cuisineTypes.length > 0 && (
-        <FilterSection title="Mutfak Türü">
-          <div className="space-y-2">
-            {cuisineTypes
-              .slice(0, showAllCategories ? undefined : 6)
-              .map((cuisine) => (
-                <label
-                  key={cuisine.id}
-                  className="flex cursor-pointer items-center gap-3 py-1"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedCuisines.includes(cuisine.slug)}
-                    onChange={() => handleCuisineToggle(cuisine.slug)}
-                    className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
-                  />
-                  <span className="flex items-center gap-1.5 text-sm text-slate-700">
-                    {cuisine.icon && <span>{cuisine.icon}</span>}
-                    {cuisine.name}
-                  </span>
-                </label>
-              ))}
-            {cuisineTypes.length > 6 && (
-              <button
-                type="button"
-                onClick={() => setShowAllCategories(!showAllCategories)}
-                className="mt-2 text-sm font-medium text-leaf-600 hover:text-leaf-700"
-              >
-                {showAllCategories
-                  ? "Daha az göster"
-                  : `+${cuisineTypes.length - 6} daha fazla göster`}
-              </button>
-            )}
-          </div>
-        </FilterSection>
-      )}
-
-      {/* Teslimat Modeli */}
-      {deliveryModels.length > 0 && (
-        <FilterSection title="Teslimat Şekli">
-          <div className="space-y-2">
-            {deliveryModels.map((model) => (
-              <label
-                key={model.id}
-                className="flex cursor-pointer items-center gap-3 py-1"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedDeliveryModels.includes(model.slug)}
-                  onChange={() => handleDeliveryModelToggle(model.slug)}
-                  className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
-                />
-                <span className="flex items-center gap-1.5 text-sm text-slate-700">
-                  {model.icon && <span>{model.icon}</span>}
-                  {model.name}
-                </span>
-              </label>
+        <FilterAccordion title="Mutfak türü" defaultOpen={false}>
+          <div className="space-y-1">
+            {cuisineTypes.map((cuisine) => (
+              <FilterCheckbox
+                key={cuisine.id}
+                label={`${cuisine.icon || "🍽️"} ${cuisine.name}`}
+                checked={selectedCuisines.includes(cuisine.slug)}
+                onChange={() =>
+                  toggleArrayFilter(selectedCuisines, cuisine.slug, "cuisines")
+                }
+              />
             ))}
           </div>
-        </FilterSection>
+        </FilterAccordion>
       )}
+
+      {/* Hizmetler */}
+      {serviceGroups.map((group) => (
+        <FilterAccordion key={group.id} title={group.name} defaultOpen={false}>
+          <div className="space-y-1">
+            {group.services.map((service) => (
+              <FilterCheckbox
+                key={service.id}
+                label={service.name}
+                checked={selectedServices.includes(service.slug)}
+                onChange={() =>
+                  toggleArrayFilter(selectedServices, service.slug, "services")
+                }
+              />
+            ))}
+          </div>
+        </FilterAccordion>
+      ))}
 
       {/* Etiketler */}
       {tagGroups.map((group) => {
         const groupTags = tags.filter((t) => t.group_id === group.id);
         if (groupTags.length === 0) return null;
-
         return (
-          <FilterSection key={group.id} title={group.name}>
-            <div className="space-y-2">
+          <FilterAccordion
+            key={group.id}
+            title={group.name}
+            defaultOpen={false}
+          >
+            <div className="space-y-1">
               {groupTags.map((tag) => (
-                <label
+                <FilterCheckbox
                   key={tag.id}
-                  className="flex cursor-pointer items-center gap-3 py-1"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedTags.includes(tag.slug)}
-                    onChange={() => handleTagToggle(tag.slug)}
-                    className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
-                  />
-                  <span className="flex items-center gap-1.5 text-sm text-slate-700">
-                    {tag.icon && <span>{tag.icon}</span>}
-                    {tag.name}
-                  </span>
-                </label>
+                  label={`${tag.icon || ""} ${tag.name}`}
+                  checked={selectedTags.includes(tag.slug)}
+                  onChange={() =>
+                    toggleArrayFilter(selectedTags, tag.slug, "tags")
+                  }
+                />
               ))}
             </div>
-          </FilterSection>
+          </FilterAccordion>
         );
       })}
-
-      {/* Operasyonel Özellikler */}
-      <FilterSection title="Diğer Özellikler">
-        <div className="space-y-2">
-          <label className="flex cursor-pointer items-center gap-3 py-1">
-            <input
-              type="checkbox"
-              checked={currentParams.available_24_7 === "true"}
-              onChange={() =>
-                handleBooleanToggle(
-                  "available_24_7",
-                  currentParams.available_24_7
-                )
-              }
-              className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
-            />
-            <span className="text-sm text-slate-700">🕐 7/24 Hizmet</span>
-          </label>
-
-          <label className="flex cursor-pointer items-center gap-3 py-1">
-            <input
-              type="checkbox"
-              checked={currentParams.has_refrigerated === "true"}
-              onChange={() =>
-                handleBooleanToggle(
-                  "has_refrigerated",
-                  currentParams.has_refrigerated
-                )
-              }
-              className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
-            />
-            <span className="text-sm text-slate-700">🚛 Frigorifik Araç</span>
-          </label>
-
-          <label className="flex cursor-pointer items-center gap-3 py-1">
-            <input
-              type="checkbox"
-              checked={currentParams.serves_outside_city === "true"}
-              onChange={() =>
-                handleBooleanToggle(
-                  "serves_outside_city",
-                  currentParams.serves_outside_city
-                )
-              }
-              className="h-4 w-4 border-slate-300 text-leaf-600 focus:ring-leaf-500"
-            />
-            <span className="text-sm text-slate-700">
-              🗺️ Şehir Dışı Teslimat
-            </span>
-          </label>
-        </div>
-      </FilterSection>
     </div>
   );
 }

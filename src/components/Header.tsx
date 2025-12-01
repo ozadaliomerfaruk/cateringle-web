@@ -16,24 +16,23 @@ interface UserProfile {
 
 // A-Z sıralı
 const corporateCategories = [
-  { name: "Fuar & Organizasyon", slug: "fuar-organizasyon", icon: "🏢" },
-  { name: "Konferans & Seminer", slug: "konferans-seminer", icon: "🎤" },
+  { name: "Fuar & Organizasyon", slug: "fuar-organizasyon" },
+  { name: "Konferans & Seminer", slug: "konferans-seminer" },
   {
     name: "Kurumsal Atıştırma Paketleri",
     slug: "kurumsal-atistirma-paketleri",
-    icon: "🍿",
   },
-  { name: "Ofis Kahvaltısı", slug: "ofis-kahvaltisi", icon: "🥐" },
-  { name: "Ofis Öğle Yemekleri", slug: "ofis-ogle-yemekleri", icon: "🍽️" },
+  { name: "Ofis Kahvaltısı", slug: "ofis-kahvaltisi" },
+  { name: "Ofis Öğle Yemekleri", slug: "ofis-ogle-yemekleri" },
 ];
 
 // A-Z sıralı
 const individualCategories = [
-  { name: "Baby Shower & Mevlüt", slug: "baby-shower-mevlut", icon: "👶" },
-  { name: "Doğum Günü", slug: "dogum-gunu", icon: "🎂" },
-  { name: "Düğün & Nişan", slug: "dugun-nisan", icon: "💒" },
-  { name: "Evde Şef Hizmeti", slug: "evde-sef-hizmeti", icon: "👨‍🍳" },
-  { name: "Pasta & Tatlı", slug: "pasta-tatli", icon: "🧁" },
+  { name: "Baby Shower & Mevlüt", slug: "baby-shower-mevlut" },
+  { name: "Doğum Günü", slug: "dogum-gunu" },
+  { name: "Düğün & Nişan", slug: "dugun-nisan" },
+  { name: "Evde Şef Hizmeti", slug: "evde-sef-hizmeti" },
+  { name: "Pasta & Tatlı", slug: "pasta-tatli" },
 ];
 
 export default function Header() {
@@ -84,16 +83,30 @@ export default function Header() {
         setLoading(false);
         return;
       }
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
-      setUserProfile({
-        email: user.email || "",
-        role: (profile?.role as UserRole) || "customer",
-      });
-      setLoading(false);
+      try {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error fetching profile:", error);
+        }
+
+        setUserProfile({
+          email: user.email || "",
+          role: (profile?.role as UserRole) || "customer",
+        });
+      } catch (err) {
+        console.error("Error in getUserProfile:", err);
+        setUserProfile({
+          email: user.email || "",
+          role: "customer",
+        });
+      } finally {
+        setLoading(false);
+      }
     },
     [supabase]
   );
@@ -101,12 +114,25 @@ export default function Header() {
   useEffect(() => {
     let isMounted = true;
     const initAuth = async () => {
-      setLoading(true);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!isMounted) return;
-      await getUserProfile(user);
+      try {
+        setLoading(true);
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+
+        if (error) {
+          console.error("Error getting user:", error);
+        }
+
+        if (!isMounted) return;
+        await getUserProfile(user);
+      } catch (err) {
+        console.error("Error in initAuth:", err);
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     };
     initAuth();
     const {
@@ -200,7 +226,6 @@ export default function Header() {
                         onClick={closeAllDropdowns}
                         className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                       >
-                        <span className="text-base">{cat.icon}</span>
                         {cat.name}
                       </Link>
                     ))}
@@ -274,7 +299,6 @@ export default function Header() {
                         onClick={closeAllDropdowns}
                         className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                       >
-                        <span className="text-base">{cat.icon}</span>
                         {cat.name}
                       </Link>
                     ))}
@@ -542,7 +566,6 @@ export default function Header() {
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
                     >
-                      <span>{cat.icon}</span>
                       {cat.name}
                     </Link>
                   ))}
@@ -560,7 +583,6 @@ export default function Header() {
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
                     >
-                      <span>{cat.icon}</span>
                       {cat.name}
                     </Link>
                   ))}
