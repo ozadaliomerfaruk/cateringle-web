@@ -14,6 +14,10 @@ interface UserProfile {
   role: UserRole;
 }
 
+interface HeaderProps {
+  initialUser?: UserProfile | null;
+}
+
 // A-Z sıralı
 const corporateCategories = [
   { name: "Fuar & Organizasyon", slug: "fuar-organizasyon" },
@@ -35,9 +39,12 @@ const individualCategories = [
   { name: "Pasta & Tatlı", slug: "pasta-tatli" },
 ];
 
-export default function Header() {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function Header({ initialUser = null }: HeaderProps) {
+  // initialUser varsa loading false başla, yoksa client-side kontrol için true
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(
+    initialUser
+  );
+  const [loading, setLoading] = useState(!initialUser);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [corporateOpen, setCorporateOpen] = useState(false);
   const [individualOpen, setIndividualOpen] = useState(false);
@@ -113,7 +120,14 @@ export default function Header() {
 
   useEffect(() => {
     let isMounted = true;
+
     const initAuth = async () => {
+      // initialUser zaten varsa, sadece auth state değişikliklerini dinle
+      if (initialUser) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         const {
@@ -123,6 +137,8 @@ export default function Header() {
 
         if (error) {
           console.error("Error getting user:", error);
+          if (isMounted) setLoading(false);
+          return;
         }
 
         if (!isMounted) return;
@@ -135,6 +151,8 @@ export default function Header() {
       }
     };
     initAuth();
+
+    // Auth state değişikliklerini dinle (login/logout)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -144,11 +162,12 @@ export default function Header() {
         router.refresh();
       }
     });
+
     return () => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase, getUserProfile, router, pathname]);
+  }, [supabase, getUserProfile, router, initialUser]);
 
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "";

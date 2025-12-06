@@ -1,8 +1,19 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Google SMTP transporter
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // TLS kullan
+  auth: {
+    user: process.env.SMTP_USER, // info@cateringle.com
+    pass: process.env.SMTP_PASS, // Google App Password
+  },
+});
 
-const FROM_EMAIL = "Cateringle <onboarding@resend.dev>";
+const FROM_EMAIL = `Cateringle <${
+  process.env.SMTP_USER || "info@cateringle.com"
+}>`;
 
 interface SendEmailParams {
   to: string;
@@ -12,22 +23,17 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
   try {
-    const { data, error } = await resend.emails.send({
+    const info = await transporter.sendMail({
       from: FROM_EMAIL,
       to,
       subject,
       html,
     });
 
-    if (error) {
-      console.error("Email send error:", error);
-      return { success: false, error };
-    }
-
-    console.log("Email sent:", data);
-    return { success: true, data };
+    console.log("Email sent:", info.messageId);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error("Email exception:", error);
+    console.error("Email send error:", error);
     return { success: false, error };
   }
 }
@@ -88,29 +94,29 @@ export async function sendNewLeadNotification({
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #059669; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .header { background: #FF6B35; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
         .segment-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-top: 8px; }
         .content { background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-top: none; }
         .info-row { padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
         .info-row:last-child { border-bottom: none; }
         .label { font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; }
         .value { font-size: 16px; margin-top: 4px; color: #1e293b; }
-        .highlight-box { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px; margin: 16px 0; }
-        .highlight-box .label { color: #047857; }
-        .highlight-box .value { color: #065f46; font-weight: 600; }
-        .cta { display: inline-block; background: #059669; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin-top: 20px; font-weight: 500; }
+        .highlight-box { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 12px; margin: 16px 0; }
+        .highlight-box .label { color: #c2410c; }
+        .highlight-box .value { color: #9a3412; font-weight: 600; }
+        .cta { display: inline-block; background: #FF6B35; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin-top: 20px; font-weight: 500; }
         .footer { text-align: center; padding: 20px; color: #64748b; font-size: 12px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; font-size: 20px;">Yeni Teklif Talebi</h1>
+          <h1 style="margin: 0; font-size: 20px;">🎉 Yeni Teklif Talebi</h1>
           <p style="margin: 5px 0 0 0; opacity: 0.9;">Cateringle.com üzerinden yeni bir talep aldınız</p>
           ${
             segmentName
               ? `<span class="segment-badge">${
-                  segmentName === "Kurumsal" ? "🏢" : "🎉"
+                  segmentName === "Kurumsal" ? "🏢" : "🎈"
                 } ${segmentName}</span>`
               : ""
           }
@@ -130,7 +136,7 @@ export async function sendNewLeadNotification({
             <div style="display: inline-block; margin-right: 20px;">
               <div class="label">Müşteri Tipi</div>
               <div class="value">${
-                segmentName === "Kurumsal" ? "🏢" : "🎉"
+                segmentName === "Kurumsal" ? "🏢" : "🎈"
               } ${segmentName}</div>
             </div>
             `
@@ -158,7 +164,7 @@ export async function sendNewLeadNotification({
           
           <div class="info-row">
             <div class="label">E-posta</div>
-            <div class="value"><a href="mailto:${customerEmail}" style="color: #059669;">${customerEmail}</a></div>
+            <div class="value"><a href="mailto:${customerEmail}" style="color: #FF6B35;">${customerEmail}</a></div>
           </div>
           
           ${
@@ -166,7 +172,7 @@ export async function sendNewLeadNotification({
               ? `
           <div class="info-row">
             <div class="label">Telefon</div>
-            <div class="value"><a href="tel:${customerPhone}" style="color: #059669;">${customerPhone}</a></div>
+            <div class="value"><a href="tel:${customerPhone}" style="color: #FF6B35;">${customerPhone}</a></div>
           </div>
           `
               : ""
@@ -208,7 +214,7 @@ export async function sendNewLeadNotification({
               : ""
           }
           
-          <a href="https://cateringle.com/vendor" class="cta">Panele Git ve Yanıtla</a>
+          <a href="https://cateringle.com/vendor/leads" class="cta">Panele Git ve Yanıtla →</a>
         </div>
         
         <div class="footer">
@@ -243,17 +249,17 @@ export async function sendLeadConfirmation({
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #059669; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .header { background: #FF6B35; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
         .content { background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-top: none; }
-        .cta { display: inline-block; background: #059669; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin-top: 15px; font-weight: 500; }
-        .secondary-link { color: #059669; text-decoration: none; }
+        .cta { display: inline-block; background: #FF6B35; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin-top: 15px; font-weight: 500; }
+        .secondary-link { color: #FF6B35; text-decoration: none; }
         .footer { text-align: center; padding: 20px; color: #64748b; font-size: 12px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; font-size: 20px;">Talebiniz Alındı!</h1>
+          <h1 style="margin: 0; font-size: 20px;">✅ Talebiniz Alındı!</h1>
         </div>
         
         <div class="content">
@@ -261,7 +267,7 @@ export async function sendLeadConfirmation({
           <p><strong>${vendorName}</strong> firmasına gönderdiğiniz teklif talebi başarıyla iletildi.</p>
           <p>Firma en kısa sürede sizinle iletişime geçecektir. Genellikle 24 saat içinde dönüş yapılmaktadır.</p>
           
-          <a href="https://cateringle.com/account" class="cta">Tekliflerimi Görüntüle</a>
+          <a href="https://cateringle.com/account/quotes" class="cta">Tekliflerimi Görüntüle →</a>
           
           <p style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
             <strong>Daha fazla teklif almak ister misiniz?</strong><br>
