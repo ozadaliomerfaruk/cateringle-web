@@ -286,3 +286,125 @@ export async function sendLeadConfirmation({
 
   return sendEmail({ to: customerEmail, subject, html });
 }
+
+// Müşteriye teklif yanıtı bildirimi
+export async function sendQuoteNotification({
+  customerEmail,
+  customerName,
+  vendorName,
+  totalPrice,
+  pricePerPerson,
+  guestCount,
+  message,
+  validUntil,
+  quoteId,
+}: {
+  customerEmail: string;
+  customerName: string;
+  vendorName: string;
+  totalPrice: number;
+  pricePerPerson?: number | null;
+  guestCount?: number | null;
+  message?: string | null;
+  validUntil?: string | null;
+  quoteId: string;
+}) {
+  const subject = `🎉 ${vendorName} size fiyat teklifi gönderdi!`;
+
+  const formattedPrice = totalPrice.toLocaleString("tr-TR");
+  const formattedPricePerPerson = pricePerPerson
+    ? pricePerPerson.toLocaleString("tr-TR")
+    : null;
+  const formattedValidUntil = validUntil
+    ? new Date(validUntil).toLocaleDateString("tr-TR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #FF6B35 0%, #f97316 100%); color: white; padding: 24px; border-radius: 8px 8px 0 0; }
+        .content { background: #f8fafc; padding: 24px; border: 1px solid #e2e8f0; border-top: none; }
+        .price-box { background: white; border: 2px solid #FF6B35; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; }
+        .price-main { font-size: 32px; font-weight: 700; color: #FF6B35; }
+        .price-detail { font-size: 14px; color: #64748b; margin-top: 4px; }
+        .info-row { padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
+        .info-row:last-child { border-bottom: none; }
+        .label { font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; }
+        .value { font-size: 15px; margin-top: 4px; color: #1e293b; }
+        .cta { display: inline-block; background: #FF6B35; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; margin-top: 20px; font-weight: 600; font-size: 16px; }
+        .cta:hover { background: #ea580c; }
+        .validity { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px; margin-top: 16px; text-align: center; }
+        .validity-text { color: #92400e; font-size: 14px; }
+        .footer { text-align: center; padding: 20px; color: #64748b; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0; font-size: 22px;">🎉 Teklif Aldınız!</h1>
+          <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 15px;">${vendorName} firması talebinize yanıt verdi</p>
+        </div>
+        
+        <div class="content">
+          <p>Merhaba <strong>${customerName}</strong>,</p>
+          <p>Harika haber! <strong>${vendorName}</strong> firması teklif talebinizi inceledi ve size özel bir fiyat teklifi hazırladı.</p>
+          
+          <div class="price-box">
+            <div class="price-main">${formattedPrice} ₺</div>
+            ${
+              formattedPricePerPerson && guestCount
+                ? `<div class="price-detail">${guestCount} kişi × ${formattedPricePerPerson} ₺/kişi</div>`
+                : ""
+            }
+          </div>
+          
+          ${
+            message
+              ? `
+          <div class="info-row">
+            <div class="label">Firma Mesajı</div>
+            <div class="value">${message}</div>
+          </div>
+          `
+              : ""
+          }
+          
+          ${
+            formattedValidUntil
+              ? `
+          <div class="validity">
+            <span class="validity-text">⏰ Bu teklif <strong>${formattedValidUntil}</strong> tarihine kadar geçerlidir</span>
+          </div>
+          `
+              : ""
+          }
+          
+          <div style="text-align: center;">
+            <a href="https://cateringle.com/account/quotes/${quoteId}" class="cta">Teklifi İncele ve Yanıtla →</a>
+          </div>
+          
+          <p style="margin-top: 24px; font-size: 14px; color: #64748b;">
+            Teklifi beğendiyseniz kabul edebilir, sorularınız varsa firma ile doğrudan iletişime geçebilirsiniz.
+          </p>
+        </div>
+        
+        <div class="footer">
+          <p>Bu e-posta Cateringle.com tarafından gönderilmiştir.</p>
+          <p>© ${new Date().getFullYear()} Cateringle.com - Tüm hakları saklıdır.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({ to: customerEmail, subject, html });
+}

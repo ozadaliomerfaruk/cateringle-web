@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import QuoteForm from "./QuoteForm";
+import { sendQuoteNotification } from "@/lib/email";
 
 export const metadata: Metadata = {
   title: "Talep Detayı | Firma Paneli",
@@ -168,7 +169,18 @@ export default async function LeadDetailPage({ params }: PageProps) {
       .update({ status: "quoted" })
       .eq("id", vendorLeadId);
 
-    // TODO: Müşteriye email gönder
+    // Müşteriye email gönder
+    sendQuoteNotification({
+      customerEmail: lead.customer_email,
+      customerName: lead.customer_name,
+      vendorName: vendor.business_name,
+      totalPrice: totalPrice,
+      pricePerPerson: pricePerPerson,
+      guestCount: lead.guest_count,
+      message: message,
+      validUntil: validUntil,
+      quoteId: quote.id,
+    }).catch((err) => console.error("Quote notification email error:", err));
 
     revalidatePath(`/vendor/leads/${vendorLeadId}`);
     revalidatePath("/vendor/leads");
