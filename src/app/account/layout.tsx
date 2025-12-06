@@ -17,15 +17,36 @@ export default async function AccountLayout({
     redirect("/auth/login?redirect=/account");
   }
 
-  const { data: profile } = await supabase
+  let { data: profile } = await supabase
     .from("profiles")
     .select("role, full_name")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile || profile.role !== "customer") {
-    if (profile?.role === "vendor_owner") redirect("/vendor");
-    if (profile?.role === "admin") redirect("/panel");
+  // Profil yoksa oluştur (ilk giriş durumu)
+  if (!profile) {
+    const { data: newProfile, error: insertError } = await supabase
+      .from("profiles")
+      .upsert({
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
+        role: "customer",
+      })
+      .select("role, full_name")
+      .single();
+
+    if (insertError) {
+      console.error("Profile creation error:", insertError);
+      redirect("/");
+    }
+    profile = newProfile;
+  }
+
+  // Rol kontrolü
+  if (profile.role !== "customer") {
+    if (profile.role === "vendor_owner") redirect("/vendor");
+    if (profile.role === "admin") redirect("/panel");
     redirect("/");
   }
 
