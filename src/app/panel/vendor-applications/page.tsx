@@ -152,6 +152,10 @@ export async function approveAndCreateVendor(formData: FormData) {
       slug,
       owner_id: userId,
       status: "approved",
+      email: app.contact_email,
+      phone: app.contact_phone,
+      city_text: app.city_text,
+      district_text: app.district_text,
     })
     .select("id")
     .single();
