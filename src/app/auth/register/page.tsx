@@ -78,8 +78,22 @@ export default async function VendorRegisterPage({
           id: authData.user.id,
           email,
           full_name: fullName,
-          role: "vendor_owner",
+          role: "vendor_owner", // Geriye uyumluluk için
         });
+
+        // RBAC: Hem customer hem vendor rolü ekle
+        const { data: roles } = await supabase
+          .from("roles")
+          .select("id, name")
+          .in("name", ["customer", "vendor"]);
+
+        if (roles && roles.length > 0) {
+          const roleInserts = roles.map((role) => ({
+            user_id: authData.user!.id,
+            role_id: role.id,
+          }));
+          await supabase.from("user_roles").upsert(roleInserts);
+        }
 
         // Vendor kaydı
         const { data: vendor, error: vendorError } = await supabase
@@ -156,7 +170,21 @@ export default async function VendorRegisterPage({
         await supabase.from("vendor_segments").insert(segmentInserts);
       }
 
-      // Rolü güncelle
+      // RBAC: Vendor rolü ekle (customer rolü zaten var)
+      const { data: vendorRole } = await supabase
+        .from("roles")
+        .select("id")
+        .eq("name", "vendor")
+        .single();
+
+      if (vendorRole) {
+        await supabase.from("user_roles").upsert({
+          user_id: user.id,
+          role_id: vendorRole.id,
+        });
+      }
+
+      // Geriye uyumluluk için profiles.role'u da güncelle
       await supabase
         .from("profiles")
         .update({ role: "vendor_owner" })

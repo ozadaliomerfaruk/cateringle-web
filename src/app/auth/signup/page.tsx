@@ -62,12 +62,27 @@ export default async function SignupPage({
     }
 
     if (data.user) {
+      // Profil oluştur
       await supabase.from("profiles").upsert({
         id: data.user.id,
         email,
         full_name: fullName,
-        role: "customer",
+        role: "customer", // Geriye uyumluluk için
       });
+
+      // RBAC: Customer rolü ekle
+      const { data: customerRole } = await supabase
+        .from("roles")
+        .select("id")
+        .eq("name", "customer")
+        .single();
+
+      if (customerRole) {
+        await supabase.from("user_roles").upsert({
+          user_id: data.user.id,
+          role_id: customerRole.id,
+        });
+      }
     }
 
     redirect("/auth/signup?success=1");
