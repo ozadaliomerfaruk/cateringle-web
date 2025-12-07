@@ -3,9 +3,26 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  Buildings,
+  Confetti,
+  MagnifyingGlass,
+  CheckCircle,
+  ChatCircleDots,
+  CurrencyDollar,
+  ArrowRight,
+  Star,
+  MapPin,
+  Cake,
+  Champagne,
+  Coffee,
+  CookingPot,
+  Handshake,
+  CalendarCheck,
+} from "@phosphor-icons/react/dist/ssr";
 
 export const metadata: Metadata = {
-  title: "Cateringle.com | Türkiye'nin Catering Firmaları Platformu",
+  title: "Cateringle.com | Catering Firmaları Platformu",
   description:
     "Düğün, nişan, kurumsal toplantı ve özel etkinlikler için en uygun catering firmalarını keşfedin.",
   keywords: [
@@ -15,7 +32,7 @@ export const metadata: Metadata = {
     "kurumsal catering",
   ],
   openGraph: {
-    title: "Cateringle.com | Türkiye'nin Catering Firmaları Platformu",
+    title: "Cateringle.com | Catering Firmaları Platformu",
     description:
       "Düğün, nişan, kurumsal toplantı için en uygun catering firmalarını keşfedin.",
     url: "https://cateringle.com",
@@ -36,309 +53,252 @@ export default async function HomePage() {
     .limit(6);
 
   return (
-    <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-[#F5F3FF]">
+    <main className="min-h-screen bg-white">
+      {/* Hero Section - Minimal & Clean */}
+      <section className="relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 py-16 lg:px-6 lg:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            {/* Left - Content */}
-            <div>
-              <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                Yemeğinizi <span className="text-leaf-600">Cateringle</span>
-                &apos;yin
-              </h1>
-
-              <p className="mt-6 text-lg text-slate-600">
-                Kurumsal toplantılardan özel kutlamalara, etkinliğiniz için en
-                uygun catering firmalarını kolayca bulun ve teklif alın.
-              </p>
-
-              {/* Feature List */}
-              <div className="mt-8 flex flex-col gap-3">
-                <div className="flex items-center gap-3 text-slate-700">
-                  <svg
-                    className="h-5 w-5 text-leaf-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span>Ücretsiz teklif alın</span>
-                </div>
-                <div className="flex items-center gap-3 text-slate-700">
-                  <svg
-                    className="h-5 w-5 text-leaf-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span>Onlarca firmayı karşılaştırın</span>
-                </div>
-                <div className="flex items-center gap-3 text-slate-700">
-                  <svg
-                    className="h-5 w-5 text-leaf-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span>Firmalarla doğrudan iletişim kurun</span>
-                </div>
-              </div>
-
-              {/* CTA Buttons */}
-              <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                <Link
-                  href="/vendors?segment=kurumsal"
-                  className="group inline-flex items-center justify-center gap-3 bg-leaf-500 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-leaf-600"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                  Kurumsal Müşteriler
-                  <svg
-                    className="h-4 w-4 transition-transform group-hover:translate-x-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </Link>
-                <Link
-                  href="/vendors?segment=bireysel"
-                  className="group inline-flex items-center justify-center gap-3 border-2 border-grape-500 bg-white px-8 py-4 text-base font-semibold text-grape-600 transition-colors hover:bg-grape-50"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  Bireysel Müşteriler
-                  <svg
-                    className="h-4 w-4 transition-transform group-hover:translate-x-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </Link>
-              </div>
+          <div className="relative z-10 mx-auto max-w-3xl text-center">
+            {/* Badge */}
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-leaf-50 px-4 py-2 text-sm font-medium text-leaf-700">
+              Catering Platformu
             </div>
 
-            {/* Right - Image */}
-            <div className="relative">
-              <div className="relative aspect-4/3 overflow-hidden bg-white shadow-2xl">
-                <Image
-                  src="/hero-image.jpg"
-                  alt="Catering servisi"
-                  fill
-                  className="object-cover"
-                  priority
+            {/* Main Heading */}
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+              Etkinliğiniz için{" "}
+              <span className="text-leaf-600">mükemmel catering</span>
+            </h1>
+
+            <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600">
+              Kurumsal toplantılardan özel kutlamalara, yüzlerce catering
+              firması arasından size en uygun olanı bulun.
+            </p>
+
+            {/* CTA Cards */}
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+              <Link
+                href="/vendors?segment=kurumsal"
+                className="group relative flex items-center gap-4 rounded-2xl border-2 border-slate-200 bg-white p-5 text-left transition-all hover:border-leaf-500 hover:shadow-lg"
+              >
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-100">
+                  <Buildings size={28} weight="light" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900">
+                    Kurumsal Etkinlik
+                  </h3>
+                  <p className="mt-0.5 text-sm text-slate-500">
+                    Ofis, toplantı, konferans
+                  </p>
+                </div>
+                <ArrowRight
+                  size={20}
+                  className="absolute right-5 text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-leaf-500"
                 />
+              </Link>
+
+              <Link
+                href="/vendors?segment=bireysel"
+                className="group relative flex items-center gap-4 rounded-2xl border-2 border-slate-200 bg-white p-5 text-left transition-all hover:border-grape-500 hover:shadow-lg"
+              >
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 transition-colors group-hover:bg-purple-100">
+                  <Confetti size={28} weight="light" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900">Özel Kutlama</h3>
+                  <p className="mt-0.5 text-sm text-slate-500">
+                    Düğün, doğum günü, parti
+                  </p>
+                </div>
+                <ArrowRight
+                  size={20}
+                  className="absolute right-5 text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-grape-500"
+                />
+              </Link>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500">
+              <div className="flex items-center gap-2">
+                <CheckCircle
+                  size={18}
+                  weight="fill"
+                  className="text-leaf-500"
+                />
+                Ücretsiz teklif
+              </div>
+
+              <div className="flex items-center gap-2">
+                <CheckCircle
+                  size={18}
+                  weight="fill"
+                  className="text-leaf-500"
+                />
+                Hızlı yanıt
               </div>
             </div>
+          </div>
+
+          {/* Decorative Icons - Floating */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <CookingPot
+              size={48}
+              weight="light"
+              className="absolute left-[10%] top-[20%] rotate-[-15deg] text-leaf-300"
+            />
+            <Cake
+              size={40}
+              weight="light"
+              className="absolute right-[15%] top-[15%] rotate-[10deg] text-leaf-300"
+            />
+            <Coffee
+              size={36}
+              weight="light"
+              className="absolute bottom-[25%] left-[8%] rotate-[5deg] text-leaf-300"
+            />
+            <Champagne
+              size={44}
+              weight="light"
+              className="absolute bottom-[20%] right-[10%] rotate-[-10deg] text-leaf-300"
+            />
           </div>
         </div>
       </section>
 
-      {/* Hizmet Türleri */}
-      <section className="bg-white py-16 lg:py-24">
+      {/* Kategoriler */}
+      <section className="border-t border-slate-100 bg-slate-50/50 py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 lg:px-6">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
-              Nasıl hizmet almak istersiniz?
+              Ne tür bir etkinlik planlıyorsunuz?
             </h2>
             <p className="mt-3 text-slate-600">
-              İhtiyacınıza göre doğru kategoriyi seçin
+              İhtiyacınıza göre kategori seçin
             </p>
           </div>
 
-          <div className="mt-12 grid gap-8 lg:grid-cols-2">
-            {/* Kurumsal Card */}
-            <Link
-              href="/vendors?segment=kurumsal"
-              className="group relative overflow-hidden border border-slate-200 bg-white p-8 transition-all hover:border-leaf-300 hover:shadow-lg"
-            >
-              <div className="flex items-start gap-6">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center bg-leaf-100 text-3xl">
-                  🏢
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Kategori kartları */}
+            {[
+              {
+                name: "Ofis Yemekleri",
+                desc: "Günlük öğle yemekleri",
+                icon: Coffee,
+                href: "/vendors?segment=kurumsal&category=ofis-ogle-yemekleri",
+                color: "bg-amber-50 text-amber-600",
+              },
+              {
+                name: "Toplantı İkramları",
+                desc: "Kahvaltı & coffee break",
+                icon: Handshake,
+                href: "/vendors?segment=kurumsal&category=toplanti-ikramlari",
+                color: "bg-blue-50 text-blue-600",
+              },
+              {
+                name: "Düğün & Nişan",
+                desc: "Özel gün organizasyonu",
+                icon: Champagne,
+                href: "/vendors?segment=bireysel&category=dugun-nisan",
+                color: "bg-pink-50 text-pink-600",
+              },
+              {
+                name: "Doğum Günü",
+                desc: "Parti & kutlama",
+                icon: Cake,
+                href: "/vendors?segment=bireysel&category=dogum-gunu",
+                color: "bg-purple-50 text-purple-600",
+              },
+            ].map((cat) => (
+              <Link
+                key={cat.name}
+                href={cat.href}
+                className="group flex flex-col items-center rounded-2xl border border-slate-200 bg-white p-6 text-center transition-all hover:border-slate-300 hover:shadow-md"
+              >
+                <div
+                  className={`flex h-14 w-14 items-center justify-center rounded-xl ${cat.color} transition-transform group-hover:scale-110`}
+                >
+                  <cat.icon size={28} weight="light" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 group-hover:text-leaf-600">
-                    Kurumsal Hizmetler
-                  </h3>
-                  <p className="mt-2 text-slate-600">
-                    Ofis yemekleri, toplantı ikramları, konferans ve kurumsal
-                    etkinlikler için profesyonel catering çözümleri.
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                      Ofis Öğle Yemeği
-                    </span>
-                    <span className="bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                      Toplantı İkramı
-                    </span>
-                    <span className="bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                      Konferans
-                    </span>
-                    <span className="bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                      Fuar
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute bottom-0 left-0 h-1 w-full origin-left scale-x-0 bg-leaf-500 transition-transform group-hover:scale-x-100" />
-            </Link>
+                <h3 className="mt-4 font-semibold text-slate-900">
+                  {cat.name}
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">{cat.desc}</p>
+              </Link>
+            ))}
+          </div>
 
-            {/* Bireysel Card */}
+          <div className="mt-8 text-center">
             <Link
-              href="/vendors?segment=bireysel"
-              className="group relative overflow-hidden border border-slate-200 bg-white p-8 transition-all hover:border-grape-300 hover:shadow-lg"
+              href="/vendors"
+              className="inline-flex items-center gap-2 text-sm font-medium text-leaf-600 hover:text-leaf-700"
             >
-              <div className="flex items-start gap-6">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center bg-grape-100 text-3xl">
-                  🎉
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 group-hover:text-grape-600">
-                    Bireysel Hizmetler
-                  </h3>
-                  <p className="mt-2 text-slate-600">
-                    Düğün, doğum günü, ev partisi ve özel günleriniz için
-                    unutulmaz lezzetler ve servis hizmetleri.
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                      Düğün & Nişan
-                    </span>
-                    <span className="bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                      Doğum Günü
-                    </span>
-                    <span className="bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                      Ev Partisi
-                    </span>
-                    <span className="bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                      Baby Shower
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute bottom-0 left-0 h-1 w-full origin-left scale-x-0 bg-grape-500 transition-transform group-hover:scale-x-100" />
+              Tüm kategorileri gör
+              <ArrowRight size={16} />
             </Link>
           </div>
         </div>
       </section>
 
       {/* Nasıl Çalışır */}
-      <section className="bg-slate-50 py-16 lg:py-24">
+      <section className="bg-white py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 lg:px-6">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
-              Nasıl Çalışır?
+              3 adımda catering bulun
             </h2>
-            <p className="mt-3 text-slate-600">
-              3 adımda etkinliğiniz için catering bulun
-            </p>
+            <p className="mt-3 text-slate-600">Hızlı, kolay ve ücretsiz</p>
           </div>
 
-          <div className="mt-12 grid gap-8 sm:grid-cols-3">
-            <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center bg-leaf-500 text-xl font-bold text-white">
-                1
+          <div className="mt-12 grid gap-8 lg:grid-cols-3">
+            {[
+              {
+                step: "1",
+                icon: MagnifyingGlass,
+                title: "Firmaları Keşfedin",
+                desc: "Bölgenizdeki catering firmalarını inceleyin, menülerini ve fiyatlarını karşılaştırın.",
+              },
+              {
+                step: "2",
+                icon: ChatCircleDots,
+                title: "Teklif İsteyin",
+                desc: "Beğendiğiniz firmalara ücretsiz teklif talebi gönderin. Detaylarınızı paylaşın.",
+              },
+              {
+                step: "3",
+                icon: CalendarCheck,
+                title: "Rezervasyon Yapın",
+                desc: "Gelen teklifleri değerlendirin ve size en uygun firmayı seçin.",
+              },
+            ].map((item) => (
+              <div key={item.step} className="relative text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-leaf-50">
+                  <item.icon
+                    size={32}
+                    weight="light"
+                    className="text-leaf-600"
+                  />
+                </div>
+                <div className="absolute -top-2 left-1/2 flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full bg-leaf-600 text-sm font-bold text-white">
+                  {item.step}
+                </div>
+                <h3 className="mt-6 text-lg font-semibold text-slate-900">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-slate-600">{item.desc}</p>
               </div>
-              <h3 className="mt-6 text-lg font-semibold text-slate-900">
-                Etkinliğinizi Tanımlayın
-              </h3>
-              <p className="mt-2 text-slate-600">
-                Kurumsal mı bireysel mi? Kaç kişi? Nerede ve ne zaman?
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center bg-leaf-500 text-xl font-bold text-white">
-                2
-              </div>
-              <h3 className="mt-6 text-lg font-semibold text-slate-900">
-                Firmaları Karşılaştırın
-              </h3>
-              <p className="mt-2 text-slate-600">
-                Menüleri inceleyin, yorumları okuyun, fiyatları karşılaştırın.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center bg-leaf-500 text-xl font-bold text-white">
-                3
-              </div>
-              <h3 className="mt-6 text-lg font-semibold text-slate-900">
-                Teklif Alın
-              </h3>
-              <p className="mt-2 text-slate-600">
-                Beğendiğiniz firmalardan ücretsiz teklif alın ve en uygununu
-                seçin.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Öne Çıkan Firmalar */}
       {featuredVendors && featuredVendors.length > 0 && (
-        <section className="bg-white py-16 lg:py-24">
+        <section className="border-t border-slate-100 bg-slate-50/50 py-16 lg:py-20">
           <div className="mx-auto max-w-7xl px-4 lg:px-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-end justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
-                  Öne Çıkan Firmalar
+                  Öne çıkan firmalar
                 </h2>
                 <p className="mt-2 text-slate-600">
                   En çok tercih edilen catering firmaları
@@ -346,59 +306,52 @@ export default async function HomePage() {
               </div>
               <Link
                 href="/vendors"
-                className="hidden items-center gap-2 font-medium text-leaf-600 hover:text-leaf-700 sm:flex"
+                className="hidden items-center gap-2 text-sm font-medium text-leaf-600 hover:text-leaf-700 sm:flex"
               >
-                Tümünü Gör
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                Tümünü gör
+                <ArrowRight size={16} />
               </Link>
             </div>
 
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {featuredVendors.map((vendor) => {
                 const city = vendor.city as { name: string } | null;
                 return (
                   <Link
                     key={vendor.id}
                     href={`/vendors/${vendor.slug}`}
-                    className="group border border-slate-200 bg-white p-6 transition-all hover:border-leaf-300 hover:shadow-md"
+                    className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-md"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden bg-slate-100">
-                        {vendor.logo_url ? (
-                          <Image
-                            src={vendor.logo_url}
-                            alt={vendor.business_name || ""}
-                            width={56}
-                            height={56}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-xl font-bold text-leaf-600">
-                            {vendor.business_name?.charAt(0)?.toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-900 group-hover:text-leaf-600">
-                          {vendor.business_name}
-                        </h3>
-                        {city?.name && (
-                          <p className="text-sm text-slate-500">{city.name}</p>
-                        )}
-                      </div>
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
+                      {vendor.logo_url ? (
+                        <Image
+                          src={vendor.logo_url}
+                          alt={vendor.business_name || ""}
+                          width={56}
+                          height={56}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xl font-bold text-leaf-600">
+                          {vendor.business_name?.charAt(0)?.toUpperCase()}
+                        </span>
+                      )}
                     </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-semibold text-slate-900 group-hover:text-leaf-600">
+                        {vendor.business_name}
+                      </h3>
+                      {city?.name && (
+                        <p className="mt-0.5 flex items-center gap-1 text-sm text-slate-500">
+                          <MapPin size={14} weight="light" />
+                          {city.name}
+                        </p>
+                      )}
+                    </div>
+                    <ArrowRight
+                      size={18}
+                      className="shrink-0 text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-leaf-500"
+                    />
                   </Link>
                 );
               })}
@@ -407,55 +360,84 @@ export default async function HomePage() {
             <div className="mt-8 text-center sm:hidden">
               <Link
                 href="/vendors"
-                className="inline-flex items-center gap-2 font-medium text-leaf-600 hover:text-leaf-700"
+                className="inline-flex items-center gap-2 text-sm font-medium text-leaf-600 hover:text-leaf-700"
               >
-                Tüm Firmaları Gör
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                Tüm firmaları gör
+                <ArrowRight size={16} />
               </Link>
             </div>
           </div>
         </section>
       )}
 
+      {/* Neden Cateringle */}
+      <section className="bg-white py-16 lg:py-20">
+        <div className="mx-auto max-w-7xl px-4 lg:px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+              Neden Cateringle?
+            </h2>
+            <p className="mt-4 text-slate-600">
+              Etkinliğiniz için doğru catering firmasını bulmak hiç bu kadar
+              kolay olmamıştı.
+            </p>
+
+            <div className="mt-12 grid gap-8 text-left sm:grid-cols-3">
+              {[
+                {
+                  icon: CurrencyDollar,
+                  title: "Ücretsiz Teklif",
+                  desc: "Sınırsız firmadan ücretsiz teklif alın, karşılaştırın.",
+                },
+                {
+                  icon: CheckCircle,
+                  title: "Doğrulanmış Firmalar",
+                  desc: "Tüm firmalar ekibimiz tarafından incelenir ve onaylanır.",
+                },
+                {
+                  icon: ChatCircleDots,
+                  title: "Hızlı İletişim",
+                  desc: "Firmalarla doğrudan ve hızlı iletişim kurun.",
+                },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className="flex flex-col items-center text-center"
+                >
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-leaf-50">
+                    <item.icon
+                      size={28}
+                      weight="light"
+                      className="text-leaf-600"
+                    />
+                  </div>
+                  <h3 className="mt-4 font-semibold text-slate-900">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm text-slate-600">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="bg-leaf-600 py-16">
-        <div className="mx-auto max-w-4xl px-4 text-center">
+      <section className="border-t border-slate-100 bg-gradient-to-br from-leaf-600 to-leaf-700 py-16 lg:py-20">
+        <div className="mx-auto max-w-3xl px-4 text-center">
           <h2 className="text-2xl font-bold text-white sm:text-3xl">
             Catering firması mısınız?
           </h2>
           <p className="mt-4 text-lg text-leaf-100">
             Cateringle&apos;ye katılın, binlerce potansiyel müşteriye ulaşın.
+            Kayıt ücretsiz!
           </p>
           <Link
             href="/auth/register"
-            className="mt-8 inline-flex items-center gap-2 bg-white px-8 py-4 font-semibold text-leaf-700 transition-colors hover:bg-leaf-50"
+            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-semibold text-leaf-700 transition-all hover:bg-leaf-50 hover:shadow-lg"
           >
-            Hemen Kaydol
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
+            Hemen Başvur
+            <ArrowRight size={20} />
           </Link>
         </div>
       </section>

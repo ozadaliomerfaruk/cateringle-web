@@ -1,3 +1,4 @@
+// src/app/vendors/[slug]/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -7,21 +8,34 @@ import LeadForm from "../../../components/LeadForm";
 import ReviewForm from "../../../components/ReviewForm";
 import ReviewList from "../../../components/ReviewList";
 import FavoriteButton from "../../../components/FavoriteButton";
+import {
+  MapPin,
+  Star,
+  Clock,
+  Users,
+  Truck,
+  Snowflake,
+  MapTrifold,
+  Phone,
+  Envelope,
+  Globe,
+  WhatsappLogo,
+  Calendar,
+  CheckCircle,
+  ShieldCheck,
+  CaretLeft,
+  Heart,
+  Export,
+  Medal,
+  Timer,
+  CurrencyDollar,
+} from "@phosphor-icons/react/dist/ssr";
 
-// Type definitions for nested Supabase queries
-type VendorCategory = {
-  category: {
-    name: string;
-    icon: string | null;
-  } | null;
-};
-
+// Type definitions
 type VendorService = {
   service: {
     name: string;
-    group: {
-      icon: string | null;
-    } | null;
+    group: { icon: string | null } | null;
   } | null;
 };
 
@@ -134,7 +148,8 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
       lead_time_hours, lead_time_type, accepts_last_minute,
       weekend_surcharge_percent, holiday_surcharge_percent,
       delivery_pricing_type, delivery_base_fee, delivery_notes,
-      has_refrigerated_vehicle, serves_outside_city, available_24_7
+      has_refrigerated_vehicle, serves_outside_city, available_24_7,
+      halal_certified, free_tasting, free_delivery
     `
     )
     .eq("slug", slug)
@@ -144,83 +159,70 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
     notFound();
   }
 
-  // Galeri
-  const { data: images } = await supabase
-    .from("vendor_images")
-    .select("id, image_url")
-    .eq("vendor_id", vendor.id)
-    .order("sort_order")
-    .limit(12);
-
-  // Yorumlar
-  const { data: reviews } = await supabase
-    .from("reviews")
-    .select("id, customer_name, rating, comment, is_verified, created_at")
-    .eq("vendor_id", vendor.id)
-    .eq("is_approved", true)
-    .order("created_at", { ascending: false })
-    .limit(10);
-
-  // Ortalama puan
-  const { data: ratingData } = await supabase
-    .from("vendor_ratings")
-    .select("avg_rating, review_count")
-    .eq("vendor_id", vendor.id)
-    .maybeSingle();
-
-  // Menüler
-  const { data: menuCategories } = await supabase
-    .from("menu_categories")
-    .select(
-      `id, name, description, menu_items (id, name, description, price_per_person)`
-    )
-    .eq("vendor_id", vendor.id)
-    .order("sort_order");
-
-  // Paketler
-  const { data: packages } = await supabase
-    .from("packages")
-    .select("*")
-    .eq("vendor_id", vendor.id)
-    .eq("is_active", true)
-    .order("sort_order");
-
-  // Kategoriler
-  const { data: vendorCats } = await supabase
-    .from("vendor_categories")
-    .select("category:service_categories(name, icon)")
-    .eq("vendor_id", vendor.id);
-
-  // Hizmetler
-  const { data: vendorServices } = await supabase
-    .from("vendor_services")
-    .select("service:services(name, group:service_groups(icon))")
-    .eq("vendor_id", vendor.id);
-
-  // ========== YENİ KATEGORİ SİSTEMİ VERİLERİ ==========
-
-  // Mutfak Türleri
-  const { data: vendorCuisines } = await supabase
-    .from("vendor_cuisines")
-    .select("cuisine_type:cuisine_types(name, icon, category)")
-    .eq("vendor_id", vendor.id);
-
-  // Teslimat Modelleri
-  const { data: vendorDeliveryModels } = await supabase
-    .from("vendor_delivery_models")
-    .select("delivery_model:delivery_models(name, icon, description)")
-    .eq("vendor_id", vendor.id);
-
-  // Etiketler
-  const { data: vendorTags } = await supabase
-    .from("vendor_tags")
-    .select("tag:tags(name, icon, group:tag_groups(name, icon))")
-    .eq("vendor_id", vendor.id);
+  // Tüm verileri paralel çek
+  const [
+    { data: images },
+    { data: reviews },
+    { data: ratingData },
+    { data: menuCategories },
+    { data: packages },
+    { data: vendorServices },
+    { data: vendorCuisines },
+    { data: vendorDeliveryModels },
+    { data: vendorTags },
+  ] = await Promise.all([
+    supabase
+      .from("vendor_images")
+      .select("id, image_url")
+      .eq("vendor_id", vendor.id)
+      .order("sort_order")
+      .limit(5),
+    supabase
+      .from("reviews")
+      .select("id, customer_name, rating, comment, is_verified, created_at")
+      .eq("vendor_id", vendor.id)
+      .eq("is_approved", true)
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("vendor_ratings")
+      .select("avg_rating, review_count")
+      .eq("vendor_id", vendor.id)
+      .maybeSingle(),
+    supabase
+      .from("menu_categories")
+      .select(
+        "id, name, description, menu_items (id, name, description, price_per_person)"
+      )
+      .eq("vendor_id", vendor.id)
+      .order("sort_order"),
+    supabase
+      .from("packages")
+      .select("*")
+      .eq("vendor_id", vendor.id)
+      .eq("is_active", true)
+      .order("sort_order"),
+    supabase
+      .from("vendor_services")
+      .select("service:services(name, group:service_groups(icon))")
+      .eq("vendor_id", vendor.id),
+    supabase
+      .from("vendor_cuisines")
+      .select("cuisine_type:cuisine_types(name, icon, category)")
+      .eq("vendor_id", vendor.id),
+    supabase
+      .from("vendor_delivery_models")
+      .select("delivery_model:delivery_models(name, icon, description)")
+      .eq("vendor_id", vendor.id),
+    supabase
+      .from("vendor_tags")
+      .select("tag:tags(name, icon, group:tag_groups(name, icon))")
+      .eq("vendor_id", vendor.id),
+  ]);
 
   // Şehir/İlçe
   let cityName = "";
   let districtName = "";
-
   if (vendor.city_id) {
     const { data } = await supabase
       .from("cities")
@@ -238,819 +240,294 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
     districtName = data?.name || "";
   }
 
-  // Hizmet Bölgeleri
-  const { data: serviceAreas } = await supabase
-    .from("vendor_service_areas")
-    .select(
-      `
-      id,
-      city_id,
-      district_id,
-      city:cities(id, name),
-      district:districts(id, name)
-    `
-    )
-    .eq("vendor_id", vendor.id);
-
-  // Hizmet bölgelerini şehir bazında grupla
-  type ServiceAreaCity = {
-    cityId: number;
-    cityName: string;
-    allDistricts: boolean; // Tüm ilçeler mi?
-    districts: string[];
-  };
-
-  const serviceAreasByCity: ServiceAreaCity[] = [];
-
-  if (serviceAreas && serviceAreas.length > 0) {
-    const cityMap = new Map<number, ServiceAreaCity>();
-
-    for (const area of serviceAreas) {
-      const cityId = area.city_id;
-      const cityNameStr = (area.city as { name: string } | null)?.name || "";
-
-      if (!cityMap.has(cityId)) {
-        cityMap.set(cityId, {
-          cityId,
-          cityName: cityNameStr,
-          allDistricts: false,
-          districts: [],
-        });
-      }
-
-      const cityData = cityMap.get(cityId)!;
-
-      // district_id null ise tüm şehir demektir
-      if (area.district_id === null) {
-        cityData.allDistricts = true;
-      } else {
-        const districtNameStr = (area.district as { name: string } | null)
-          ?.name;
-        if (districtNameStr && !cityData.districts.includes(districtNameStr)) {
-          cityData.districts.push(districtNameStr);
-        }
-      }
-    }
-
-    serviceAreasByCity.push(...cityMap.values());
-  }
-
   const locationText = [districtName, cityName].filter(Boolean).join(", ");
   const whatsappLink = vendor.whatsapp
     ? `https://wa.me/${vendor.whatsapp.replace(/\D/g, "")}`
     : null;
   const galleryImages = images || [];
+  const hasRating = ratingData?.avg_rating && ratingData.avg_rating > 0;
+  const reviewCount = ratingData?.review_count || 0;
+
+  // Özellikler listesi
+  const features = [];
+  if (vendor.available_24_7)
+    features.push({
+      icon: Clock,
+      label: "7/24 Hizmet",
+      desc: "Her zaman ulaşılabilir",
+    });
+  if (vendor.has_refrigerated_vehicle)
+    features.push({
+      icon: Snowflake,
+      label: "Frigorifik Araç",
+      desc: "Soğuk zincir garantisi",
+    });
+  if (vendor.serves_outside_city)
+    features.push({
+      icon: MapTrifold,
+      label: "Şehir Dışı Teslimat",
+      desc: "Farklı şehirlere hizmet",
+    });
+  if (vendor.halal_certified)
+    features.push({
+      icon: Medal,
+      label: "Helal Sertifikalı",
+      desc: "Helal gıda garantisi",
+    });
+  if (vendor.free_tasting)
+    features.push({
+      icon: CheckCircle,
+      label: "Ücretsiz Tadım",
+      desc: "Önceden tadım imkanı",
+    });
+  if (vendor.free_delivery)
+    features.push({
+      icon: Truck,
+      label: "Ücretsiz Teslimat",
+      desc: "Teslimat ücreti yok",
+    });
+  if (vendor.accepts_last_minute)
+    features.push({
+      icon: Timer,
+      label: "Son Dakika Kabul",
+      desc: "Acil siparişler kabul edilir",
+    });
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      {/* Hero Section */}
-      <div className="bg-white border-b">
-        <div className="mx-auto max-w-6xl px-4 py-6">
-          {/* Breadcrumb */}
-          <nav className="mb-6">
-            <ol className="flex items-center gap-2 text-sm text-slate-500">
-              <li>
-                <Link href="/" className="hover:text-leaf-600">
-                  Ana Sayfa
-                </Link>
-              </li>
-              <li>
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </li>
-              <li>
-                <Link href="/vendors" className="hover:text-leaf-600">
-                  Firmalar
-                </Link>
-              </li>
-              <li>
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </li>
-              <li className="text-slate-900 font-medium">
-                {vendor.business_name}
-              </li>
-            </ol>
-          </nav>
-
-          {/* Firma Bilgileri */}
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-              {/* Logo */}
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-leaf--100 to-teal-50 shadow-sm">
-                {vendor.logo_url ? (
-                  <Image
-                    src={vendor.logo_url}
-                    alt={vendor.business_name}
-                    width={96}
-                    height={96}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <svg
-                    className="h-12 w-12 text-leaf-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                )}
-              </div>
-
-              {/* Bilgiler */}
-              <div>
-                <div className="flex items-start gap-3">
-                  <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
-                    {vendor.business_name}
-                  </h1>
-                  <FavoriteButton vendorId={vendor.id} size="md" />
-                </div>
-
-                {locationText && (
-                  <p className="mt-2 flex items-center gap-1.5 text-slate-600">
-                    <svg
-                      className="h-5 w-5 text-slate-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                    {locationText}
-                  </p>
-                )}
-
-                {/* Rating */}
-                {ratingData?.avg_rating && (
-                  <div className="mt-3 flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className={`h-5 w-5 ${
-                            i < Math.round(ratingData.avg_rating)
-                              ? "text-yellow-400 fill-yellow-400"
-                              : "text-slate-200 fill-slate-200"
-                          }`}
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
-                    </div>
-                    <span className="font-semibold text-slate-900">
-                      {ratingData.avg_rating}
-                    </span>
-                    <span className="text-slate-500">
-                      ({ratingData.review_count} yorum)
-                    </span>
-                  </div>
-                )}
-
-                {/* Badges */}
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {typeof vendor.avg_price_per_person === "number" && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-leaf-100 px-4 py-1.5 text-sm font-medium text-leaf-700">
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      ≈ {Math.round(vendor.avg_price_per_person)} TL / kişi
-                    </span>
-                  )}
-                  {vendor.min_guest_count && vendor.max_guest_count && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-4 py-1.5 text-sm font-medium text-blue-700">
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                        />
-                      </svg>
-                      {vendor.min_guest_count} - {vendor.max_guest_count} kişi
-                    </span>
-                  )}
-                </div>
-
-                {/* Kategoriler */}
-                {vendorCats && vendorCats.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {vendorCats.map((vc: VendorCategory, i: number) => (
-                      <span
-                        key={i}
-                        className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600"
-                      >
-                        {vc.category?.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap gap-3">
-              {vendor.phone && (
-                <a
-                  href={`tel:${vendor.phone}`}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:shadow"
-                >
-                  <svg
-                    className="h-5 w-5 text-slate-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                    />
-                  </svg>
-                  Ara
-                </a>
-              )}
-              {whatsappLink && (
-                <a
-                  href={whatsappLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                  </svg>
-                  WhatsApp
-                </a>
-              )}
-            </div>
+    <main className="min-h-screen bg-white">
+      {/* Üst Bar - Geri + Paylaş + Favori */}
+      <div className="sticky top-16 z-20 border-b border-slate-200 bg-white lg:top-20">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-6">
+          <Link
+            href="/vendors"
+            className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900"
+          >
+            <CaretLeft size={20} weight="bold" />
+            <span className="hidden sm:inline">Firmalara Dön</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+              <Export size={18} />
+              <span className="hidden sm:inline">Paylaş</span>
+            </button>
+            <FavoriteButton vendorId={vendor.id} size="md" />
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Sol Kolon */}
-          <div className="space-y-6 lg:col-span-2">
-            {/* Hakkında */}
-            <section className="rounded-2xl bg-white p-6 shadow-sm">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                <svg
-                  className="h-5 w-5 text-leaf-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
-                Firma Hakkında
-              </h2>
-              {vendor.description ? (
-                <p className="mt-4 whitespace-pre-line text-slate-600 leading-relaxed">
+      {/* Galeri Section - Airbnb Grid */}
+      <section className="mx-auto max-w-7xl px-4 pt-6 lg:px-6">
+        {galleryImages.length > 0 ? (
+          <div className="grid grid-cols-4 gap-2 overflow-hidden rounded-xl">
+            {/* Ana Görsel */}
+            <div className="relative col-span-4 aspect-[16/9] sm:col-span-2 sm:row-span-2 sm:aspect-square">
+              <Image
+                src={galleryImages[0]?.image_url || vendor.logo_url || ""}
+                alt={vendor.business_name}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+            {/* Küçük Görseller */}
+            {galleryImages.slice(1, 5).map((img, idx) => (
+              <div
+                key={img.id}
+                className="relative hidden aspect-square sm:block"
+              >
+                <Image
+                  src={img.image_url}
+                  alt={`${vendor.business_name} - ${idx + 2}`}
+                  fill
+                  className="object-cover"
+                />
+                {idx === 3 && galleryImages.length > 5 && (
+                  <button className="absolute inset-0 flex items-center justify-center bg-black/40 text-white transition-colors hover:bg-black/50">
+                    <span className="text-sm font-medium">
+                      +{galleryImages.length - 5} fotoğraf
+                    </span>
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : vendor.logo_url ? (
+          <div className="relative mx-auto aspect-video max-w-2xl overflow-hidden rounded-xl">
+            <Image
+              src={vendor.logo_url}
+              alt={vendor.business_name}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        ) : (
+          <div className="mx-auto flex aspect-video max-w-2xl items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-200">
+            <span className="text-6xl font-bold text-slate-300">
+              {vendor.business_name?.charAt(0)?.toUpperCase()}
+            </span>
+          </div>
+        )}
+      </section>
+
+      {/* Ana İçerik */}
+      <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+        <div className="grid gap-12 lg:grid-cols-3">
+          {/* Sol Kolon - Bilgiler */}
+          <div className="lg:col-span-2">
+            {/* Başlık + Konum + Rating */}
+            <div className="border-b border-slate-200 pb-6">
+              <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+                {vendor.business_name}
+              </h1>
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-slate-600">
+                {locationText && (
+                  <span className="flex items-center gap-1">
+                    <MapPin size={18} weight="light" />
+                    {locationText}
+                  </span>
+                )}
+                {hasRating && (
+                  <span className="flex items-center gap-1">
+                    <Star size={18} weight="fill" className="text-slate-900" />
+                    <span className="font-medium text-slate-900">
+                      {Number(ratingData.avg_rating).toFixed(1)}
+                    </span>
+                    <span className="text-slate-500">
+                      ({reviewCount} yorum)
+                    </span>
+                  </span>
+                )}
+                {vendor.min_guest_count && vendor.max_guest_count && (
+                  <span className="flex items-center gap-1">
+                    <Users size={18} weight="light" />
+                    {vendor.min_guest_count} - {vendor.max_guest_count} kişi
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Özellikler */}
+            {features.length > 0 && (
+              <div className="border-b border-slate-200 py-6">
+                <div className="space-y-4">
+                  {features.slice(0, 4).map((feature, idx) => (
+                    <div key={idx} className="flex items-start gap-4">
+                      <feature.icon
+                        size={24}
+                        weight="light"
+                        className="mt-0.5 shrink-0 text-slate-700"
+                      />
+                      <div>
+                        <p className="font-medium text-slate-900">
+                          {feature.label}
+                        </p>
+                        <p className="text-sm text-slate-500">{feature.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Açıklama */}
+            {vendor.description && (
+              <div className="border-b border-slate-200 py-6">
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Hakkında
+                </h2>
+                <p className="mt-3 whitespace-pre-line text-slate-600 leading-relaxed">
                   {vendor.description}
                 </p>
-              ) : (
-                <p className="mt-4 text-slate-500 italic">
-                  Firma açıklaması henüz eklenmemiş.
-                </p>
-              )}
-            </section>
-
-            {/* Galeri */}
-            <section className="rounded-2xl bg-white p-6 shadow-sm">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                <svg
-                  className="h-5 w-5 text-leaf-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                Fotoğraflar
-              </h2>
-              {galleryImages.length > 0 ? (
-                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {galleryImages.map((img) => (
-                    <div
-                      key={img.id}
-                      className="group aspect-square overflow-hidden rounded-xl bg-slate-100"
-                    >
-                      <Image
-                        src={img.image_url}
-                        alt="Firma fotoğrafı"
-                        width={300}
-                        height={300}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-4 grid grid-cols-3 gap-3">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div
-                      key={i}
-                      className="flex aspect-square items-center justify-center rounded-xl bg-slate-100"
-                    >
-                      <svg
-                        className="h-8 w-8 text-slate-300"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Sunulan Hizmetler */}
-            {vendorServices && vendorServices.length > 0 && (
-              <section className="rounded-2xl bg-white p-6 shadow-sm">
-                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                  <svg
-                    className="h-5 w-5 text-leaf-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                    />
-                  </svg>
-                  Sunulan Hizmetler
-                </h2>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {vendorServices.map((vs: VendorService, i: number) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-leaf-50 px-3 py-1.5 text-sm text-leaf-700"
-                    >
-                      <svg
-                        className="h-4 w-4 text-leaf-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      {vs.service?.name}
-                    </span>
-                  ))}
-                </div>
-              </section>
+              </div>
             )}
 
-            {/* Mutfak Türleri */}
-            {vendorCuisines && vendorCuisines.length > 0 && (
-              <section className="rounded-2xl bg-white p-6 shadow-sm">
-                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                  <svg
-                    className="h-5 w-5 text-leaf-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                  Mutfak Türleri
+            {/* Bu firma neler sunuyor? */}
+            {((vendorServices && vendorServices.length > 0) ||
+              (vendorCuisines && vendorCuisines.length > 0) ||
+              (vendorDeliveryModels && vendorDeliveryModels.length > 0)) && (
+              <div className="border-b border-slate-200 py-6">
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Bu firma neler sunuyor?
                 </h2>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {vendorCuisines.map((vc: VendorCuisine, i: number) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1.5 text-sm text-orange-700"
-                    >
-                      {vc.cuisine_type?.icon && (
-                        <span>{vc.cuisine_type.icon}</span>
+
+                {/* Hizmetler */}
+                {vendorServices && vendorServices.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium text-slate-500">
+                      Hizmetler
+                    </h3>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(vendorServices as VendorService[]).map(
+                        (vs, idx) =>
+                          vs.service?.name && (
+                            <span
+                              key={idx}
+                              className="rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-700"
+                            >
+                              {vs.service.name}
+                            </span>
+                          )
                       )}
-                      {vc.cuisine_type?.name}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Teslimat Modelleri */}
-            {vendorDeliveryModels && vendorDeliveryModels.length > 0 && (
-              <section className="rounded-2xl bg-white p-6 shadow-sm">
-                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                  <svg
-                    className="h-5 w-5 text-leaf-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"
-                    />
-                  </svg>
-                  Teslimat Seçenekleri
-                </h2>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {vendorDeliveryModels.map(
-                    (vdm: VendorDeliveryModel, i: number) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-3 rounded-xl bg-teal-50 p-4"
-                      >
-                        <span className="text-xl">
-                          {vdm.delivery_model?.icon || "📦"}
-                        </span>
-                        <div>
-                          <p className="font-medium text-teal-800">
-                            {vdm.delivery_model?.name}
-                          </p>
-                          {vdm.delivery_model?.description && (
-                            <p className="mt-0.5 text-xs text-teal-600">
-                              {vdm.delivery_model.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-
-                {/* Teslimat Ücret Bilgisi */}
-                {vendor.delivery_pricing_type && (
-                  <div className="mt-4 rounded-lg bg-slate-50 px-4 py-3">
-                    <p className="text-sm text-slate-600">
-                      <span className="font-medium">Teslimat Ücreti: </span>
-                      {vendor.delivery_pricing_type === "free" && "Ücretsiz"}
-                      {vendor.delivery_pricing_type === "fixed" &&
-                        `${vendor.delivery_base_fee} TL sabit`}
-                      {vendor.delivery_pricing_type === "per_km" &&
-                        `${vendor.delivery_base_fee} TL/km`}
-                      {vendor.delivery_pricing_type === "included" &&
-                        "Fiyata dahil"}
-                      {vendor.delivery_pricing_type === "contact" &&
-                        "İletişime geçin"}
-                    </p>
-                    {vendor.delivery_notes && (
-                      <p className="mt-1 text-xs text-slate-500">
-                        {vendor.delivery_notes}
-                      </p>
-                    )}
+                    </div>
                   </div>
                 )}
-              </section>
-            )}
 
-            {/* Hizmet Bölgeleri */}
-            {serviceAreasByCity.length > 0 && (
-              <section className="rounded-2xl bg-white p-6 shadow-sm">
-                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                  <svg
-                    className="h-5 w-5 text-leaf-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  Hizmet Bölgeleri
-                </h2>
-                <div className="mt-4 space-y-4">
-                  {serviceAreasByCity.map((cityArea) => (
-                    <div
-                      key={cityArea.cityId}
-                      className="rounded-xl bg-slate-50 p-4"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">📍</span>
-                        <h3 className="font-semibold text-slate-900">
-                          {cityArea.cityName}
-                        </h3>
-                        {cityArea.allDistricts && (
-                          <span className="rounded-full bg-leaf-100 px-2.5 py-0.5 text-xs font-medium text-leaf-700">
-                            Tüm İlçeler
-                          </span>
-                        )}
-                      </div>
-                      {!cityArea.allDistricts &&
-                        cityArea.districts.length > 0 && (
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            {cityArea.districts.sort().map((district) => (
-                              <span
-                                key={district}
-                                className="inline-flex items-center rounded-full bg-white px-3 py-1 text-sm text-slate-700 shadow-sm ring-1 ring-slate-200"
-                              >
-                                {district}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                {/* Mutfak Türleri */}
+                {vendorCuisines && vendorCuisines.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium text-slate-500">
+                      Mutfak Türleri
+                    </h3>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(vendorCuisines as VendorCuisine[]).map(
+                        (vc, idx) =>
+                          vc.cuisine_type?.name && (
+                            <span
+                              key={idx}
+                              className="rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-700"
+                            >
+                              {vc.cuisine_type.icon} {vc.cuisine_type.name}
+                            </span>
+                          )
+                      )}
                     </div>
-                  ))}
-                </div>
-                {vendor.serves_outside_city && (
-                  <div className="mt-4 flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700">
-                    <svg
-                      className="h-4 w-4 shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <span>
-                      Bu firma şehir dışına da hizmet verebilmektedir.
-                    </span>
                   </div>
                 )}
-              </section>
-            )}
 
-            {/* Etiketler ve Sertifikalar */}
-            {vendorTags && vendorTags.length > 0 && (
-              <section className="rounded-2xl bg-white p-6 shadow-sm">
-                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                  <svg
-                    className="h-5 w-5 text-leaf-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                    />
-                  </svg>
-                  Özellikler ve Sertifikalar
-                </h2>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {vendorTags.map((vt: VendorTag, i: number) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1.5 text-sm text-violet-700"
-                    >
-                      {vt.tag?.icon && <span>{vt.tag.icon}</span>}
-                      {vt.tag?.name}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Operasyonel Bilgiler */}
-            {(vendor.lead_time_type ||
-              vendor.available_24_7 ||
-              vendor.has_refrigerated_vehicle ||
-              vendor.serves_outside_city ||
-              vendor.accepts_last_minute) && (
-              <section className="rounded-2xl bg-white p-6 shadow-sm">
-                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                  <svg
-                    className="h-5 w-5 text-leaf-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  Operasyonel Bilgiler
-                </h2>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {vendor.lead_time_type && (
-                    <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4">
-                      <span className="text-xl">⏰</span>
-                      <div>
-                        <p className="text-xs text-slate-500">
-                          Minimum Sipariş Süresi
-                        </p>
-                        <p className="font-medium text-slate-900">
-                          {vendor.lead_time_type === "urgent" &&
-                            "Acil (24 saat içinde)"}
-                          {vendor.lead_time_type === "standard" &&
-                            "Standart (2-3 gün)"}
-                          {vendor.lead_time_type === "advance" &&
-                            "Önceden (1 hafta+)"}
-                          {vendor.lead_time_hours &&
-                            ` (min. ${vendor.lead_time_hours} saat)`}
-                        </p>
-                      </div>
+                {/* Teslimat Modelleri */}
+                {vendorDeliveryModels && vendorDeliveryModels.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium text-slate-500">
+                      Teslimat Seçenekleri
+                    </h3>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(vendorDeliveryModels as VendorDeliveryModel[]).map(
+                        (vdm, idx) =>
+                          vdm.delivery_model?.name && (
+                            <span
+                              key={idx}
+                              className="rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-700"
+                            >
+                              {vdm.delivery_model.icon}{" "}
+                              {vdm.delivery_model.name}
+                            </span>
+                          )
+                      )}
                     </div>
-                  )}
-
-                  {vendor.available_24_7 && (
-                    <div className="flex items-center gap-3 rounded-xl bg-green-50 p-4">
-                      <span className="text-xl">🕐</span>
-                      <div>
-                        <p className="font-medium text-green-800">
-                          7/24 Hizmet
-                        </p>
-                        <p className="text-xs text-green-600">
-                          Her zaman ulaşılabilir
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {vendor.accepts_last_minute && (
-                    <div className="flex items-center gap-3 rounded-xl bg-amber-50 p-4">
-                      <span className="text-xl">⚡</span>
-                      <div>
-                        <p className="font-medium text-amber-800">
-                          Son Dakika Siparişleri
-                        </p>
-                        <p className="text-xs text-amber-600">
-                          Acil siparişler değerlendirilebilir
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {vendor.has_refrigerated_vehicle && (
-                    <div className="flex items-center gap-3 rounded-xl bg-blue-50 p-4">
-                      <span className="text-xl">🚛</span>
-                      <div>
-                        <p className="font-medium text-blue-800">
-                          Frigorifik Araç
-                        </p>
-                        <p className="text-xs text-blue-600">
-                          Soğuk zincir teslimatı
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {vendor.serves_outside_city && (
-                    <div className="flex items-center gap-3 rounded-xl bg-purple-50 p-4">
-                      <span className="text-xl">🗺️</span>
-                      <div>
-                        <p className="font-medium text-purple-800">
-                          Şehir Dışı Teslimat
-                        </p>
-                        <p className="text-xs text-purple-600">
-                          Şehir dışına hizmet verilir
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {(vendor.weekend_surcharge_percent ||
-                    vendor.holiday_surcharge_percent) && (
-                    <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4 sm:col-span-2">
-                      <span className="text-xl">💰</span>
-                      <div>
-                        <p className="text-xs text-slate-500">Ek Ücretler</p>
-                        <p className="font-medium text-slate-900">
-                          {vendor.weekend_surcharge_percent &&
-                            `Hafta sonu: +%${vendor.weekend_surcharge_percent}`}
-                          {vendor.weekend_surcharge_percent &&
-                            vendor.holiday_surcharge_percent &&
-                            " | "}
-                          {vendor.holiday_surcharge_percent &&
-                            `Tatil: +%${vendor.holiday_surcharge_percent}`}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </section>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Menüler */}
             {menuCategories && menuCategories.length > 0 && (
-              <section className="rounded-2xl bg-white p-6 shadow-sm">
-                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                  <svg
-                    className="h-5 w-5 text-leaf-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                  Menüler
-                </h2>
+              <div className="border-b border-slate-200 py-6">
+                <h2 className="text-lg font-semibold text-slate-900">Menü</h2>
                 <div className="mt-4 space-y-6">
-                  {menuCategories.map((category: MenuCategory) => (
+                  {(menuCategories as MenuCategory[]).map((category) => (
                     <div key={category.id}>
-                      <h3 className="font-semibold text-slate-900">
+                      <h3 className="font-medium text-slate-800">
                         {category.name}
                       </h3>
                       {category.description && (
@@ -1058,99 +535,83 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                           {category.description}
                         </p>
                       )}
-                      <div className="mt-3 space-y-2">
-                        {category.menu_items?.map((item: MenuItem) => (
-                          <div
-                            key={item.id}
-                            className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3"
-                          >
-                            <div>
-                              <p className="font-medium text-slate-900">
-                                {item.name}
-                              </p>
-                              {item.description && (
-                                <p className="text-sm text-slate-500">
-                                  {item.description}
-                                </p>
-                              )}
-                            </div>
-                            {item.price_per_person && (
-                              <span className="text-lg font-semibold text-leaf-600">
-                                {item.price_per_person} TL
-                              </span>
-                            )}
+                      {category.menu_items &&
+                        category.menu_items.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            {category.menu_items.map((item) => (
+                              <div
+                                key={item.id}
+                                className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3"
+                              >
+                                <div>
+                                  <p className="font-medium text-slate-900">
+                                    {item.name}
+                                  </p>
+                                  {item.description && (
+                                    <p className="text-sm text-slate-500">
+                                      {item.description}
+                                    </p>
+                                  )}
+                                </div>
+                                {item.price_per_person && (
+                                  <span className="shrink-0 font-semibold text-slate-900">
+                                    ₺{item.price_per_person}
+                                  </span>
+                                )}
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        )}
                     </div>
                   ))}
                 </div>
-              </section>
+              </div>
             )}
 
             {/* Paketler */}
             {packages && packages.length > 0 && (
-              <section className="rounded-2xl bg-white p-6 shadow-sm">
-                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                  <svg
-                    className="h-5 w-5 text-leaf-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                    />
-                  </svg>
+              <div className="border-b border-slate-200 py-6">
+                <h2 className="text-lg font-semibold text-slate-900">
                   Paketler
                 </h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  {packages.map((pkg: Package) => (
+                  {(packages as Package[]).map((pkg) => (
                     <div
                       key={pkg.id}
-                      className="rounded-xl border-2 border-slate-100 bg-linear-to-br from-slate-50 to-white p-5 transition-all hover:border-leaf--200 hover:shadow-md"
+                      className="rounded-xl border border-slate-200 p-4"
                     >
-                      <div className="flex items-start justify-between">
-                        <h3 className="font-semibold text-slate-900">
-                          {pkg.name}
-                        </h3>
-                        <span className="rounded-full bg-leaf-100 px-3 py-1 text-sm font-bold text-leaf-700">
-                          {pkg.price_per_person} TL
-                        </span>
-                      </div>
+                      <h3 className="font-semibold text-slate-900">
+                        {pkg.name}
+                      </h3>
                       {pkg.description && (
-                        <p className="mt-2 text-sm text-slate-600">
+                        <p className="mt-1 text-sm text-slate-500">
                           {pkg.description}
                         </p>
                       )}
-                      {pkg.min_guest_count && pkg.max_guest_count && (
-                        <p className="mt-2 text-xs text-slate-500">
-                          {pkg.min_guest_count} - {pkg.max_guest_count} kişi
-                        </p>
-                      )}
+                      <div className="mt-3 flex items-center justify-between">
+                        {pkg.price_per_person && (
+                          <span className="text-lg font-bold text-leaf-600">
+                            ₺{pkg.price_per_person}/kişi
+                          </span>
+                        )}
+                        {pkg.min_guest_count && pkg.max_guest_count && (
+                          <span className="text-sm text-slate-500">
+                            {pkg.min_guest_count}-{pkg.max_guest_count} kişi
+                          </span>
+                        )}
+                      </div>
                       {pkg.includes && pkg.includes.length > 0 && (
-                        <ul className="mt-3 space-y-1.5">
-                          {pkg.includes.map((item: string, i: number) => (
+                        <ul className="mt-3 space-y-1">
+                          {pkg.includes.map((item, idx) => (
                             <li
-                              key={i}
+                              key={idx}
                               className="flex items-center gap-2 text-sm text-slate-600"
                             >
-                              <svg
-                                className="h-4 w-4 text-leaf-500"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
+                              <CheckCircle
+                                size={16}
+                                weight="fill"
+                                className="text-leaf-500"
+                              />
                               {item}
                             </li>
                           ))}
@@ -1159,265 +620,271 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                     </div>
                   ))}
                 </div>
-              </section>
+              </div>
             )}
 
-            {/* İletişim */}
-            <section className="rounded-2xl bg-white p-6 shadow-sm">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                <svg
-                  className="h-5 w-5 text-leaf-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-                İletişim Bilgileri
-              </h2>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {vendor.phone && (
-                  <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-100">
-                      <svg
-                        className="h-5 w-5 text-leaf-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500">Telefon</p>
-                      <a
-                        href={`tel:${vendor.phone}`}
-                        className="font-medium text-slate-900 hover:text-leaf-600"
-                      >
-                        {vendor.phone}
-                      </a>
-                    </div>
+            {/* Bu firma size neler sunabilir? - Özellikler & Etiketler */}
+            {(features.length > 0 || (vendorTags && vendorTags.length > 0)) && (
+              <div className="border-b border-slate-200 py-6">
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Bu firma size neler sunabilir?
+                </h2>
+
+                {/* Özellikler Grid */}
+                {features.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                    {features.map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                          <feature.icon
+                            size={20}
+                            weight="light"
+                            className="text-slate-700"
+                          />
+                        </div>
+                        <span className="text-sm font-medium text-slate-700">
+                          {feature.label}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
-                {vendor.email && (
-                  <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-100">
-                      <svg
-                        className="h-5 w-5 text-leaf-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500">E-posta</p>
-                      <a
-                        href={`mailto:${vendor.email}`}
-                        className="font-medium text-slate-900 hover:text-leaf-600"
-                      >
-                        {vendor.email}
-                      </a>
-                    </div>
-                  </div>
-                )}
-                {vendor.website_url && (
-                  <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-100">
-                      <svg
-                        className="h-5 w-5 text-leaf-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500">Web Sitesi</p>
-                      <a
-                        href={vendor.website_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-medium text-slate-900 hover:text-leaf-600"
-                      >
-                        {vendor.website_url.replace(/^https?:\/\//, "")}
-                      </a>
-                    </div>
-                  </div>
-                )}
-                {vendor.address_text && (
-                  <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4 sm:col-span-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-100">
-                      <svg
-                        className="h-5 w-5 text-leaf-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500">Adres</p>
-                      <p className="font-medium text-slate-900">
-                        {vendor.address_text}
-                      </p>
+
+                {/* Etiketler */}
+                {vendorTags && vendorTags.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-sm font-medium text-slate-500">
+                      Öne Çıkan Özellikler
+                    </h3>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {(vendorTags as VendorTag[]).map(
+                        (vt, idx) =>
+                          vt.tag?.name && (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700"
+                            >
+                              {vt.tag.icon && <span>{vt.tag.icon}</span>}
+                              {vt.tag.name}
+                            </span>
+                          )
+                      )}
                     </div>
                   </div>
                 )}
               </div>
-            </section>
+            )}
 
             {/* Yorumlar */}
-            <section className="rounded-2xl bg-white p-6 shadow-sm">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-                <svg
-                  className="h-5 w-5 text-leaf-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                  />
-                </svg>
-                Müşteri Yorumları
-              </h2>
+            <div className="border-b border-slate-200 py-6">
+              <div className="flex items-center gap-2">
+                <Star size={24} weight="fill" className="text-slate-900" />
+                <h2 className="text-lg font-semibold text-slate-900">
+                  {hasRating
+                    ? `${Number(ratingData.avg_rating).toFixed(
+                        1
+                      )} · ${reviewCount} yorum`
+                    : "Yorumlar"}
+                </h2>
+              </div>
 
               {reviews && reviews.length > 0 ? (
                 <div className="mt-4">
                   <ReviewList
                     reviews={reviews}
                     avgRating={ratingData?.avg_rating || null}
-                    reviewCount={ratingData?.review_count || 0}
+                    reviewCount={reviewCount}
                   />
                 </div>
               ) : (
                 <p className="mt-4 text-slate-500">
-                  Bu firma için henüz yorum bulunmuyor. İlk yorumu siz
-                  yapabilirsiniz.
+                  Henüz yorum bulunmuyor. İlk yorumu siz yapın!
                 </p>
               )}
 
-              <div className="mt-6 border-t border-slate-100 pt-6">
+              <div className="mt-6 rounded-xl bg-slate-50 p-4">
                 <ReviewForm
                   vendorId={vendor.id}
                   vendorName={vendor.business_name}
                 />
               </div>
-            </section>
+            </div>
+
+            {/* İletişim Bilgileri */}
+            <div className="py-6">
+              <h2 className="text-lg font-semibold text-slate-900">İletişim</h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {vendor.phone && (
+                  <a
+                    href={`tel:${vendor.phone}`}
+                    className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition-colors hover:border-leaf-500 hover:bg-leaf-50"
+                  >
+                    <Phone size={24} weight="light" className="text-leaf-600" />
+                    <div>
+                      <p className="text-xs text-slate-500">Telefon</p>
+                      <p className="font-medium text-slate-900">
+                        {vendor.phone}
+                      </p>
+                    </div>
+                  </a>
+                )}
+                {whatsappLink && (
+                  <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition-colors hover:border-green-500 hover:bg-green-50"
+                  >
+                    <WhatsappLogo
+                      size={24}
+                      weight="fill"
+                      className="text-green-600"
+                    />
+                    <div>
+                      <p className="text-xs text-slate-500">WhatsApp</p>
+                      <p className="font-medium text-slate-900">Mesaj Gönder</p>
+                    </div>
+                  </a>
+                )}
+                {vendor.email && (
+                  <a
+                    href={`mailto:${vendor.email}`}
+                    className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition-colors hover:border-leaf-500 hover:bg-leaf-50"
+                  >
+                    <Envelope
+                      size={24}
+                      weight="light"
+                      className="text-leaf-600"
+                    />
+                    <div>
+                      <p className="text-xs text-slate-500">E-posta</p>
+                      <p className="font-medium text-slate-900">
+                        {vendor.email}
+                      </p>
+                    </div>
+                  </a>
+                )}
+                {vendor.website_url && (
+                  <a
+                    href={vendor.website_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition-colors hover:border-leaf-500 hover:bg-leaf-50"
+                  >
+                    <Globe size={24} weight="light" className="text-leaf-600" />
+                    <div>
+                      <p className="text-xs text-slate-500">Web Sitesi</p>
+                      <p className="font-medium text-slate-900 truncate">
+                        {vendor.website_url.replace(/^https?:\/\//, "")}
+                      </p>
+                    </div>
+                  </a>
+                )}
+              </div>
+              {vendor.address_text && (
+                <div className="mt-3 flex items-start gap-3 rounded-xl border border-slate-200 p-4">
+                  <MapPin
+                    size={24}
+                    weight="light"
+                    className="shrink-0 text-leaf-600"
+                  />
+                  <div>
+                    <p className="text-xs text-slate-500">Adres</p>
+                    <p className="font-medium text-slate-900">
+                      {vendor.address_text}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Sağ Kolon - Sticky */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
-            <div className="space-y-4">
-              {/* Teklif Formu */}
-              <div className="rounded-2xl bg-white p-6 shadow-sm">
+          {/* Sağ Kolon - Sticky Teklif Formu */}
+          <div className="lg:col-span-1">
+            <div className="lg:sticky lg:top-32">
+              {/* Fiyat Kartı */}
+              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-lg">
+                {/* Fiyat */}
+                {typeof vendor.avg_price_per_person === "number" && (
+                  <div className="mb-4 border-b border-slate-100 pb-4">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-bold text-slate-900">
+                        ₺{Math.round(vendor.avg_price_per_person)}
+                      </span>
+                      <span className="text-slate-500">/ kişi başı</span>
+                    </div>
+                    {vendor.min_guest_count && (
+                      <p className="mt-1 text-sm text-slate-500">
+                        Minimum {vendor.min_guest_count} kişi
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Teklif Formu */}
                 <LeadForm
                   vendorId={vendor.id}
                   vendorName={vendor.business_name}
+                  vendorFeatures={{
+                    has_refrigerated_vehicle: vendor.has_refrigerated_vehicle,
+                    serves_outside_city: vendor.serves_outside_city,
+                    available_24_7: vendor.available_24_7,
+                    halal_certified: vendor.halal_certified,
+                    free_tasting: vendor.free_tasting,
+                    free_delivery: vendor.free_delivery,
+                    accepts_last_minute: vendor.accepts_last_minute,
+                  }}
                 />
+
+                {/* Alt Not */}
+                <p className="mt-4 text-center text-xs text-slate-500">
+                  Henüz ödeme yapılmayacak
+                </p>
               </div>
 
-              {/* Güvence */}
-              <div className="rounded-2xl bg-gradient-to-br from-leaf--50 to-teal-50 p-5">
-                <h3 className="font-semibold text-slate-900">
-                  Neden Cateringle?
-                </h3>
-                <ul className="mt-3 space-y-2.5">
+              {/* Güvence Kartı */}
+              <div className="mt-4 rounded-xl border border-slate-200 p-5">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck
+                    size={20}
+                    weight="fill"
+                    className="text-rose-500"
+                  />
+                  <span className="font-medium text-slate-900">
+                    Cateringle Güvencesi
+                  </span>
+                </div>
+                <ul className="mt-3 space-y-2">
                   {[
                     "Bilgileriniz gizli tutulur",
                     "Teklif almak tamamen ücretsiz",
-                    "Farklı firmalardan hızlıca teklif alın",
-                    "Sorularınız için destek",
+                    "Hızlı yanıt garantisi",
                   ].map((item, i) => (
                     <li
                       key={i}
-                      className="flex items-center gap-2 text-sm text-slate-700"
+                      className="flex items-center gap-2 text-sm text-slate-600"
                     >
-                      <svg
-                        className="h-5 w-5 text-leaf-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                        />
-                      </svg>
+                      <CheckCircle
+                        size={16}
+                        weight="fill"
+                        className="text-leaf-500"
+                      />
                       {item}
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Üyelik Tarihi */}
-              <div className="rounded-2xl bg-white p-5 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
-                    <svg
-                      className="h-5 w-5 text-slate-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Üyelik Tarihi</p>
-                    <p className="font-medium text-slate-900">
-                      {new Date(vendor.created_at).toLocaleDateString("tr-TR", {
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-                </div>
+              {/* Üyelik Bilgisi */}
+              <div className="mt-4 flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+                <Calendar size={20} weight="light" className="text-slate-500" />
+                <span className="text-sm text-slate-600">
+                  {new Date(vendor.created_at).toLocaleDateString("tr-TR", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                  &apos;dan beri üye
+                </span>
               </div>
             </div>
           </div>

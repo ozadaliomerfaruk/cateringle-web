@@ -1,5 +1,6 @@
 // src/components/Footer.tsx
 import Link from "next/link";
+import { Buildings, Confetti } from "@phosphor-icons/react/dist/ssr";
 
 export default function Footer() {
   return (
@@ -71,8 +72,8 @@ export default function Footer() {
           {/* Kurumsal Hizmetler */}
           <div>
             <h3 className="flex items-center gap-2 font-semibold text-white">
-              <span className="flex h-6 w-6 items-center justify-center rounded bg-blue-500/20 text-xs">
-                🏢
+              <span className="flex h-6 w-6 items-center justify-center rounded bg-blue-500/20">
+                <Buildings size={14} weight="light" className="text-blue-400" />
               </span>
               Kurumsal
             </h3>
@@ -115,8 +116,8 @@ export default function Footer() {
           {/* Bireysel Hizmetler */}
           <div>
             <h3 className="flex items-center gap-2 font-semibold text-white">
-              <span className="flex h-6 w-6 items-center justify-center rounded bg-leaf-500/20 text-xs">
-                🎉
+              <span className="flex h-6 w-6 items-center justify-center rounded bg-leaf-500/20">
+                <Confetti size={14} weight="light" className="text-leaf-400" />
               </span>
               Bireysel
             </h3>

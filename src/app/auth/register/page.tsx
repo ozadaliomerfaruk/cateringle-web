@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { sendNewVendorNotification } from "@/lib/email";
 
 export const metadata: Metadata = {
   title: "Tedarikçi Başvurusu",
@@ -131,6 +132,33 @@ export default async function VendorRegisterPage({
           await supabase.from("vendor_segments").insert(segmentInserts);
         }
 
+        // Admin'e bildirim emaili gönder
+        const { data: cityData } = cityId
+          ? await supabase
+              .from("cities")
+              .select("name")
+              .eq("id", cityId)
+              .single()
+          : { data: null };
+
+        const { data: segmentData } =
+          segmentIds.length > 0
+            ? await supabase
+                .from("customer_segments")
+                .select("slug")
+                .in("id", segmentIds)
+            : { data: null };
+
+        await sendNewVendorNotification({
+          vendorName: formData.get("business_name") as string,
+          ownerName: fullName,
+          ownerEmail: email,
+          phone: (formData.get("phone") as string) || undefined,
+          cityName: cityData?.name || undefined,
+          description: (formData.get("description") as string) || undefined,
+          segments: segmentData?.map((s) => s.slug) || undefined,
+        });
+
         redirect("/auth/register?success=1");
       }
     } else {
@@ -189,6 +217,35 @@ export default async function VendorRegisterPage({
         .from("profiles")
         .update({ role: "vendor_owner" })
         .eq("id", user.id);
+
+      // Admin'e bildirim emaili gönder
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", user.id)
+        .single();
+
+      const { data: cityData } = cityId
+        ? await supabase.from("cities").select("name").eq("id", cityId).single()
+        : { data: null };
+
+      const { data: segmentData } =
+        segmentIds.length > 0
+          ? await supabase
+              .from("customer_segments")
+              .select("slug")
+              .in("id", segmentIds)
+          : { data: null };
+
+      await sendNewVendorNotification({
+        vendorName: formData.get("business_name") as string,
+        ownerName: profile?.full_name || "Belirtilmemiş",
+        ownerEmail: profile?.email || user.email || "",
+        phone: (formData.get("phone") as string) || undefined,
+        cityName: cityData?.name || undefined,
+        description: (formData.get("description") as string) || undefined,
+        segments: segmentData?.map((s) => s.slug) || undefined,
+      });
 
       redirect("/auth/register?success=1");
     }

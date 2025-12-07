@@ -287,6 +287,149 @@ export async function sendLeadConfirmation({
   return sendEmail({ to: customerEmail, subject, html });
 }
 
+// Admin'e yeni tedarikçi başvurusu bildirimi
+export async function sendNewVendorNotification({
+  vendorName,
+  ownerName,
+  ownerEmail,
+  phone,
+  cityName,
+  description,
+  segments,
+}: {
+  vendorName: string;
+  ownerName: string;
+  ownerEmail: string;
+  phone?: string;
+  cityName?: string;
+  description?: string;
+  segments?: string[];
+}) {
+  const adminEmail =
+    process.env.ADMIN_EMAIL || process.env.SMTP_USER || "info@cateringle.com";
+  const subject = `🆕 Yeni Tedarikçi Başvurusu: ${vendorName}`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 24px; border-radius: 8px 8px 0 0; }
+        .content { background: #f8fafc; padding: 24px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px; }
+        .info-row { padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
+        .info-row:last-child { border-bottom: none; }
+        .label { font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; }
+        .value { font-size: 15px; margin-top: 4px; color: #1e293b; }
+        .segment-badge { display: inline-block; background: #f3e8ff; color: #7c3aed; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-right: 8px; margin-top: 4px; }
+        .cta { display: inline-block; background: #7c3aed; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; margin-top: 20px; font-weight: 600; }
+        .status-badge { display: inline-block; background: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; }
+        .footer { text-align: center; padding: 20px; color: #64748b; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0; font-size: 22px;">🆕 Yeni Tedarikçi Başvurusu</h1>
+          <p style="margin: 8px 0 0 0; opacity: 0.9;">Cateringle.com'a yeni bir firma başvuru yaptı</p>
+        </div>
+        
+        <div class="content">
+          <div style="margin-bottom: 20px;">
+            <span class="status-badge">⏳ Onay Bekliyor</span>
+          </div>
+          
+          <div class="info-row">
+            <div class="label">Firma Adı</div>
+            <div class="value" style="font-size: 18px; font-weight: 600;">${vendorName}</div>
+          </div>
+          
+          <div class="info-row">
+            <div class="label">Yetkili Kişi</div>
+            <div class="value">${ownerName}</div>
+          </div>
+          
+          <div class="info-row">
+            <div class="label">E-posta</div>
+            <div class="value"><a href="mailto:${ownerEmail}" style="color: #7c3aed;">${ownerEmail}</a></div>
+          </div>
+          
+          ${
+            phone
+              ? `
+          <div class="info-row">
+            <div class="label">Telefon</div>
+            <div class="value"><a href="tel:${phone}" style="color: #7c3aed;">${phone}</a></div>
+          </div>
+          `
+              : ""
+          }
+          
+          ${
+            cityName
+              ? `
+          <div class="info-row">
+            <div class="label">Şehir</div>
+            <div class="value">${cityName}</div>
+          </div>
+          `
+              : ""
+          }
+          
+          ${
+            segments && segments.length > 0
+              ? `
+          <div class="info-row">
+            <div class="label">Hizmet Segmentleri</div>
+            <div class="value">
+              ${segments
+                .map(
+                  (s) =>
+                    `<span class="segment-badge">${
+                      s === "kurumsal" ? "🏢 Kurumsal" : "🎉 Bireysel"
+                    }</span>`
+                )
+                .join("")}
+            </div>
+          </div>
+          `
+              : ""
+          }
+          
+          ${
+            description
+              ? `
+          <div class="info-row">
+            <div class="label">Firma Açıklaması</div>
+            <div class="value">${description}</div>
+          </div>
+          `
+              : ""
+          }
+          
+          <div style="text-align: center; margin-top: 24px;">
+            <a href="https://cateringle.com/panel/users" class="cta">Admin Paneline Git →</a>
+          </div>
+          
+          <p style="margin-top: 20px; padding: 12px; background: #fef3c7; border-radius: 8px; font-size: 14px; color: #92400e;">
+            ⚠️ Bu başvuruyu inceleyip onaylamanız veya reddetmeniz gerekmektedir.
+          </p>
+        </div>
+        
+        <div class="footer">
+          <p>Bu e-posta Cateringle.com tarafından otomatik olarak gönderilmiştir.</p>
+          <p>© ${new Date().getFullYear()} Cateringle.com - Tüm hakları saklıdır.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({ to: adminEmail, subject, html });
+}
+
 // Müşteriye teklif yanıtı bildirimi
 export async function sendQuoteNotification({
   customerEmail,

@@ -31,12 +31,28 @@ interface DietaryTag {
   icon: string | null;
 }
 
+// Vendor özellikleri
+interface VendorFeatures {
+  has_refrigerated_vehicle?: boolean | null;
+  serves_outside_city?: boolean | null;
+  available_24_7?: boolean | null;
+  halal_certified?: boolean | null;
+  free_tasting?: boolean | null;
+  free_delivery?: boolean | null;
+  accepts_last_minute?: boolean | null;
+}
+
 interface LeadFormProps {
   vendorId: string;
   vendorName: string;
+  vendorFeatures?: VendorFeatures;
 }
 
-export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
+export default function LeadForm({
+  vendorId,
+  vendorName,
+  vendorFeatures,
+}: LeadFormProps) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -72,6 +88,14 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
     deliveryModel: "",
     dietaryRequirements: [] as string[],
     notes: "",
+    // Vendor özelliklerine göre dinamik alanlar
+    wantsRefrigerated: false,
+    wantsOutsideCity: false,
+    wants24_7: false,
+    wantsHalal: false,
+    wantsTasting: false,
+    wantsFreeDelivery: false,
+    wantsLastMinute: false,
   });
 
   // Segmentleri ve kullanıcı bilgilerini çek
@@ -229,6 +253,14 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
               ? form.dietaryRequirements
               : null,
           notes: form.notes.trim() || null,
+          // Vendor özelliklerine göre dinamik alanlar
+          wantsRefrigerated: form.wantsRefrigerated,
+          wantsOutsideCity: form.wantsOutsideCity,
+          wants24_7: form.wants24_7,
+          wantsHalal: form.wantsHalal,
+          wantsTasting: form.wantsTasting,
+          wantsFreeDelivery: form.wantsFreeDelivery,
+          wantsLastMinute: form.wantsLastMinute,
         }),
       });
 
@@ -260,6 +292,14 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
         deliveryModel: "",
         dietaryRequirements: [],
         notes: "",
+        // Vendor özelliklerine göre dinamik alanlar
+        wantsRefrigerated: false,
+        wantsOutsideCity: false,
+        wants24_7: false,
+        wantsHalal: false,
+        wantsTasting: false,
+        wantsFreeDelivery: false,
+        wantsLastMinute: false,
       });
     } catch (error) {
       console.error("Submit error:", error);
@@ -651,6 +691,106 @@ export default function LeadForm({ vendorId, vendorName }: LeadFormProps) {
             Kullan-at tabak ve bardak
           </label>
         </div>
+
+        {/* Firma Özellikleri - Dinamik */}
+        {vendorFeatures &&
+          (vendorFeatures.has_refrigerated_vehicle ||
+            vendorFeatures.serves_outside_city ||
+            vendorFeatures.available_24_7 ||
+            vendorFeatures.halal_certified ||
+            vendorFeatures.free_tasting ||
+            vendorFeatures.free_delivery ||
+            vendorFeatures.accepts_last_minute) && (
+            <div className="space-y-2 rounded-lg border border-leaf-200 bg-leaf-50 p-4">
+              <p className="text-xs font-medium text-leaf-800">
+                Bu firmanın sunduğu özellikler
+              </p>
+              {vendorFeatures?.has_refrigerated_vehicle && (
+                <label className="flex items-center gap-2.5 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    name="wantsRefrigerated"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
+                    checked={form.wantsRefrigerated}
+                    onChange={handleChange}
+                  />
+                  🧊 Frigorifik araçla teslimat istiyorum
+                </label>
+              )}
+              {vendorFeatures?.serves_outside_city && (
+                <label className="flex items-center gap-2.5 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    name="wantsOutsideCity"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
+                    checked={form.wantsOutsideCity}
+                    onChange={handleChange}
+                  />
+                  🗺️ Şehir dışına teslimat istiyorum
+                </label>
+              )}
+              {vendorFeatures?.available_24_7 && (
+                <label className="flex items-center gap-2.5 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    name="wants24_7"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
+                    checked={form.wants24_7}
+                    onChange={handleChange}
+                  />
+                  🕐 Gece/erken saatlerde hizmet istiyorum
+                </label>
+              )}
+              {vendorFeatures?.halal_certified && (
+                <label className="flex items-center gap-2.5 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    name="wantsHalal"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
+                    checked={form.wantsHalal}
+                    onChange={handleChange}
+                  />
+                  🏅 Helal sertifikalı yemek istiyorum
+                </label>
+              )}
+              {vendorFeatures?.free_tasting && (
+                <label className="flex items-center gap-2.5 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    name="wantsTasting"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
+                    checked={form.wantsTasting}
+                    onChange={handleChange}
+                  />
+                  🍴 Önceden tadım yapmak istiyorum
+                </label>
+              )}
+              {vendorFeatures?.free_delivery && (
+                <label className="flex items-center gap-2.5 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    name="wantsFreeDelivery"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
+                    checked={form.wantsFreeDelivery}
+                    onChange={handleChange}
+                  />
+                  🚚 Ücretsiz teslimat istiyorum
+                </label>
+              )}
+              {vendorFeatures?.accepts_last_minute && (
+                <label className="flex items-center gap-2.5 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    name="wantsLastMinute"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
+                    checked={form.wantsLastMinute}
+                    onChange={handleChange}
+                  />
+                  ⚡ Acil/son dakika siparişi
+                </label>
+              )}
+            </div>
+          )}
 
         {/* Notlar */}
         <div>

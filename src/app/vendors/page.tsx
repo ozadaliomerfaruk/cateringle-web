@@ -5,6 +5,13 @@ import FilterSidebar from "./FilterSidebar";
 import MobileFilterButton from "./MobileFilterButton";
 import VendorCard from "./VendorCard";
 import { Tables } from "@/types/database";
+import {
+  Buildings,
+  Confetti,
+  ForkKnife,
+  Faders,
+  MagnifyingGlass,
+} from "@phosphor-icons/react/dist/ssr";
 
 export const dynamic = "force-dynamic";
 
@@ -77,7 +84,6 @@ interface VendorWithRelations
     city_id: number | null;
     district_id: number | null;
   }[];
-  // Boolean alanlar
   available_24_7?: boolean | null;
   has_refrigerated_vehicle?: boolean | null;
   serves_outside_city?: boolean | null;
@@ -257,12 +263,12 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
   if (params.max_guest)
     query = query.lte("min_guest_count", parseInt(params.max_guest));
 
-  const { data: vendors } = await query.order("created_at", {
-    ascending: false,
-  });
+  const { data: vendors, error } = await query;
 
-  // Vendor'ları filtrele
-  let filteredVendors = (vendors || []) as unknown as VendorWithRelations[];
+  // Debug log
+  console.log("Vendors query result:", { count: vendors?.length, error });
+
+  let filteredVendors = (vendors as unknown as VendorWithRelations[]) || [];
 
   // Segment filtresi
   if (selectedSegment) {
@@ -271,96 +277,88 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
     );
   }
 
-  // Hizmet bolgesi filtresi (vendor_service_areas uzerinden)
-  if (params.city) {
-    const cityId = parseInt(params.city);
-    filteredVendors = filteredVendors.filter((v) => {
-      // Firma bu sehire hizmet veriyor mu?
-      const servesCity = v.vendor_service_areas?.some(
-        (area) => area.city_id === cityId && area.district_id === null
+  // Kategori filtresi
+  if (params.category && categories) {
+    const selectedCategory = categories.find((c) => c.slug === params.category);
+    if (selectedCategory) {
+      filteredVendors = filteredVendors.filter((v) =>
+        v.vendor_categories?.some(
+          (vc) => vc.category_id === selectedCategory.id
+        )
       );
-      // Veya bu sehirdeki herhangi bir ilceye hizmet veriyor mu?
-      const servesDistrictInCity = v.vendor_service_areas?.some(
-        (area) => area.city_id === cityId && area.district_id !== null
-      );
-      return servesCity || servesDistrictInCity;
-    });
-
-    // Ilce filtresi (sadece sehir seciliyse)
-    if (params.district) {
-      const districtId = parseInt(params.district);
-      filteredVendors = filteredVendors.filter((v) => {
-        // Firma bu ilceye ozel hizmet veriyor mu?
-        const servesDistrict = v.vendor_service_areas?.some(
-          (area) => area.district_id === districtId
-        );
-        // Veya tum sehire hizmet veriyor mu? (district_id null ise tum sehir)
-        const servesWholeCity = v.vendor_service_areas?.some(
-          (area) => area.city_id === cityId && area.district_id === null
-        );
-        return servesDistrict || servesWholeCity;
-      });
     }
   }
 
-  // Kategori filtresi
-  if (params.category) {
-    const categoryObj = categories?.find((c) => c.slug === params.category);
-    if (categoryObj) {
-      filteredVendors = filteredVendors.filter((v) =>
-        v.vendor_categories?.some((vc) => vc.category_id === categoryObj.id)
+  // Şehir filtresi
+  if (params.city) {
+    const cityId = parseInt(params.city);
+    filteredVendors = filteredVendors.filter((v) => {
+      const hasMainCity =
+        cities?.find((c) => c.name === v.city?.name)?.id === cityId;
+      const hasServiceArea = v.vendor_service_areas?.some(
+        (area) => area.city_id === cityId
       );
-    }
+      return hasMainCity || hasServiceArea;
+    });
+  }
+
+  // İlçe filtresi
+  if (params.district) {
+    const districtId = parseInt(params.district);
+    filteredVendors = filteredVendors.filter((v) => {
+      const hasMainDistrict =
+        districts?.find((d) => d.name === v.district?.name)?.id === districtId;
+      const hasServiceArea = v.vendor_service_areas?.some(
+        (area) => area.district_id === districtId
+      );
+      return hasMainDistrict || hasServiceArea;
+    });
   }
 
   // Hizmet filtresi
   if (params.services) {
-    const serviceSlugs = params.services.split(",");
+    const serviceSlugList = params.services.split(",");
     filteredVendors = filteredVendors.filter((v) =>
-      v.vendor_services?.some((vs) =>
-        serviceSlugs.includes(vs.service?.slug || "")
+      serviceSlugList.every((slug) =>
+        v.vendor_services?.some((vs) => vs.service?.slug === slug)
       )
     );
   }
 
   // Mutfak türü filtresi
   if (params.cuisines) {
-    const cuisineSlugs = params.cuisines.split(",");
-    const cuisineIds =
-      cuisineTypes
-        ?.filter((c) => cuisineSlugs.includes(c.slug))
-        .map((c) => c.id) || [];
-    if (cuisineIds.length > 0) {
-      filteredVendors = filteredVendors.filter((v) =>
-        v.vendor_cuisines?.some((vc) => cuisineIds.includes(vc.cuisine_type_id))
-      );
-    }
+    const cuisineIdList = params.cuisines.split(",").map(Number);
+    filteredVendors = filteredVendors.filter((v) =>
+      cuisineIdList.some((id) =>
+        v.vendor_cuisines?.some((vc) => vc.cuisine_type_id === id)
+      )
+    );
   }
 
   // Teslimat modeli filtresi
   if (params.delivery_models) {
-    const modelSlugs = params.delivery_models.split(",");
-    const modelIds =
-      deliveryModels
-        ?.filter((m) => modelSlugs.includes(m.slug))
-        .map((m) => m.id) || [];
-    if (modelIds.length > 0) {
-      filteredVendors = filteredVendors.filter((v) =>
-        v.vendor_delivery_models?.some((vdm) =>
-          modelIds.includes(vdm.delivery_model_id)
-        )
-      );
-    }
+    const deliveryModelIdList = params.delivery_models.split(",").map(Number);
+    filteredVendors = filteredVendors.filter((v) =>
+      deliveryModelIdList.some((id) =>
+        v.vendor_delivery_models?.some((vdm) => vdm.delivery_model_id === id)
+      )
+    );
   }
 
-  // Etiket filtresi
+  // Tag filtresi
   if (params.tags) {
-    const tagSlugs = params.tags.split(",");
-    const tagIds =
-      tags?.filter((t) => tagSlugs.includes(t.slug)).map((t) => t.id) || [];
-    if (tagIds.length > 0) {
-      filteredVendors = filteredVendors.filter((v) =>
-        v.vendor_tags?.some((vt) => tagIds.includes(vt.tag_id))
+    const tagIdList = params.tags.split(",").map(Number);
+    filteredVendors = filteredVendors.filter((v) =>
+      tagIdList.some((id) => v.vendor_tags?.some((vt) => vt.tag_id === id))
+    );
+  }
+
+  // Lead time filtresi
+  if (params.lead_time) {
+    const leadTimeList = params.lead_time.split(",");
+    if (leadTimeList.length > 0) {
+      filteredVendors = filteredVendors.filter(
+        (v) => v.lead_time_type && leadTimeList.includes(v.lead_time_type)
       );
     }
   }
@@ -428,69 +426,100 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-4">
-          {/* Breadcrumb + Sonuç Sayısı */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm">
-              <Link href="/" className="text-blue-600 hover:underline">
-                Ana Sayfa
-              </Link>
-              <span className="text-slate-400">/</span>
-              <span className="text-slate-600">Catering Firmaları</span>
-              {selectedSegment && (
-                <>
-                  <span className="text-slate-400">/</span>
-                  <span className="text-slate-900 font-medium">
-                    {selectedSegment.name}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Segment Tabs */}
-          <div className="mt-4 flex items-center gap-6 border-b border-slate-200 -mb-[1px]">
-            <Link
-              href="/vendors"
-              className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
-                !params.segment
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Tümü
-            </Link>
-            {segments?.map((segment) => (
+    <main className="min-h-screen bg-white">
+      {/* Segment Tabs - Airbnb Style */}
+      <div className="sticky top-16 z-30 border-b border-slate-200 bg-white lg:top-20">
+        <div className="mx-auto max-w-7xl px-4 lg:px-6">
+          <div className="flex items-center gap-6 py-4">
+            {/* Segment Pills */}
+            <div className="flex items-center gap-2">
               <Link
-                key={segment.id}
-                href={buildUrl({ segment: segment.slug, category: undefined })}
-                className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
-                  params.segment === segment.slug
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-slate-600 hover:text-slate-900"
+                href="/vendors"
+                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                  !params.segment
+                    ? "bg-slate-900 text-white"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
               >
-                {segment.name}
+                <ForkKnife size={18} weight="light" />
+                Tümü
               </Link>
-            ))}
+              <Link
+                href={buildUrl({ segment: "kurumsal", category: undefined })}
+                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                  params.segment === "kurumsal"
+                    ? "bg-slate-900 text-white"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                <Buildings size={18} weight="light" />
+                Kurumsal
+              </Link>
+              <Link
+                href={buildUrl({ segment: "bireysel", category: undefined })}
+                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                  params.segment === "bireysel"
+                    ? "bg-slate-900 text-white"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                <Confetti size={18} weight="light" />
+                Bireysel
+              </Link>
+            </div>
+
+            {/* Separator */}
+            <div className="hidden h-8 w-px bg-slate-200 lg:block" />
+
+            {/* Kategori Chips */}
+            {categories && categories.length > 0 && (
+              <div className="hidden flex-1 gap-2 overflow-x-auto lg:flex">
+                {categories.slice(0, 6).map((category) => (
+                  <Link
+                    key={category.id}
+                    href={buildUrl({
+                      category: category.slug,
+                      segment:
+                        params.segment ||
+                        (category.segment_id === 1 ? "kurumsal" : "bireysel"),
+                    })}
+                    className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-all ${
+                      params.category === category.slug
+                        ? "border-slate-900 bg-slate-900 text-white"
+                        : "border-slate-200 text-slate-700 hover:border-slate-900"
+                    }`}
+                  >
+                    {category.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* Filtre Butonu (Desktop) */}
+            <button className="ml-auto hidden items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:border-slate-900 lg:flex">
+              <Faders size={18} weight="light" />
+              Filtreler
+              {activeFilterCount > 0 && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-xs text-white">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Kategori Chips */}
+      {/* Mobil Kategori Chips */}
       {categories && categories.length > 0 && (
-        <div className="border-b border-slate-200 bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-3">
-            <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="border-b border-slate-100 bg-white lg:hidden">
+          <div className="mx-auto max-w-7xl px-4">
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 py-3">
               <Link
                 href={buildUrl({ category: undefined })}
-                className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition-all ${
                   !params.category
-                    ? "bg-blue-600 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 text-slate-600"
                 }`}
               >
                 Tümü
@@ -504,10 +533,10 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                       params.segment ||
                       (category.segment_id === 1 ? "kurumsal" : "bireysel"),
                   })}
-                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition-all ${
                     params.category === category.slug
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-slate-200 text-slate-600"
                   }`}
                 >
                   {category.name}
@@ -519,26 +548,11 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
       )}
 
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-4 py-6">
-        {/* Sonuç Başlığı */}
-        <div className="mb-6">
-          <h1 className="text-xl font-bold text-slate-900">
-            {selectedCategory
-              ? `${selectedCategory.name} Catering`
-              : "Catering Firmaları"}
-            {params.city &&
-              cities?.find((c) => c.id === parseInt(params.city!))?.name &&
-              ` - ${cities.find((c) => c.id === parseInt(params.city!))?.name}`}
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            {filteredVendors.length} firma bulundu
-          </p>
-        </div>
-
+      <div className="mx-auto max-w-7xl px-4 py-6 lg:px-6 lg:py-8">
         <div className="flex gap-8">
           {/* Sidebar */}
           <aside className="hidden w-64 shrink-0 lg:block">
-            <div className="sticky top-4">
+            <div className="sticky top-40">
               <FilterSidebar
                 cities={cities || []}
                 districts={districts}
@@ -553,24 +567,30 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
             </div>
           </aside>
 
-          {/* Vendor Listesi */}
+          {/* Vendor Grid */}
           <div className="flex-1">
+            {/* Sonuç Başlığı */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-slate-900">
+                {selectedCategory
+                  ? selectedCategory.name
+                  : selectedSegment
+                  ? selectedSegment.name
+                  : "Tüm Catering Firmaları"}
+              </h1>
+              <p className="mt-1 text-slate-500">
+                {filteredVendors.length} firma bulundu
+              </p>
+            </div>
+
             {filteredVendors.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-300 bg-white p-16 text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-                  <svg
-                    className="h-8 w-8 text-slate-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-16 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white">
+                  <MagnifyingGlass
+                    size={32}
+                    weight="light"
+                    className="text-slate-400"
+                  />
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900">
                   Firma bulunamadı
@@ -580,13 +600,13 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                 </p>
                 <Link
                   href="/vendors"
-                  className="mt-6 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+                  className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-800"
                 >
                   Filtreleri Temizle
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredVendors.map((vendor) => (
                   <VendorCard key={vendor.id} vendor={vendor} />
                 ))}

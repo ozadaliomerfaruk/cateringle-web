@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -54,7 +55,13 @@ export default async function RootLayout({
       </head>
       <body className="min-h-screen bg-background pb-20 font-sans text-foreground lg:pb-0">
         <div className="flex min-h-screen flex-col">
-          <Header initialUser={initialUser} />
+          <Suspense
+            fallback={
+              <div className="h-16 border-b border-slate-200 bg-white lg:h-20" />
+            }
+          >
+            <Header initialUser={initialUser} />
+          </Suspense>
           <main className="flex-1">{children}</main>
           <Footer />
         </div>
