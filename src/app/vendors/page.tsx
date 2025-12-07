@@ -26,6 +26,10 @@ interface VendorsPageProps {
     available_24_7?: string;
     has_refrigerated?: string;
     serves_outside_city?: string;
+    halal_certified?: string;
+    free_tasting?: string;
+    free_delivery?: string;
+    accepts_last_minute?: string;
   }>;
 }
 
@@ -51,6 +55,10 @@ interface VendorWithRelations
     | "available_24_7"
     | "has_refrigerated_vehicle"
     | "serves_outside_city"
+    | "halal_certified"
+    | "free_tasting"
+    | "free_delivery"
+    | "accepts_last_minute"
     | "city_id"
     | "district_id"
   > {
@@ -65,10 +73,18 @@ interface VendorWithRelations
   vendor_cuisines?: { cuisine_type_id: number }[];
   vendor_delivery_models?: { delivery_model_id: number }[];
   vendor_tags?: { tag_id: number }[];
+  vendor_service_areas?: {
+    city_id: number | null;
+    district_id: number | null;
+  }[];
   // Boolean alanlar
   available_24_7?: boolean | null;
   has_refrigerated_vehicle?: boolean | null;
   serves_outside_city?: boolean | null;
+  halal_certified?: boolean | null;
+  free_tasting?: boolean | null;
+  free_delivery?: boolean | null;
+  accepts_last_minute?: boolean | null;
 }
 
 const segmentInfo: Record<string, { title: string; description: string }> = {
@@ -189,6 +205,13 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
     .eq("is_active", true)
     .order("sort_order");
 
+  // Populer Filtreler
+  const { data: popularFilters } = await supabase
+    .from("popular_filters")
+    .select("id, filter_type, filter_key, label, icon, is_active, sort_order")
+    .eq("is_active", true)
+    .order("sort_order");
+
   // Vendor sorgusu
   let query = supabase
     .from("vendors")
@@ -206,6 +229,10 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
       available_24_7,
       has_refrigerated_vehicle,
       serves_outside_city,
+      halal_certified,
+      free_tasting,
+      free_delivery,
+      accepts_last_minute,
       city:cities(name),
       district:districts(name),
       vendor_categories(category_id),
@@ -214,15 +241,13 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
       vendor_ratings(avg_rating, review_count),
       vendor_cuisines(cuisine_type_id),
       vendor_delivery_models(delivery_model_id),
-      vendor_tags(tag_id)
+      vendor_tags(tag_id),
+      vendor_service_areas(city_id, district_id)
     `
     )
     .eq("status", "approved");
 
-  // Filtreler
-  if (params.city) query = query.eq("city_id", parseInt(params.city));
-  if (params.district)
-    query = query.eq("district_id", parseInt(params.district));
+  // Fiyat ve kisi sayisi filtreleri (bunlar vendor uzerinden)
   if (params.min_price)
     query = query.gte("avg_price_per_person", parseFloat(params.min_price));
   if (params.max_price)
@@ -244,6 +269,38 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
     filteredVendors = filteredVendors.filter((v) =>
       v.vendor_segments?.some((vs) => vs.segment_id === selectedSegment.id)
     );
+  }
+
+  // Hizmet bolgesi filtresi (vendor_service_areas uzerinden)
+  if (params.city) {
+    const cityId = parseInt(params.city);
+    filteredVendors = filteredVendors.filter((v) => {
+      // Firma bu sehire hizmet veriyor mu?
+      const servesCity = v.vendor_service_areas?.some(
+        (area) => area.city_id === cityId && area.district_id === null
+      );
+      // Veya bu sehirdeki herhangi bir ilceye hizmet veriyor mu?
+      const servesDistrictInCity = v.vendor_service_areas?.some(
+        (area) => area.city_id === cityId && area.district_id !== null
+      );
+      return servesCity || servesDistrictInCity;
+    });
+
+    // Ilce filtresi (sadece sehir seciliyse)
+    if (params.district) {
+      const districtId = parseInt(params.district);
+      filteredVendors = filteredVendors.filter((v) => {
+        // Firma bu ilceye ozel hizmet veriyor mu?
+        const servesDistrict = v.vendor_service_areas?.some(
+          (area) => area.district_id === districtId
+        );
+        // Veya tum sehire hizmet veriyor mu? (district_id null ise tum sehir)
+        const servesWholeCity = v.vendor_service_areas?.some(
+          (area) => area.city_id === cityId && area.district_id === null
+        );
+        return servesDistrict || servesWholeCity;
+      });
+    }
   }
 
   // Kategori filtresi
@@ -322,6 +379,20 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
       (v) => v.serves_outside_city === true
     );
   }
+  if (params.halal_certified === "true") {
+    filteredVendors = filteredVendors.filter((v) => v.halal_certified === true);
+  }
+  if (params.free_tasting === "true") {
+    filteredVendors = filteredVendors.filter((v) => v.free_tasting === true);
+  }
+  if (params.free_delivery === "true") {
+    filteredVendors = filteredVendors.filter((v) => v.free_delivery === true);
+  }
+  if (params.accepts_last_minute === "true") {
+    filteredVendors = filteredVendors.filter(
+      (v) => v.accepts_last_minute === true
+    );
+  }
 
   // Aktif filtre sayısı
   const activeFilterCount = [
@@ -338,6 +409,10 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
     params.available_24_7,
     params.has_refrigerated,
     params.serves_outside_city,
+    params.halal_certified,
+    params.free_tasting,
+    params.free_delivery,
+    params.accepts_last_minute,
   ].filter(Boolean).length;
 
   const selectedCategory = categories?.find((c) => c.slug === params.category);
@@ -472,6 +547,7 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                 deliveryModels={deliveryModels || []}
                 tagGroups={tagGroups || []}
                 tags={tags || []}
+                popularFilters={popularFilters || []}
                 currentParams={params}
               />
             </div>
@@ -530,6 +606,7 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
           deliveryModels={deliveryModels || []}
           tagGroups={tagGroups || []}
           tags={tags || []}
+          popularFilters={popularFilters || []}
           currentParams={params}
         />
       </MobileFilterButton>

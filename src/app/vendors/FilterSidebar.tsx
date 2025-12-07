@@ -40,6 +40,16 @@ interface Tag {
   icon: string | null;
 }
 
+interface PopularFilter {
+  id: number;
+  filter_type: string;
+  filter_key: string;
+  label: string;
+  icon: string | null;
+  is_active: boolean;
+  sort_order: number;
+}
+
 interface FilterSidebarProps {
   cities: { id: number; name: string }[];
   districts: { id: number; name: string }[];
@@ -48,6 +58,7 @@ interface FilterSidebarProps {
   deliveryModels: DeliveryModel[];
   tagGroups: TagGroup[];
   tags: Tag[];
+  popularFilters: PopularFilter[];
   currentParams: {
     city?: string;
     district?: string;
@@ -65,6 +76,10 @@ interface FilterSidebarProps {
     available_24_7?: string;
     has_refrigerated?: string;
     serves_outside_city?: string;
+    halal_certified?: string;
+    free_tasting?: string;
+    free_delivery?: string;
+    accepts_last_minute?: string;
   };
 }
 
@@ -145,6 +160,7 @@ export default function FilterSidebar({
   deliveryModels,
   tagGroups,
   tags,
+  popularFilters,
   currentParams,
 }: FilterSidebarProps) {
   const router = useRouter();
@@ -180,16 +196,76 @@ export default function FilterSidebar({
     );
   };
 
-  // Popüler filtreler
-  const popularFilters = [
-    { key: "available_24_7", label: "7/24 Hizmet", icon: "🕐" },
-    { key: "has_refrigerated", label: "Frigorifik Araç", icon: "🚛" },
-  ];
+  // Populer filtre tiplerine gore render
+  const renderPopularFilter = (filter: PopularFilter) => {
+    if (filter.filter_type === "boolean") {
+      // Boolean filtre (vendors tablosundaki kolon)
+      const isChecked =
+        currentParams[filter.filter_key as keyof typeof currentParams] ===
+        "true";
+      return (
+        <FilterCheckbox
+          key={filter.id}
+          label={`${filter.icon || ""} ${filter.label}`.trim()}
+          checked={isChecked}
+          onChange={() =>
+            router.push(
+              buildFilterUrl({
+                [filter.filter_key]: isChecked ? undefined : "true",
+              })
+            )
+          }
+        />
+      );
+    } else if (filter.filter_type === "cuisine") {
+      // Mutfak turu filtresi
+      return (
+        <FilterCheckbox
+          key={filter.id}
+          label={`${filter.icon || ""} ${filter.label}`.trim()}
+          checked={selectedCuisines.includes(filter.filter_key)}
+          onChange={() =>
+            toggleArrayFilter(selectedCuisines, filter.filter_key, "cuisines")
+          }
+        />
+      );
+    } else if (filter.filter_type === "delivery_model") {
+      // Teslimat modeli filtresi
+      return (
+        <FilterCheckbox
+          key={filter.id}
+          label={`${filter.icon || ""} ${filter.label}`.trim()}
+          checked={selectedDeliveryModels.includes(filter.filter_key)}
+          onChange={() =>
+            toggleArrayFilter(
+              selectedDeliveryModels,
+              filter.filter_key,
+              "delivery_models"
+            )
+          }
+        />
+      );
+    } else if (filter.filter_type === "tag") {
+      // Etiket filtresi
+      return (
+        <FilterCheckbox
+          key={filter.id}
+          label={`${filter.icon || ""} ${filter.label}`.trim()}
+          checked={selectedTags.includes(filter.filter_key)}
+          onChange={() =>
+            toggleArrayFilter(selectedTags, filter.filter_key, "tags")
+          }
+        />
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="divide-y divide-slate-200">
       {/* Filtreleri Temizle */}
       {(currentParams.city ||
+        currentParams.district ||
         currentParams.services ||
         currentParams.cuisines ||
         currentParams.delivery_models ||
@@ -197,6 +273,10 @@ export default function FilterSidebar({
         currentParams.available_24_7 ||
         currentParams.has_refrigerated ||
         currentParams.serves_outside_city ||
+        currentParams.halal_certified ||
+        currentParams.free_tasting ||
+        currentParams.free_delivery ||
+        currentParams.accepts_last_minute ||
         currentParams.min_price ||
         currentParams.max_price) && (
         <div className="pb-4">
@@ -209,60 +289,82 @@ export default function FilterSidebar({
         </div>
       )}
 
-      {/* Popüler Filtreler */}
-      <div className="py-4">
-        <h3 className="mb-3 text-sm font-semibold text-slate-900">
-          Popüler filtreler
-        </h3>
-        <div className="space-y-1">
-          {/* Ev Yemekleri - Mutfak türü olarak */}
-          <FilterCheckbox
-            label="🏠 Ev Yemekleri"
-            checked={selectedCuisines.includes("ev-yemekleri")}
-            onChange={() =>
-              toggleArrayFilter(selectedCuisines, "ev-yemekleri", "cuisines")
-            }
-          />
-          {popularFilters.map((filter) => (
-            <FilterCheckbox
-              key={filter.key}
-              label={`${filter.icon} ${filter.label}`}
-              checked={
-                currentParams[filter.key as keyof typeof currentParams] ===
-                "true"
-              }
-              onChange={() =>
+      {/* Populer Filtreler */}
+      {popularFilters.length > 0 && (
+        <div className="py-4">
+          <h3 className="mb-3 text-sm font-semibold text-slate-900">
+            Populer filtreler
+          </h3>
+          <div className="space-y-1">
+            {popularFilters.map((filter) => renderPopularFilter(filter))}
+          </div>
+        </div>
+      )}
+
+      {/* Hizmet Bolgesi */}
+      <FilterAccordion title="Hizmet bolgesi" defaultOpen={true}>
+        <div className="space-y-3">
+          {/* Sehir Secimi */}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-600">
+              Sehir
+            </label>
+            <select
+              value={currentParams.city || ""}
+              onChange={(e) =>
                 router.push(
                   buildFilterUrl({
-                    [filter.key]:
-                      currentParams[
-                        filter.key as keyof typeof currentParams
-                      ] === "true"
-                        ? undefined
-                        : "true",
+                    city: e.target.value || undefined,
+                    district: undefined, // Şehir değişince ilçeyi sıfırla
                   })
                 )
               }
-            />
-          ))}
-          {deliveryModels.slice(0, 3).map((model) => (
-            <FilterCheckbox
-              key={model.id}
-              label={`${model.icon || "📦"} ${model.name}`}
-              checked={selectedDeliveryModels.includes(model.slug)}
-              onChange={() =>
-                toggleArrayFilter(
-                  selectedDeliveryModels,
-                  model.slug,
-                  "delivery_models"
-                )
-              }
-            />
-          ))}
-        </div>
-      </div>
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">Tum sehirler</option>
+              {cities.map((city) => (
+                <option key={city.id} value={city.id.toString()}>
+                  {city.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      {/* Fiyat Aralığı */}
+          {/* Ilce Secimi - Sadece sehir seciliyse goster */}
+          {currentParams.city && districts.length > 0 && (
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-600">
+                Ilce
+              </label>
+              <select
+                value={currentParams.district || ""}
+                onChange={(e) =>
+                  router.push(
+                    buildFilterUrl({
+                      district: e.target.value || undefined,
+                    })
+                  )
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="">Tum ilceler</option>
+                {districts.map((district) => (
+                  <option key={district.id} value={district.id.toString()}>
+                    {district.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Bilgi notu */}
+          <p className="text-xs text-slate-500">
+            Sectiginiz bolgeye hizmet veren firmalar listelenir
+          </p>
+        </div>
+      </FilterAccordion>
+
+      {/* Fiyat Araligi */}
       <FilterAccordion title="Kişi başı fiyat" defaultOpen={true}>
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -390,34 +492,6 @@ export default function FilterSidebar({
         </div>
       </FilterAccordion>
 
-      {/* İmkanlar ve Özellikler */}
-      <FilterAccordion title="İmkanlar ve özellikler" defaultOpen={false}>
-        <div className="space-y-1">
-          {popularFilters.map((filter) => (
-            <FilterCheckbox
-              key={filter.key}
-              label={`${filter.icon} ${filter.label}`}
-              checked={
-                currentParams[filter.key as keyof typeof currentParams] ===
-                "true"
-              }
-              onChange={() =>
-                router.push(
-                  buildFilterUrl({
-                    [filter.key]:
-                      currentParams[
-                        filter.key as keyof typeof currentParams
-                      ] === "true"
-                        ? undefined
-                        : "true",
-                  })
-                )
-              }
-            />
-          ))}
-        </div>
-      </FilterAccordion>
-
       {/* Teslimat Şekli */}
       {deliveryModels.length > 0 && (
         <FilterAccordion title="Teslimat şekli" defaultOpen={false}>
@@ -504,3 +578,4 @@ export default function FilterSidebar({
     </div>
   );
 }
+// src/app/vendors/FilterSidebar.tsx

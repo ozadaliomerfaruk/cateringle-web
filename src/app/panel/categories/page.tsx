@@ -1,13 +1,14 @@
+// src/app/panel/categories/page.tsx
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
-import CategoryRow from "./CategoryRow";
+
+export const dynamic = "force-dynamic";
 
 interface Segment {
   id: number;
   name: string;
   slug: string;
-  description: string | null;
-  is_active: boolean;
 }
 
 interface Category {
@@ -21,301 +22,345 @@ interface Category {
   segment?: { name: string; slug: string } | null;
 }
 
+function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ı/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// Kategori ekle
+async function addCategory(formData: FormData) {
+  "use server";
+
+  const name = formData.get("name") as string;
+  const segmentId = formData.get("segment_id") as string;
+  const icon = formData.get("icon") as string;
+
+  if (!name) return;
+
+  const slug = slugify(name);
+
+  await supabaseAdmin.from("service_categories").insert({
+    name,
+    slug,
+    icon: icon || null,
+    segment_id: segmentId ? parseInt(segmentId) : null,
+    is_active: true,
+  });
+
+  revalidatePath("/panel/categories");
+}
+
+// Kategori guncelle
+async function updateCategory(formData: FormData) {
+  "use server";
+
+  const categoryId = formData.get("category_id") as string;
+  const name = formData.get("name") as string;
+  const segmentId = formData.get("segment_id") as string;
+  const icon = formData.get("icon") as string;
+
+  if (!categoryId) return;
+
+  const updates: Record<string, unknown> = {};
+
+  if (name) {
+    updates.name = name;
+    updates.slug = slugify(name);
+  }
+  if (icon !== undefined) updates.icon = icon || null;
+
+  // segment_id: "" = Her Ikisi (null), diger = segment id
+  updates.segment_id = segmentId ? parseInt(segmentId) : null;
+
+  await supabaseAdmin
+    .from("service_categories")
+    .update(updates)
+    .eq("id", parseInt(categoryId));
+
+  revalidatePath("/panel/categories");
+}
+
+// Kategori sil
+async function deleteCategory(formData: FormData) {
+  "use server";
+
+  const categoryId = formData.get("category_id") as string;
+  if (!categoryId) return;
+
+  await supabaseAdmin
+    .from("service_categories")
+    .delete()
+    .eq("id", parseInt(categoryId));
+
+  revalidatePath("/panel/categories");
+}
+
+// Aktif/Pasif toggle
+async function toggleCategoryActive(formData: FormData) {
+  "use server";
+
+  const categoryId = formData.get("category_id") as string;
+  const isActive = formData.get("is_active") === "true";
+
+  if (!categoryId) return;
+
+  await supabaseAdmin
+    .from("service_categories")
+    .update({ is_active: !isActive })
+    .eq("id", parseInt(categoryId));
+
+  revalidatePath("/panel/categories");
+}
+
 export default async function CategoriesPage() {
   const supabase = await createServerSupabaseClient();
 
-  // Segmentleri çek
+  // Segmentleri cek
   const { data: segments } = await supabase
     .from("customer_segments")
-    .select("*")
+    .select("id, name, slug")
     .order("sort_order");
 
-  // Kategorileri çek
+  // Kategorileri cek
   const { data: categories } = await supabase
     .from("service_categories")
     .select("*, segment:customer_segments(name, slug)")
-    .order("segment_id")
-    .order("sort_order");
+    .order("sort_order")
+    .order("name");
 
-  // Kategori segment güncelleme
-  async function updateCategorySegment(formData: FormData) {
-    "use server";
-    const supabase = await createServerSupabaseClient();
+  const typedSegments = (segments || []) as Segment[];
+  const typedCategories = (categories || []) as Category[];
 
-    const categoryId = formData.get("category_id") as string;
-    const segmentId = formData.get("segment_id") as string;
-
-    await supabase
-      .from("service_categories")
-      .update({ segment_id: segmentId ? parseInt(segmentId) : null })
-      .eq("id", parseInt(categoryId));
-
-    revalidatePath("/panel/categories");
-  }
-
-  // Kategori aktiflik güncelleme
-  async function toggleCategoryActive(formData: FormData) {
-    "use server";
-    const supabase = await createServerSupabaseClient();
-
-    const categoryId = formData.get("category_id") as string;
-    const isActive = formData.get("is_active") === "true";
-
-    await supabase
-      .from("service_categories")
-      .update({ is_active: !isActive })
-      .eq("id", parseInt(categoryId));
-
-    revalidatePath("/panel/categories");
-  }
-
-  // Segment aktiflik güncelleme
-  async function toggleSegmentActive(formData: FormData) {
-    "use server";
-    const supabase = await createServerSupabaseClient();
-
-    const segmentId = formData.get("segment_id") as string;
-    const isActive = formData.get("is_active") === "true";
-
-    await supabase
-      .from("customer_segments")
-      .update({ is_active: !isActive })
-      .eq("id", parseInt(segmentId));
-
-    revalidatePath("/panel/categories");
-  }
-
-  // Segment bazlı kategori grupla
-  const categoriesBySegment: Record<string, Category[]> = {
-    kurumsal: [],
-    bireysel: [],
-    segmentsiz: [],
-  };
-
-  (categories as Category[])?.forEach((cat) => {
-    if (cat.segment?.slug === "kurumsal") {
-      categoriesBySegment.kurumsal.push(cat);
-    } else if (cat.segment?.slug === "bireysel") {
-      categoriesBySegment.bireysel.push(cat);
-    } else {
-      categoriesBySegment.segmentsiz.push(cat);
-    }
-  });
-
-  // Segments for CategoryRow (simplified)
-  const segmentsForRow =
-    (segments as Segment[])?.map((s) => ({
-      id: s.id,
-      name: s.name,
-      slug: s.slug,
-    })) || [];
+  // Istatistikler
+  const activeCount = typedCategories.filter((c) => c.is_active).length;
+  const kurumsalCount = typedCategories.filter(
+    (c) => c.segment?.slug === "kurumsal"
+  ).length;
+  const bireyselCount = typedCategories.filter(
+    (c) => c.segment?.slug === "bireysel"
+  ).length;
+  const herIkisiCount = typedCategories.filter((c) => !c.segment_id).length;
 
   return (
-    <div className="p-6">
+    <div className="mx-auto max-w-7xl px-4 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Kategori Yönetimi</h1>
-        <p className="mt-1 text-slate-500">
-          Segmentleri ve kategorileri yönetin
+        <h1 className="text-xl font-semibold text-slate-900">
+          Kategori Yonetimi
+        </h1>
+        <p className="text-sm text-slate-600">
+          Kategorileri ekle, duzenle, sil veya aktif/pasif yap
         </p>
       </div>
 
-      {/* Segmentler */}
-      <div className="mb-8">
-        <h2 className="mb-4 text-lg font-semibold text-slate-900">
-          Segmentler
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {(segments as Segment[])?.map((segment) => (
-            <div
-              key={segment.id}
-              className={`rounded-xl border p-5 ${
-                segment.slug === "kurumsal"
-                  ? "border-blue-200 bg-blue-50"
-                  : "border-leaf--200 bg-leaf-50"
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">
-                    {segment.slug === "kurumsal" ? "🏢" : "🎉"}
-                  </span>
-                  <div>
-                    <h3 className="font-semibold text-slate-900">
-                      {segment.name}
-                    </h3>
-                    <p className="text-sm text-slate-500">
-                      {segment.description}
-                    </p>
-                  </div>
-                </div>
-                <form action={toggleSegmentActive}>
-                  <input type="hidden" name="segment_id" value={segment.id} />
-                  <input
-                    type="hidden"
-                    name="is_active"
-                    value={segment.is_active.toString()}
-                  />
-                  <button
-                    type="submit"
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      segment.is_active
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {segment.is_active ? "Aktif" : "Pasif"}
-                  </button>
-                </form>
-              </div>
-              <div className="mt-3 text-sm text-slate-600">
-                <span className="font-medium">
-                  {segment.slug === "kurumsal"
-                    ? categoriesBySegment.kurumsal.length
-                    : categoriesBySegment.bireysel.length}
-                </span>{" "}
-                kategori
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Kurumsal Kategoriler */}
-      <div className="mb-8">
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-lg">
-            🏢
-          </span>
-          Kurumsal Kategoriler
-          <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
-            {categoriesBySegment.kurumsal.length}
-          </span>
-        </h2>
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <table className="w-full">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                  Kategori
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                  Slug
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                  Segment
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                  Durum
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {categoriesBySegment.kurumsal.map((cat) => (
-                <CategoryRow
-                  key={cat.id}
-                  category={cat}
-                  segments={segmentsForRow}
-                  updateAction={updateCategorySegment}
-                  toggleAction={toggleCategoryActive}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Bireysel Kategoriler */}
-      <div className="mb-8">
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-leaf-100 text-lg">
-            🎉
-          </span>
-          Bireysel Kategoriler
-          <span className="ml-2 rounded-full bg-leaf-100 px-2 py-0.5 text-xs font-medium text-leaf-700">
-            {categoriesBySegment.bireysel.length}
-          </span>
-        </h2>
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <table className="w-full">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                  Kategori
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                  Slug
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                  Segment
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                  Durum
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {categoriesBySegment.bireysel.map((cat) => (
-                <CategoryRow
-                  key={cat.id}
-                  category={cat}
-                  segments={segmentsForRow}
-                  updateAction={updateCategorySegment}
-                  toggleAction={toggleCategoryActive}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Segmentsiz Kategoriler */}
-      {categoriesBySegment.segmentsiz.length > 0 && (
-        <div className="mb-8">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-lg">
-              ❓
-            </span>
-            Segmentsiz Kategoriler
-            <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-              {categoriesBySegment.segmentsiz.length}
-            </span>
-          </h2>
-          <p className="mb-4 text-sm text-amber-600">
-            Bu kategoriler henüz bir segmente atanmamış. Lütfen segment seçin.
+      {/* Istatistikler */}
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-lg border bg-white px-4 py-3">
+          <p className="text-2xl font-bold text-slate-900">
+            {typedCategories.length}
           </p>
-          <div className="overflow-hidden rounded-xl border border-amber-200 bg-white">
-            <table className="w-full">
-              <thead className="bg-amber-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                    Kategori
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                    Slug
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                    Segment
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                    Durum
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {categoriesBySegment.segmentsiz.map((cat) => (
-                  <CategoryRow
-                    key={cat.id}
-                    category={cat}
-                    segments={segmentsForRow}
-                    updateAction={updateCategorySegment}
-                    toggleAction={toggleCategoryActive}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <p className="text-xs text-slate-500">Toplam</p>
         </div>
-      )}
+        <div className="rounded-lg border bg-white px-4 py-3">
+          <p className="text-2xl font-bold text-leaf-600">{activeCount}</p>
+          <p className="text-xs text-slate-500">Aktif</p>
+        </div>
+        <div className="rounded-lg border bg-white px-4 py-3">
+          <p className="text-2xl font-bold text-blue-600">{kurumsalCount}</p>
+          <p className="text-xs text-slate-500">Kurumsal</p>
+        </div>
+        <div className="rounded-lg border bg-white px-4 py-3">
+          <p className="text-2xl font-bold text-purple-600">{bireyselCount}</p>
+          <p className="text-xs text-slate-500">Bireysel</p>
+        </div>
+      </div>
+
+      {/* Kategori Ekle */}
+      <div className="mb-6 rounded-lg border bg-white p-4">
+        <h2 className="mb-3 font-medium text-slate-900">Yeni Kategori Ekle</h2>
+        <form action={addCategory} className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[200px]">
+            <label className="mb-1 block text-xs font-medium text-slate-600">
+              Kategori Adi
+            </label>
+            <input
+              type="text"
+              name="name"
+              required
+              placeholder="Ornek: Dugun Yemekleri"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none focus:ring-1 focus:ring-leaf-500"
+            />
+          </div>
+          <div className="w-32">
+            <label className="mb-1 block text-xs font-medium text-slate-600">
+              Ikon
+            </label>
+            <input
+              type="text"
+              name="icon"
+              placeholder="Opsiyonel"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none focus:ring-1 focus:ring-leaf-500"
+            />
+          </div>
+          <div className="w-40">
+            <label className="mb-1 block text-xs font-medium text-slate-600">
+              Segment
+            </label>
+            <select
+              name="segment_id"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-leaf-500 focus:outline-none focus:ring-1 focus:ring-leaf-500"
+            >
+              <option value="">Her Ikisi</option>
+              {typedSegments.map((seg) => (
+                <option key={seg.id} value={seg.id}>
+                  {seg.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="submit"
+            className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-700"
+          >
+            Ekle
+          </button>
+        </form>
+      </div>
+
+      {/* Kategoriler Tablosu */}
+      <div className="overflow-hidden rounded-lg border bg-white">
+        <table className="w-full text-sm">
+          <thead className="border-b bg-slate-50">
+            <tr>
+              <th className="px-4 py-3 text-left font-medium text-slate-600">
+                Kategori
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-slate-600">
+                Slug
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-slate-600">
+                Segment
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-slate-600">
+                Durum
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-slate-600">
+                Islemler
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {typedCategories.map((category) => (
+              <tr key={category.id} className="hover:bg-slate-50">
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    {category.icon && (
+                      <span className="text-base">{category.icon}</span>
+                    )}
+                    <span className="font-medium text-slate-900">
+                      {category.name}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  <code className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                    {category.slug}
+                  </code>
+                </td>
+                <td className="px-4 py-3">
+                  <form
+                    action={updateCategory}
+                    className="flex items-center gap-1"
+                  >
+                    <input
+                      type="hidden"
+                      name="category_id"
+                      value={category.id}
+                    />
+                    <select
+                      name="segment_id"
+                      defaultValue={category.segment_id?.toString() || ""}
+                      className="rounded border border-slate-200 px-2 py-1 text-xs focus:border-leaf-500 focus:outline-none"
+                    >
+                      <option value="">Her Ikisi</option>
+                      {typedSegments.map((seg) => (
+                        <option key={seg.id} value={seg.id}>
+                          {seg.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="submit"
+                      className="rounded bg-slate-600 px-2 py-1 text-xs text-white hover:bg-slate-700"
+                    >
+                      Kaydet
+                    </button>
+                  </form>
+                </td>
+                <td className="px-4 py-3">
+                  <form action={toggleCategoryActive}>
+                    <input
+                      type="hidden"
+                      name="category_id"
+                      value={category.id}
+                    />
+                    <input
+                      type="hidden"
+                      name="is_active"
+                      value={category.is_active.toString()}
+                    />
+                    <button
+                      type="submit"
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                        category.is_active
+                          ? "bg-leaf-100 text-leaf-700 hover:bg-leaf-200"
+                          : "bg-red-100 text-red-700 hover:bg-red-200"
+                      }`}
+                    >
+                      {category.is_active ? "Aktif" : "Pasif"}
+                    </button>
+                  </form>
+                </td>
+                <td className="px-4 py-3">
+                  <form action={deleteCategory}>
+                    <input
+                      type="hidden"
+                      name="category_id"
+                      value={category.id}
+                    />
+                    <button
+                      type="submit"
+                      className="rounded px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+                    >
+                      Sil
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {typedCategories.length === 0 && (
+          <div className="px-4 py-12 text-center text-sm text-slate-500">
+            Henuz kategori yok
+          </div>
+        )}
+      </div>
+
+      {/* Bilgi */}
+      <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+        <strong>Not:</strong> &quot;Her Ikisi&quot; secilen kategoriler hem
+        kurumsal hem bireysel musterilere gosterilir.
+      </div>
     </div>
   );
 }

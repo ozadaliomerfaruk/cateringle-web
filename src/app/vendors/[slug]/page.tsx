@@ -238,6 +238,63 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
     districtName = data?.name || "";
   }
 
+  // Hizmet Bölgeleri
+  const { data: serviceAreas } = await supabase
+    .from("vendor_service_areas")
+    .select(
+      `
+      id,
+      city_id,
+      district_id,
+      city:cities(id, name),
+      district:districts(id, name)
+    `
+    )
+    .eq("vendor_id", vendor.id);
+
+  // Hizmet bölgelerini şehir bazında grupla
+  type ServiceAreaCity = {
+    cityId: number;
+    cityName: string;
+    allDistricts: boolean; // Tüm ilçeler mi?
+    districts: string[];
+  };
+
+  const serviceAreasByCity: ServiceAreaCity[] = [];
+
+  if (serviceAreas && serviceAreas.length > 0) {
+    const cityMap = new Map<number, ServiceAreaCity>();
+
+    for (const area of serviceAreas) {
+      const cityId = area.city_id;
+      const cityNameStr = (area.city as { name: string } | null)?.name || "";
+
+      if (!cityMap.has(cityId)) {
+        cityMap.set(cityId, {
+          cityId,
+          cityName: cityNameStr,
+          allDistricts: false,
+          districts: [],
+        });
+      }
+
+      const cityData = cityMap.get(cityId)!;
+
+      // district_id null ise tüm şehir demektir
+      if (area.district_id === null) {
+        cityData.allDistricts = true;
+      } else {
+        const districtNameStr = (area.district as { name: string } | null)
+          ?.name;
+        if (districtNameStr && !cityData.districts.includes(districtNameStr)) {
+          cityData.districts.push(districtNameStr);
+        }
+      }
+    }
+
+    serviceAreasByCity.push(...cityMap.values());
+  }
+
   const locationText = [districtName, cityName].filter(Boolean).join(", ");
   const whatsappLink = vendor.whatsapp
     ? `https://wa.me/${vendor.whatsapp.replace(/\D/g, "")}`
@@ -729,6 +786,87 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
                         {vendor.delivery_notes}
                       </p>
                     )}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Hizmet Bölgeleri */}
+            {serviceAreasByCity.length > 0 && (
+              <section className="rounded-2xl bg-white p-6 shadow-sm">
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+                  <svg
+                    className="h-5 w-5 text-leaf-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  Hizmet Bölgeleri
+                </h2>
+                <div className="mt-4 space-y-4">
+                  {serviceAreasByCity.map((cityArea) => (
+                    <div
+                      key={cityArea.cityId}
+                      className="rounded-xl bg-slate-50 p-4"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">📍</span>
+                        <h3 className="font-semibold text-slate-900">
+                          {cityArea.cityName}
+                        </h3>
+                        {cityArea.allDistricts && (
+                          <span className="rounded-full bg-leaf-100 px-2.5 py-0.5 text-xs font-medium text-leaf-700">
+                            Tüm İlçeler
+                          </span>
+                        )}
+                      </div>
+                      {!cityArea.allDistricts &&
+                        cityArea.districts.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {cityArea.districts.sort().map((district) => (
+                              <span
+                                key={district}
+                                className="inline-flex items-center rounded-full bg-white px-3 py-1 text-sm text-slate-700 shadow-sm ring-1 ring-slate-200"
+                              >
+                                {district}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                    </div>
+                  ))}
+                </div>
+                {vendor.serves_outside_city && (
+                  <div className="mt-4 flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                    <svg
+                      className="h-4 w-4 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>
+                      Bu firma şehir dışına da hizmet verebilmektedir.
+                    </span>
                   </div>
                 )}
               </section>

@@ -2,8 +2,6 @@
 import Link from "next/link";
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
-
   return (
     <footer className="border-t bg-slate-900 text-slate-300">
       {/* Main Footer */}
@@ -250,7 +248,7 @@ export default function Footer() {
       <div className="border-t border-slate-800">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row">
           <p className="text-sm text-slate-500">
-            © {currentYear} Cateringle.com. Tüm hakları saklıdır.
+            © 2025 Cateringle.com. Tüm hakları saklıdır.
           </p>
           <div className="flex items-center gap-2 text-sm text-slate-500">
             <svg

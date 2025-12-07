@@ -31,9 +31,7 @@ export default async function AdminLayout({
       title: "Genel",
       items: [
         { href: "/panel", label: "Dashboard" },
-        { href: "/panel/vendor-applications", label: "Başvurular" },
-        { href: "/panel/vendors", label: "Firmalar" },
-        { href: "/panel/users", label: "Kullanıcılar" },
+        { href: "/panel/users", label: "Kullanicilar & Firmalar" },
         { href: "/panel/leads", label: "Talepler" },
         { href: "/panel/reviews", label: "Yorumlar" },
       ],
@@ -42,8 +40,8 @@ export default async function AdminLayout({
       title: "Katalog",
       items: [
         { href: "/panel/categories", label: "Kategoriler" },
-        { href: "/panel/segments", label: "Segmentler" },
-        { href: "/panel/cuisines", label: "Mutfak Türleri" },
+        { href: "/panel/filters", label: "Populer Filtreler" },
+        { href: "/panel/cuisines", label: "Mutfak Turleri" },
         { href: "/panel/delivery-models", label: "Teslimat" },
         { href: "/panel/services", label: "Hizmetler" },
         { href: "/panel/tags", label: "Etiketler" },
@@ -52,12 +50,12 @@ export default async function AdminLayout({
     {
       title: "Konum",
       items: [
-        { href: "/panel/cities", label: "Şehirler" },
-        { href: "/panel/districts", label: "İlçeler" },
+        { href: "/panel/cities", label: "Sehirler" },
+        { href: "/panel/districts", label: "Ilceler" },
       ],
     },
     {
-      title: "İçerik",
+      title: "Icerik",
       items: [
         { href: "/panel/blogs", label: "Blog" },
         { href: "/panel/settings", label: "Ayarlar" },
