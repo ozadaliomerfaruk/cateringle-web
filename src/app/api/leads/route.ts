@@ -98,6 +98,12 @@ export async function POST(request: NextRequest) {
       .eq("id", vendorId)
       .single();
 
+    console.log("Vendor bilgisi:", {
+      vendorId,
+      vendorEmail: vendor?.email,
+      vendorName: vendor?.business_name,
+    });
+
     // 4) Segment bilgisini çek (e-posta için)
     let segmentName = "";
     if (segmentId) {
@@ -111,26 +117,40 @@ export async function POST(request: NextRequest) {
 
     // 5) E-posta bildirimleri gönder
     if (vendor?.email) {
-      sendNewLeadNotification({
-        vendorEmail: vendor.email,
-        vendorName: vendor.business_name,
-        customerName,
-        customerEmail,
-        customerPhone,
-        eventDate,
-        guestCount: guestCount ? parseInt(guestCount, 10) : undefined,
-        message: notes,
-        segmentName,
-        eventType,
-      }).catch((err) => console.error("Vendor email error:", err));
+      console.log("Vendor'a email gönderiliyor:", vendor.email);
+      try {
+        const vendorEmailResult = await sendNewLeadNotification({
+          vendorEmail: vendor.email,
+          vendorName: vendor.business_name,
+          customerName,
+          customerEmail,
+          customerPhone,
+          eventDate,
+          guestCount: guestCount ? parseInt(guestCount, 10) : undefined,
+          message: notes,
+          segmentName,
+          eventType,
+        });
+        console.log("Vendor email sonucu:", vendorEmailResult);
+      } catch (err) {
+        console.error("Vendor email error:", err);
+      }
+    } else {
+      console.log("Vendor email adresi bulunamadı, mail gönderilmedi");
     }
 
     // Müşteriye onay e-postası
-    sendLeadConfirmation({
-      customerEmail,
-      customerName,
-      vendorName: vendor?.business_name || "Firma",
-    }).catch((err) => console.error("Customer email error:", err));
+    console.log("Müşteriye email gönderiliyor:", customerEmail);
+    try {
+      const customerEmailResult = await sendLeadConfirmation({
+        customerEmail,
+        customerName,
+        vendorName: vendor?.business_name || "Firma",
+      });
+      console.log("Customer email sonucu:", customerEmailResult);
+    } catch (err) {
+      console.error("Customer email error:", err);
+    }
 
     return NextResponse.json({ success: true, leadId: lead.id });
   } catch (error) {

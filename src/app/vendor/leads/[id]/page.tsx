@@ -170,17 +170,23 @@ export default async function LeadDetailPage({ params }: PageProps) {
       .eq("id", vendorLeadId);
 
     // Müşteriye email gönder
-    sendQuoteNotification({
-      customerEmail: lead.customer_email,
-      customerName: lead.customer_name,
-      vendorName: vendor.business_name,
-      totalPrice: totalPrice,
-      pricePerPerson: pricePerPerson,
-      guestCount: lead.guest_count,
-      message: message,
-      validUntil: validUntil,
-      quoteId: quote.id,
-    }).catch((err) => console.error("Quote notification email error:", err));
+    console.log("Teklif bildirimi gönderiliyor:", lead.customer_email);
+    try {
+      const emailResult = await sendQuoteNotification({
+        customerEmail: lead.customer_email,
+        customerName: lead.customer_name,
+        vendorName: vendor.business_name,
+        totalPrice: totalPrice,
+        pricePerPerson: pricePerPerson,
+        guestCount: lead.guest_count,
+        message: message,
+        validUntil: validUntil,
+        quoteId: quote.id,
+      });
+      console.log("Teklif email sonucu:", emailResult);
+    } catch (err) {
+      console.error("Quote notification email error:", err);
+    }
 
     revalidatePath(`/vendor/leads/${vendorLeadId}`);
     revalidatePath("/vendor/leads");
