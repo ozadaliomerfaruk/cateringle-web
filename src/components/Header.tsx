@@ -7,6 +7,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Buildings, Confetti, ForkKnife, Article } from "@phosphor-icons/react";
+import NotificationBell from "./NotificationBell";
 
 type UserRole = "customer" | "vendor_owner" | "admin" | "super_admin";
 
@@ -291,6 +292,9 @@ export default function Header({ initialUser = null }: HeaderProps) {
                   Tedarikçi Ol
                 </Link>
               )}
+
+              {/* Bildirimler (Giriş yapmışsa) */}
+              {!loading && userProfile && <NotificationBell />}
 
               {/* User Menu Button */}
               <div ref={userMenuRef} className="relative">

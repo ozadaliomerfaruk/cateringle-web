@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendNewLeadNotification, sendLeadConfirmation } from "@/lib/email";
 import { createLeadSchema, sanitizeInput } from "@/lib/validations/lead";
+import { notifyNewLead } from "@/lib/notifications";
 import { ZodError } from "zod";
 
 // Rate limit için basit in-memory store (production'da Redis kullanılmalı)
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
     // 7) Vendor'ın varlığını ve aktifliğini kontrol et
     const { data: vendor, error: vendorError } = await supabaseAdmin
       .from("vendors")
-      .select("id, business_name, email, status")
+      .select("id, business_name, email, status, owner_id")
       .eq("id", data.vendorId)
       .single();
 
@@ -195,6 +196,15 @@ export async function POST(request: NextRequest) {
       customerName: sanitizedData.customerName,
       vendorName: vendor.business_name,
     }).catch((err) => console.error("Customer email error:", err));
+
+    // 11) In-app bildirim gönder (vendor sahibine)
+    if (vendor.owner_id) {
+      notifyNewLead(
+        vendor.owner_id,
+        leadId,
+        sanitizedData.customerName
+      ).catch((err) => console.error("In-app notification error:", err));
+    }
 
     return NextResponse.json({ success: true, leadId });
   } catch (error) {

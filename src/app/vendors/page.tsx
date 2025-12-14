@@ -4,13 +4,14 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import FilterSidebar from "./FilterSidebar";
 import MobileFilterButton from "./MobileFilterButton";
 import VendorCard from "./VendorCard";
-import { Tables } from "@/types/database";
 import {
   Buildings,
   Confetti,
   ForkKnife,
   Faders,
   MagnifyingGlass,
+  CaretLeft,
+  CaretRight,
 } from "@phosphor-icons/react/dist/ssr";
 
 export const dynamic = "force-dynamic";
@@ -37,12 +38,11 @@ interface VendorsPageProps {
     free_tasting?: string;
     free_delivery?: string;
     accepts_last_minute?: string;
+    page?: string;
+    sort?: string;
+    q?: string;
   }>;
 }
-
-type Vendor = Tables<"vendors">;
-type City = Tables<"cities">;
-type District = Tables<"districts">;
 
 interface ServiceGroup {
   id: number;
@@ -56,41 +56,36 @@ interface ServiceGroup {
   }[];
 }
 
-interface VendorWithRelations
-  extends Omit<
-    Vendor,
-    | "available_24_7"
-    | "has_refrigerated_vehicle"
-    | "serves_outside_city"
-    | "halal_certified"
-    | "free_tasting"
-    | "free_delivery"
-    | "accepts_last_minute"
-    | "city_id"
-    | "district_id"
-  > {
-  city: Pick<City, "name"> | null;
-  district: Pick<District, "name"> | null;
-  vendor_categories: { category_id: number }[];
-  vendor_services: { service_id: number; service: { slug: string } | null }[];
-  vendor_segments: { segment_id: number }[];
-  vendor_ratings:
-    | { avg_rating: number | null; review_count: number | null }[]
-    | null;
-  vendor_cuisines?: { cuisine_type_id: number }[];
-  vendor_delivery_models?: { delivery_model_id: number }[];
-  vendor_tags?: { tag_id: number }[];
-  vendor_service_areas?: {
-    city_id: number | null;
-    district_id: number | null;
-  }[];
-  available_24_7?: boolean | null;
-  has_refrigerated_vehicle?: boolean | null;
-  serves_outside_city?: boolean | null;
-  halal_certified?: boolean | null;
-  free_tasting?: boolean | null;
-  free_delivery?: boolean | null;
-  accepts_last_minute?: boolean | null;
+// RPC'den dönen vendor tipi
+interface SearchVendor {
+  id: string;
+  business_name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  avg_price_per_person: number | null;
+  min_guest_count: number | null;
+  max_guest_count: number | null;
+  lead_time_type: string | null;
+  available_24_7: boolean;
+  has_refrigerated_vehicle: boolean;
+  serves_outside_city: boolean;
+  halal_certified: boolean;
+  free_tasting: boolean;
+  free_delivery: boolean;
+  accepts_last_minute: boolean;
+  city_name: string | null;
+  district_name: string | null;
+  avg_rating: number;
+  review_count: number;
+}
+
+interface SearchResult {
+  vendors: SearchVendor[];
+  total_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
 }
 
 const segmentInfo: Record<string, { title: string; description: string }> = {
@@ -127,6 +122,10 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
   const params = await searchParams;
   const supabase = await createServerSupabaseClient();
 
+  // Sayfa numarası
+  const currentPage = Math.max(1, parseInt(params.page || "1", 10));
+  const pageSize = 12;
+
   // Segmentleri çek
   const { data: segments } = await supabase
     .from("customer_segments")
@@ -148,6 +147,9 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
   }
 
   const { data: categories } = await categoriesQuery;
+
+  // Seçili kategori
+  const selectedCategory = categories?.find((c) => c.slug === params.category);
 
   // Hizmet gruplarını çek
   const { data: serviceGroups } = await supabase
@@ -218,178 +220,68 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
     .eq("is_active", true)
     .order("sort_order");
 
-  // Vendor sorgusu
-  let query = supabase
-    .from("vendors")
-    .select(
-      `
-      id,
-      business_name,
-      slug,
-      description,
-      logo_url,
-      avg_price_per_person,
-      min_guest_count,
-      max_guest_count,
-      lead_time_type,
-      available_24_7,
-      has_refrigerated_vehicle,
-      serves_outside_city,
-      halal_certified,
-      free_tasting,
-      free_delivery,
-      accepts_last_minute,
-      city:cities(name),
-      district:districts(name),
-      vendor_categories(category_id),
-      vendor_services(service_id, service:services(slug)),
-      vendor_segments(segment_id),
-      vendor_ratings(avg_rating, review_count),
-      vendor_cuisines(cuisine_type_id),
-      vendor_delivery_models(delivery_model_id),
-      vendor_tags(tag_id),
-      vendor_service_areas(city_id, district_id)
-    `
-    )
-    .eq("status", "approved");
-
-  // Fiyat ve kisi sayisi filtreleri (bunlar vendor uzerinden)
-  if (params.min_price)
-    query = query.gte("avg_price_per_person", parseFloat(params.min_price));
-  if (params.max_price)
-    query = query.lte("avg_price_per_person", parseFloat(params.max_price));
-  if (params.min_guest)
-    query = query.gte("max_guest_count", parseInt(params.min_guest));
-  if (params.max_guest)
-    query = query.lte("min_guest_count", parseInt(params.max_guest));
-
-  const { data: vendors, error } = await query;
-
-  // Debug log
-  console.log("Vendors query result:", { count: vendors?.length, error });
-
-  let filteredVendors = (vendors as unknown as VendorWithRelations[]) || [];
-
-  // Segment filtresi
-  if (selectedSegment) {
-    filteredVendors = filteredVendors.filter((v) =>
-      v.vendor_segments?.some((vs) => vs.segment_id === selectedSegment.id)
-    );
-  }
-
-  // Kategori filtresi
-  if (params.category && categories) {
-    const selectedCategory = categories.find((c) => c.slug === params.category);
-    if (selectedCategory) {
-      filteredVendors = filteredVendors.filter((v) =>
-        v.vendor_categories?.some(
-          (vc) => vc.category_id === selectedCategory.id
-        )
-      );
-    }
-  }
-
-  // Şehir filtresi
-  if (params.city) {
-    const cityId = parseInt(params.city);
-    filteredVendors = filteredVendors.filter((v) => {
-      const hasMainCity =
-        cities?.find((c) => c.name === v.city?.name)?.id === cityId;
-      const hasServiceArea = v.vendor_service_areas?.some(
-        (area) => area.city_id === cityId
-      );
-      return hasMainCity || hasServiceArea;
-    });
-  }
-
-  // İlçe filtresi
-  if (params.district) {
-    const districtId = parseInt(params.district);
-    filteredVendors = filteredVendors.filter((v) => {
-      const hasMainDistrict =
-        districts?.find((d) => d.name === v.district?.name)?.id === districtId;
-      const hasServiceArea = v.vendor_service_areas?.some(
-        (area) => area.district_id === districtId
-      );
-      return hasMainDistrict || hasServiceArea;
-    });
-  }
-
-  // Hizmet filtresi
+  // Service slug'larını ID'lere çevir
+  let serviceIds: number[] | null = null;
   if (params.services) {
-    const serviceSlugList = params.services.split(",");
-    filteredVendors = filteredVendors.filter((v) =>
-      serviceSlugList.every((slug) =>
-        v.vendor_services?.some((vs) => vs.service?.slug === slug)
-      )
-    );
+    const serviceSlugs = params.services.split(",");
+    const allServices = sortedServiceGroups.flatMap((g) => g.services);
+    serviceIds = serviceSlugs
+      .map((slug) => allServices.find((s) => s.slug === slug)?.id)
+      .filter((id): id is number => id !== undefined);
+    if (serviceIds.length === 0) serviceIds = null;
   }
 
-  // Mutfak türü filtresi
-  if (params.cuisines) {
-    const cuisineIdList = params.cuisines.split(",").map(Number);
-    filteredVendors = filteredVendors.filter((v) =>
-      cuisineIdList.some((id) =>
-        v.vendor_cuisines?.some((vc) => vc.cuisine_type_id === id)
-      )
-    );
-  }
+  // RPC parametrelerini hazırla
+  const rpcParams = {
+    p_segment_id: selectedSegment?.id || null,
+    p_category_id: selectedCategory?.id || null,
+    p_city_id: params.city ? parseInt(params.city) : null,
+    p_district_id: params.district ? parseInt(params.district) : null,
+    p_min_price: params.min_price ? parseFloat(params.min_price) : null,
+    p_max_price: params.max_price ? parseFloat(params.max_price) : null,
+    p_min_guest: params.min_guest ? parseInt(params.min_guest) : null,
+    p_max_guest: params.max_guest ? parseInt(params.max_guest) : null,
+    p_service_ids: serviceIds,
+    p_cuisine_ids: params.cuisines
+      ? params.cuisines.split(",").map(Number)
+      : null,
+    p_delivery_model_ids: params.delivery_models
+      ? params.delivery_models.split(",").map(Number)
+      : null,
+    p_tag_ids: params.tags ? params.tags.split(",").map(Number) : null,
+    p_lead_time_types: params.lead_time
+      ? params.lead_time.split(",")
+      : null,
+    p_available_24_7: params.available_24_7 === "true" ? true : null,
+    p_has_refrigerated: params.has_refrigerated === "true" ? true : null,
+    p_serves_outside_city: params.serves_outside_city === "true" ? true : null,
+    p_halal_certified: params.halal_certified === "true" ? true : null,
+    p_free_tasting: params.free_tasting === "true" ? true : null,
+    p_free_delivery: params.free_delivery === "true" ? true : null,
+    p_accepts_last_minute: params.accepts_last_minute === "true" ? true : null,
+    p_page: currentPage,
+    p_page_size: pageSize,
+    p_sort_by: params.sort || "rating",
+    p_search_query: params.q || null,
+  };
 
-  // Teslimat modeli filtresi
-  if (params.delivery_models) {
-    const deliveryModelIdList = params.delivery_models.split(",").map(Number);
-    filteredVendors = filteredVendors.filter((v) =>
-      deliveryModelIdList.some((id) =>
-        v.vendor_delivery_models?.some((vdm) => vdm.delivery_model_id === id)
-      )
-    );
-  }
+  // search_vendors RPC çağrısı
+  const { data: searchResult, error } = await supabase.rpc(
+    "search_vendors",
+    rpcParams
+  );
 
-  // Tag filtresi
-  if (params.tags) {
-    const tagIdList = params.tags.split(",").map(Number);
-    filteredVendors = filteredVendors.filter((v) =>
-      tagIdList.some((id) => v.vendor_tags?.some((vt) => vt.tag_id === id))
-    );
-  }
+  // Sonuçları parse et
+  const result: SearchResult = searchResult || {
+    vendors: [],
+    total_count: 0,
+    page: 1,
+    page_size: pageSize,
+    total_pages: 0,
+  };
 
-  // Lead time filtresi
-  if (params.lead_time) {
-    const leadTimeList = params.lead_time.split(",");
-    if (leadTimeList.length > 0) {
-      filteredVendors = filteredVendors.filter(
-        (v) => v.lead_time_type && leadTimeList.includes(v.lead_time_type)
-      );
-    }
-  }
-
-  // Boolean filtreler
-  if (params.available_24_7 === "true") {
-    filteredVendors = filteredVendors.filter((v) => v.available_24_7 === true);
-  }
-  if (params.has_refrigerated === "true") {
-    filteredVendors = filteredVendors.filter(
-      (v) => v.has_refrigerated_vehicle === true
-    );
-  }
-  if (params.serves_outside_city === "true") {
-    filteredVendors = filteredVendors.filter(
-      (v) => v.serves_outside_city === true
-    );
-  }
-  if (params.halal_certified === "true") {
-    filteredVendors = filteredVendors.filter((v) => v.halal_certified === true);
-  }
-  if (params.free_tasting === "true") {
-    filteredVendors = filteredVendors.filter((v) => v.free_tasting === true);
-  }
-  if (params.free_delivery === "true") {
-    filteredVendors = filteredVendors.filter((v) => v.free_delivery === true);
-  }
-  if (params.accepts_last_minute === "true") {
-    filteredVendors = filteredVendors.filter(
-      (v) => v.accepts_last_minute === true
-    );
+  if (error) {
+    console.error("search_vendors error:", error);
   }
 
   // Aktif filtre sayısı
@@ -413,16 +305,23 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
     params.accepts_last_minute,
   ].filter(Boolean).length;
 
-  const selectedCategory = categories?.find((c) => c.slug === params.category);
-
   const buildUrl = (newParams: Record<string, string | undefined>) => {
     const urlParams = new URLSearchParams();
+    // page parametresini sıfırla (filtre değiştiğinde)
+    const resetPage = Object.keys(newParams).some((k) => k !== "page");
+    
     Object.entries({ ...params, ...newParams }).forEach(([key, value]) => {
+      if (key === "page" && resetPage && !newParams.page) return;
       if (value) urlParams.set(key, value);
       else urlParams.delete(key);
     });
     const queryString = urlParams.toString();
     return queryString ? `/vendors?${queryString}` : "/vendors";
+  };
+
+  // Pagination helper
+  const buildPageUrl = (page: number) => {
+    return buildUrl({ page: page.toString() });
   };
 
   return (
@@ -579,11 +478,17 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                   : "Tüm Catering Firmaları"}
               </h1>
               <p className="mt-1 text-slate-500">
-                {filteredVendors.length} firma bulundu
+                {result.total_count} firma bulundu
+                {result.total_pages > 1 && (
+                  <span className="text-slate-400">
+                    {" "}
+                    · Sayfa {result.page}/{result.total_pages}
+                  </span>
+                )}
               </p>
             </div>
 
-            {filteredVendors.length === 0 ? (
+            {result.vendors.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-16 text-center">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white">
                   <MagnifyingGlass
@@ -606,11 +511,109 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                 </Link>
               </div>
             ) : (
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {filteredVendors.map((vendor) => (
-                  <VendorCard key={vendor.id} vendor={vendor} />
-                ))}
-              </div>
+              <>
+                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                  {result.vendors.map((vendor) => (
+                    <VendorCard
+                      key={vendor.id}
+                      vendor={{
+                        id: vendor.id,
+                        business_name: vendor.business_name,
+                        slug: vendor.slug,
+                        description: vendor.description,
+                        logo_url: vendor.logo_url,
+                        avg_price_per_person: vendor.avg_price_per_person,
+                        min_guest_count: vendor.min_guest_count,
+                        max_guest_count: vendor.max_guest_count,
+                        lead_time_type: vendor.lead_time_type,
+                        available_24_7: vendor.available_24_7,
+                        has_refrigerated_vehicle: vendor.has_refrigerated_vehicle,
+                        serves_outside_city: vendor.serves_outside_city,
+                        halal_certified: vendor.halal_certified,
+                        free_tasting: vendor.free_tasting,
+                        free_delivery: vendor.free_delivery,
+                        accepts_last_minute: vendor.accepts_last_minute,
+                        city: vendor.city_name ? { name: vendor.city_name } : null,
+                        district: vendor.district_name
+                          ? { name: vendor.district_name }
+                          : null,
+                        vendor_ratings: [
+                          {
+                            avg_rating: vendor.avg_rating,
+                            review_count: vendor.review_count,
+                          },
+                        ],
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {result.total_pages > 1 && (
+                  <div className="mt-8 flex items-center justify-center gap-2">
+                    {/* Önceki Sayfa */}
+                    {currentPage > 1 ? (
+                      <Link
+                        href={buildPageUrl(currentPage - 1)}
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:border-slate-900 hover:text-slate-900"
+                      >
+                        <CaretLeft size={20} weight="bold" />
+                      </Link>
+                    ) : (
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-100 text-slate-300">
+                        <CaretLeft size={20} weight="bold" />
+                      </span>
+                    )}
+
+                    {/* Sayfa Numaraları */}
+                    <div className="flex items-center gap-1">
+                      {Array.from(
+                        { length: Math.min(5, result.total_pages) },
+                        (_, i) => {
+                          let pageNum: number;
+                          if (result.total_pages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= result.total_pages - 2) {
+                            pageNum = result.total_pages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+
+                          return (
+                            <Link
+                              key={pageNum}
+                              href={buildPageUrl(pageNum)}
+                              className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-all ${
+                                pageNum === currentPage
+                                  ? "bg-slate-900 text-white"
+                                  : "text-slate-600 hover:bg-slate-100"
+                              }`}
+                            >
+                              {pageNum}
+                            </Link>
+                          );
+                        }
+                      )}
+                    </div>
+
+                    {/* Sonraki Sayfa */}
+                    {currentPage < result.total_pages ? (
+                      <Link
+                        href={buildPageUrl(currentPage + 1)}
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:border-slate-900 hover:text-slate-900"
+                      >
+                        <CaretRight size={20} weight="bold" />
+                      </Link>
+                    ) : (
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-100 text-slate-300">
+                        <CaretRight size={20} weight="bold" />
+                      </span>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
