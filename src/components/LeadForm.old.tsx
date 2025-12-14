@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import { Turnstile } from "@/components/Turnstile";
 
 interface Segment {
   id: number;
@@ -67,10 +66,6 @@ export default function LeadForm({
     fullName?: string;
     phone?: string;
   } | null>(null);
-
-  // Turnstile token state
-  const [turnstileToken, setTurnstileToken] = useState<string>("");
-  const [turnstileError, setTurnstileError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     customerName: "",
@@ -229,13 +224,6 @@ export default function LeadForm({
     setSuccess(false);
     setLoading(true);
 
-    // Turnstile token kontrolü
-    if (!turnstileToken) {
-      setErrorMsg("Lütfen güvenlik doğrulamasını tamamlayın.");
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await fetch("/api/leads", {
         method: "POST",
@@ -257,6 +245,7 @@ export default function LeadForm({
           needsTablesChairs: form.needsTablesChairs,
           wantsRealTableware: form.wantsRealTableware,
           wantsDisposableTableware: form.wantsDisposableTableware,
+          // Yeni alanlar
           cuisinePreference: form.cuisinePreference || null,
           deliveryModel: form.deliveryModel || null,
           dietaryRequirements:
@@ -264,148 +253,127 @@ export default function LeadForm({
               ? form.dietaryRequirements
               : null,
           notes: form.notes.trim() || null,
-          // Turnstile token
-          turnstileToken,
-          // Çift submit koruması için idempotency key
-          idempotencyKey: crypto.randomUUID(),
+          // Vendor özelliklerine göre dinamik alanlar
+          wantsRefrigerated: form.wantsRefrigerated,
+          wantsOutsideCity: form.wantsOutsideCity,
+          wants24_7: form.wants24_7,
+          wantsHalal: form.wantsHalal,
+          wantsTasting: form.wantsTasting,
+          wantsFreeDelivery: form.wantsFreeDelivery,
+          wantsLastMinute: form.wantsLastMinute,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Validation hatası varsa detayları göster
-        if (data.details && Array.isArray(data.details)) {
-          const messages = data.details
-            .map((d: { message: string }) => d.message)
-            .join(", ");
-          throw new Error(messages);
-        }
-        throw new Error(data.error || "Bir hata oluştu");
+        setErrorMsg(data.error || "Bir hata oluştu");
+        return;
       }
 
       setSuccess(true);
-      // Turnstile'ı sıfırla (yeni token gerekecek)
-      setTurnstileToken("");
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Bir hata oluştu");
-      // Hata durumunda Turnstile'ı sıfırla
-      setTurnstileToken("");
+      setForm({
+        customerName: currentUser?.fullName || "",
+        customerEmail: currentUser?.email || "",
+        customerPhone: currentUser?.phone || "",
+        segmentId: "",
+        eventType: "",
+        eventDate: "",
+        guestCount: "",
+        budgetMin: "",
+        budgetMax: "",
+        serviceStyle: "",
+        needsServiceStaff: false,
+        needsCleanup: false,
+        needsTablesChairs: false,
+        wantsRealTableware: false,
+        wantsDisposableTableware: false,
+        cuisinePreference: "",
+        deliveryModel: "",
+        dietaryRequirements: [],
+        notes: "",
+        // Vendor özelliklerine göre dinamik alanlar
+        wantsRefrigerated: false,
+        wantsOutsideCity: false,
+        wants24_7: false,
+        wantsHalal: false,
+        wantsTasting: false,
+        wantsFreeDelivery: false,
+        wantsLastMinute: false,
+      });
+    } catch (error) {
+      console.error("Submit error:", error);
+      setErrorMsg("Beklenmeyen bir hata oluştu");
     } finally {
       setLoading(false);
     }
   };
 
-  // Kurumsal etkinlik türleri
-  const corporateEventTypes = [
-    { value: "ofis-ogle", label: "Ofis Öğle Yemeği" },
-    { value: "toplanti", label: "Toplantı İkramı" },
-    { value: "kahvalti", label: "Ofis Kahvaltısı" },
-    { value: "etkinlik", label: "Kurumsal Etkinlik" },
-    { value: "konferans", label: "Konferans / Seminer" },
-    { value: "fuar", label: "Fuar / Organizasyon" },
-  ];
+  // Etkinlik türleri segment'e göre
+  const eventTypes = {
+    kurumsal: [
+      { value: "ofis-ogle", label: "Ofis Öğle Yemeği" },
+      { value: "toplanti", label: "Toplantı İkramı" },
+      { value: "kahvalti", label: "Ofis Kahvaltısı" },
+      { value: "etkinlik", label: "Kurumsal Etkinlik" },
+      { value: "konferans", label: "Konferans / Seminer" },
+      { value: "fuar", label: "Fuar / Organizasyon" },
+    ],
+    bireysel: [
+      { value: "dugun", label: "Düğün / Nişan" },
+      { value: "dogum-gunu", label: "Doğum Günü" },
+      { value: "ev-partisi", label: "Ev Partisi" },
+      { value: "baby-shower", label: "Baby Shower / Mevlüt" },
+      { value: "mezuniyet", label: "Mezuniyet" },
+      { value: "yildonumu", label: "Yıldönümü / Özel Gün" },
+      { value: "piknik", label: "Piknik / Açık Hava" },
+    ],
+  };
 
-  // Bireysel etkinlik türleri
-  const individualEventTypes = [
-    { value: "dugun", label: "Düğün / Nişan" },
-    { value: "dogum-gunu", label: "Doğum Günü" },
-    { value: "ev-partisi", label: "Ev Partisi" },
-    { value: "baby-shower", label: "Baby Shower / Mevlüt" },
-    { value: "mezuniyet", label: "Mezuniyet" },
-    { value: "yildonumu", label: "Yıldönümü / Özel Gün" },
-    { value: "piknik", label: "Piknik / Açık Hava" },
-  ];
-
-  // Seçili segmente göre etkinlik türlerini belirle
   const selectedSegment = segments.find(
-    (s) => s.id === parseInt(form.segmentId)
+    (s) => s.id.toString() === form.segmentId
   );
-  const eventTypes =
-    selectedSegment?.slug === "kurumsal"
-      ? corporateEventTypes
-      : selectedSegment?.slug === "bireysel"
-      ? individualEventTypes
-      : [];
-
-  // Başarı mesajı
-  if (success) {
-    return (
-      <div className="space-y-4 rounded-2xl border border-leaf-200 bg-leaf-50 p-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-leaf-100">
-          <svg
-            className="h-8 w-8 text-leaf-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-leaf-800">
-            Talebiniz Gönderildi
-          </h3>
-          <p className="mt-1 text-sm text-leaf-600">
-            <span className="font-medium">{vendorName}</span> en kısa sürede
-            sizinle iletişime geçecek.
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            setSuccess(false);
-            setForm({
-              customerName: currentUser?.fullName || "",
-              customerEmail: currentUser?.email || "",
-              customerPhone: currentUser?.phone || "",
-              segmentId: "",
-              eventType: "",
-              eventDate: "",
-              guestCount: "",
-              budgetMin: "",
-              budgetMax: "",
-              serviceStyle: "",
-              needsServiceStaff: false,
-              needsCleanup: false,
-              needsTablesChairs: false,
-              wantsRealTableware: false,
-              wantsDisposableTableware: false,
-              cuisinePreference: "",
-              deliveryModel: "",
-              dietaryRequirements: [],
-              notes: "",
-              wantsRefrigerated: false,
-              wantsOutsideCity: false,
-              wants24_7: false,
-              wantsHalal: false,
-              wantsTasting: false,
-              wantsFreeDelivery: false,
-              wantsLastMinute: false,
-            });
-          }}
-          className="text-sm font-medium text-leaf-700 underline hover:text-leaf-800"
-        >
-          Yeni talep oluştur
-        </button>
-      </div>
-    );
-  }
+  const currentEventTypes = selectedSegment
+    ? eventTypes[selectedSegment.slug as keyof typeof eventTypes] || []
+    : [];
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-4">
-        <h3 className="text-base font-semibold text-slate-900">
-          Ücretsiz Teklif Al
-        </h3>
-        <p className="mt-0.5 text-xs text-slate-500">
-          {vendorName} ile iletişime geçin
-        </p>
-      </div>
+    <div>
+      <h2 className="mb-1 text-lg font-semibold text-slate-900">
+        Ücretsiz Teklif Alın
+      </h2>
+      <p className="mb-4 text-sm text-slate-500">
+        {vendorName} size özel bir teklif hazırlasın
+      </p>
+
+      {currentUser && (
+        <div className="mb-4 rounded-lg border border-leaf--200 bg-leaf-50 px-3 py-2 text-sm text-leaf-700">
+          <span className="font-medium">
+            {currentUser.fullName || currentUser.email}
+          </span>{" "}
+          olarak devam ediyorsunuz
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-4 rounded-lg border border-leaf--200 bg-leaf-50 px-4 py-3 text-sm text-leaf-700">
+          <p className="font-medium">Talebiniz iletildi!</p>
+          <p className="mt-1 text-leaf-600">
+            Firma en kısa sürede sizinle iletişime geçecek.
+          </p>
+          {currentUser && (
+            <p className="mt-2">
+              <a
+                href="/account"
+                className="font-medium underline hover:text-leaf-800"
+              >
+                Hesabınızdan
+              </a>{" "}
+              tüm taleplerinizi takip edebilirsiniz.
+            </p>
+          )}
+        </div>
+      )}
 
       {errorMsg && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -413,102 +381,101 @@ export default function LeadForm({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* İsim */}
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-slate-700">
-            Adınız Soyadınız <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="customerName"
-            required
-            placeholder="Örn: Ahmet Yılmaz"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
-            value={form.customerName}
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* E-posta */}
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-slate-700">
-            E-posta <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="email"
-            name="customerEmail"
-            required
-            placeholder="ornek@email.com"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
-            value={form.customerEmail}
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Telefon */}
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-slate-700">
-            Telefon <span className="text-slate-400">(isteğe bağlı)</span>
-          </label>
-          <input
-            type="tel"
-            name="customerPhone"
-            placeholder="05XX XXX XX XX"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
-            value={form.customerPhone}
-            onChange={handleChange}
-          />
+      <form onSubmit={handleSubmit} className="space-y-4 text-sm">
+        {/* İletişim Bilgileri */}
+        <div className="space-y-3">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-700">
+              Adınız Soyadınız
+            </label>
+            <input
+              type="text"
+              name="customerName"
+              required
+              placeholder="Adınızı girin"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
+              value={form.customerName}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-700">
+              E-posta
+            </label>
+            <input
+              type="email"
+              name="customerEmail"
+              required
+              placeholder="ornek@email.com"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
+              value={form.customerEmail}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-700">
+              Telefon <span className="text-slate-400">(isteğe bağlı)</span>
+            </label>
+            <input
+              type="tel"
+              name="customerPhone"
+              placeholder="05XX XXX XX XX"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
+              value={form.customerPhone}
+              onChange={handleChange}
+            />
+          </div>
         </div>
 
         {/* Segment Seçimi */}
-        {segments.length > 0 && (
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-slate-700">
-              Müşteri Tipi <span className="text-red-500">*</span>
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {segments.map((segment) => (
-                <button
-                  key={segment.id}
-                  type="button"
-                  onClick={() => handleSegmentChange(segment.id.toString())}
-                  className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all ${
-                    form.segmentId === segment.id.toString()
-                      ? "border-leaf-500 bg-leaf-50 text-leaf-700"
-                      : "border-slate-200 text-slate-600 hover:border-slate-300"
-                  }`}
-                >
-                  {segment.slug === "kurumsal" ? "🏢" : "🎉"} {segment.name}
-                </button>
-              ))}
-            </div>
+        <div>
+          <label className="mb-2 block text-xs font-medium text-slate-700">
+            Hizmet türü
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {segments.map((segment) => (
+              <button
+                key={segment.id}
+                type="button"
+                onClick={() => handleSegmentChange(segment.id.toString())}
+                className={`flex items-center justify-center gap-2 rounded-lg border-2 px-3 py-2.5 text-sm font-medium transition-all ${
+                  form.segmentId === segment.id.toString()
+                    ? segment.slug === "kurumsal"
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-leaf--500 bg-leaf-50 text-leaf-700"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                }`}
+              >
+                <span>{segment.slug === "kurumsal" ? "🏢" : "🎉"}</span>
+                {segment.name}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
 
         {/* Etkinlik Türü - Segment seçildiyse göster */}
-        {form.segmentId && eventTypes.length > 0 && (
+        {form.segmentId && currentEventTypes.length > 0 && (
           <div>
             <label className="mb-1.5 block text-xs font-medium text-slate-700">
-              Etkinlik Türü
+              Etkinlik türü
             </label>
             <select
               name="eventType"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.eventType}
               onChange={handleChange}
             >
               <option value="">Seçiniz</option>
-              {eventTypes.map((et) => (
-                <option key={et.value} value={et.value}>
-                  {et.label}
+              {currentEventTypes.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
                 </option>
               ))}
             </select>
           </div>
         )}
 
-        {/* Tarih ve Kişi Sayısı */}
+        {/* Etkinlik Bilgileri */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="mb-1.5 block text-xs font-medium text-slate-700">
@@ -517,10 +484,9 @@ export default function LeadForm({
             <input
               type="date"
               name="eventDate"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.eventDate}
               onChange={handleChange}
-              min={new Date().toISOString().split("T")[0]}
             />
           </div>
           <div>
@@ -531,9 +497,8 @@ export default function LeadForm({
               type="number"
               name="guestCount"
               min="1"
-              max="10000"
               placeholder="Örn: 50"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.guestCount}
               onChange={handleChange}
             />
@@ -544,51 +509,51 @@ export default function LeadForm({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="mb-1.5 block text-xs font-medium text-slate-700">
-              Min. Bütçe (₺)
+              Min. Bütçe
             </label>
             <input
               type="number"
               name="budgetMin"
               min="0"
-              placeholder="Örn: 5000"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
+              placeholder="TL"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.budgetMin}
               onChange={handleChange}
             />
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-slate-700">
-              Max. Bütçe (₺)
+              Maks. Bütçe
             </label>
             <input
               type="number"
               name="budgetMax"
               min="0"
-              placeholder="Örn: 15000"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
+              placeholder="TL"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.budgetMax}
               onChange={handleChange}
             />
           </div>
         </div>
 
-        {/* Servis Stili */}
+        {/* Servis Tarzı */}
         <div>
           <label className="mb-1.5 block text-xs font-medium text-slate-700">
-            Servis Tercihi
+            Servis Tarzı
           </label>
           <select
             name="serviceStyle"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
             value={form.serviceStyle}
             onChange={handleChange}
           >
-            <option value="">Seçiniz</option>
-            <option value="buffet">Açık Büfe</option>
-            <option value="seated">Oturmalı Servis</option>
+            <option value="">Henüz karar vermedim</option>
+            <option value="open_buffet">Açık Büfe</option>
             <option value="cocktail">Kokteyl</option>
-            <option value="boxed">Paket / Kutu</option>
-            <option value="drop_off">Sadece Teslimat</option>
+            <option value="plated">Oturmalı Menü</option>
+            <option value="coffee_break">Coffee Break</option>
+            <option value="lunchbox">Lunchbox / Paket</option>
           </select>
         </div>
 
@@ -596,11 +561,12 @@ export default function LeadForm({
         {cuisineTypes.length > 0 && (
           <div>
             <label className="mb-1.5 block text-xs font-medium text-slate-700">
-              Mutfak Tercihi
+              Mutfak Tercihi{" "}
+              <span className="text-slate-400">(isteğe bağlı)</span>
             </label>
             <select
               name="cuisinePreference"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.cuisinePreference}
               onChange={handleChange}
             >
@@ -618,11 +584,12 @@ export default function LeadForm({
         {deliveryModels.length > 0 && (
           <div>
             <label className="mb-1.5 block text-xs font-medium text-slate-700">
-              Teslimat Tercihi
+              Teslimat Tercihi{" "}
+              <span className="text-slate-400">(isteğe bağlı)</span>
             </label>
             <select
               name="deliveryModel"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
               value={form.deliveryModel}
               onChange={handleChange}
             >
@@ -651,7 +618,7 @@ export default function LeadForm({
                   onClick={() => handleDietaryToggle(tag.slug)}
                   className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                     form.dietaryRequirements.includes(tag.slug)
-                      ? "bg-leaf-100 text-leaf-700 ring-2 ring-leaf-500"
+                      ? "bg-leaf-100 text-leaf-700 ring-2 ring-leaf--500"
                       : "bg-white text-slate-600 hover:bg-slate-100"
                   }`}
                 >
@@ -672,7 +639,7 @@ export default function LeadForm({
             <input
               type="checkbox"
               name="needsServiceStaff"
-              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
               checked={form.needsServiceStaff}
               onChange={handleChange}
             />
@@ -682,7 +649,7 @@ export default function LeadForm({
             <input
               type="checkbox"
               name="needsCleanup"
-              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
               checked={form.needsCleanup}
               onChange={handleChange}
             />
@@ -692,7 +659,7 @@ export default function LeadForm({
             <input
               type="checkbox"
               name="needsTablesChairs"
-              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
               checked={form.needsTablesChairs}
               onChange={handleChange}
             />
@@ -707,7 +674,7 @@ export default function LeadForm({
             <input
               type="checkbox"
               name="wantsRealTableware"
-              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
               checked={form.wantsRealTableware}
               onChange={handleChange}
             />
@@ -717,7 +684,7 @@ export default function LeadForm({
             <input
               type="checkbox"
               name="wantsDisposableTableware"
-              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+              className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
               checked={form.wantsDisposableTableware}
               onChange={handleChange}
             />
@@ -743,11 +710,11 @@ export default function LeadForm({
                   <input
                     type="checkbox"
                     name="wantsRefrigerated"
-                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
                     checked={form.wantsRefrigerated}
                     onChange={handleChange}
                   />
-                  Frigorifik araçla teslimat istiyorum
+                  🧊 Frigorifik araçla teslimat istiyorum
                 </label>
               )}
               {vendorFeatures?.serves_outside_city && (
@@ -755,11 +722,11 @@ export default function LeadForm({
                   <input
                     type="checkbox"
                     name="wantsOutsideCity"
-                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
                     checked={form.wantsOutsideCity}
                     onChange={handleChange}
                   />
-                  Şehir dışına teslimat istiyorum
+                  🗺️ Şehir dışına teslimat istiyorum
                 </label>
               )}
               {vendorFeatures?.available_24_7 && (
@@ -767,11 +734,11 @@ export default function LeadForm({
                   <input
                     type="checkbox"
                     name="wants24_7"
-                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
                     checked={form.wants24_7}
                     onChange={handleChange}
                   />
-                  Gece/erken saatlerde hizmet istiyorum
+                  🕐 Gece/erken saatlerde hizmet istiyorum
                 </label>
               )}
               {vendorFeatures?.halal_certified && (
@@ -779,11 +746,11 @@ export default function LeadForm({
                   <input
                     type="checkbox"
                     name="wantsHalal"
-                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
                     checked={form.wantsHalal}
                     onChange={handleChange}
                   />
-                  Helal sertifikalı yemek istiyorum
+                  🏅 Helal sertifikalı yemek istiyorum
                 </label>
               )}
               {vendorFeatures?.free_tasting && (
@@ -791,11 +758,11 @@ export default function LeadForm({
                   <input
                     type="checkbox"
                     name="wantsTasting"
-                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
                     checked={form.wantsTasting}
                     onChange={handleChange}
                   />
-                  Önceden tadım yapmak istiyorum
+                  🍴 Önceden tadım yapmak istiyorum
                 </label>
               )}
               {vendorFeatures?.free_delivery && (
@@ -803,11 +770,11 @@ export default function LeadForm({
                   <input
                     type="checkbox"
                     name="wantsFreeDelivery"
-                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
                     checked={form.wantsFreeDelivery}
                     onChange={handleChange}
                   />
-                  Ücretsiz teslimat istiyorum
+                  🚚 Ücretsiz teslimat istiyorum
                 </label>
               )}
               {vendorFeatures?.accepts_last_minute && (
@@ -815,11 +782,11 @@ export default function LeadForm({
                   <input
                     type="checkbox"
                     name="wantsLastMinute"
-                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500"
+                    className="h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf--500"
                     checked={form.wantsLastMinute}
                     onChange={handleChange}
                   />
-                  Acil/son dakika siparişi
+                  ⚡ Acil/son dakika siparişi
                 </label>
               )}
             </div>
@@ -835,43 +802,15 @@ export default function LeadForm({
             name="notes"
             rows={3}
             placeholder="Özel istekleriniz, diyet gereksinimleri, alerjiler..."
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf-500 focus:ring-2 focus:ring-leaf-500/20"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-leaf--500 focus:ring-2 focus:ring-leaf--500/20"
             value={form.notes}
             onChange={handleChange}
           />
         </div>
 
-        {/* Turnstile Widget */}
-        <div className="flex justify-center">
-          <Turnstile
-            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
-            onSuccess={(token) => {
-              setTurnstileToken(token);
-              setTurnstileError(null);
-            }}
-            onError={(error) => {
-              setTurnstileError(
-                "Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin."
-              );
-              console.error("Turnstile error:", error);
-            }}
-            onExpire={() => {
-              setTurnstileToken("");
-              setTurnstileError(
-                "Güvenlik doğrulaması süresi doldu. Lütfen tekrar deneyin."
-              );
-            }}
-            theme="light"
-          />
-        </div>
-
-        {turnstileError && (
-          <p className="text-center text-xs text-red-500">{turnstileError}</p>
-        )}
-
         <button
           type="submit"
-          disabled={loading || !turnstileToken}
+          disabled={loading}
           className="w-full rounded-xl bg-leaf-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-leaf-700 hover:shadow disabled:opacity-60"
         >
           {loading ? "Gönderiliyor..." : "Ücretsiz Teklif İste"}

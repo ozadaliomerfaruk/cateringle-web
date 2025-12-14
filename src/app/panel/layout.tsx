@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isAdmin } from "@/lib/roles";
 
 export default async function AdminLayout({
   children,
@@ -18,11 +19,13 @@ export default async function AdminLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, full_name")
+    .select("full_name")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile || !["admin", "super_admin"].includes(profile.role)) {
+  // RBAC kontrolü - user_roles tablosuna bakar, fallback olarak profiles.role
+  const hasAdminAccess = await isAdmin(supabase, user.id);
+  if (!hasAdminAccess) {
     redirect("/");
   }
 

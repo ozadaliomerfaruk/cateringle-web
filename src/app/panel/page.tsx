@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isAdmin } from "@/lib/roles";
 
 export const metadata: Metadata = {
   title: "Admin Panel",
@@ -28,13 +29,9 @@ export default async function AdminDashboardPage() {
     redirect("/auth/login?redirect=/panel");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (!profile || !["admin", "super_admin"].includes(profile.role)) {
+  // RBAC kontrolü
+  const hasAdminAccess = await isAdmin(supabase, user.id);
+  if (!hasAdminAccess) {
     redirect("/");
   }
 

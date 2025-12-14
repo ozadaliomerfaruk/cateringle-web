@@ -1,160 +1,212 @@
+import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendNewLeadNotification, sendLeadConfirmation } from "@/lib/email";
+import { createLeadSchema, sanitizeInput } from "@/lib/validations/lead";
+import { ZodError } from "zod";
+
+// Rate limit için basit in-memory store (production'da Redis kullanılmalı)
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 dakika
+const RATE_LIMIT_MAX = 5; // Dakikada max 5 istek
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitStore.get(ip);
+
+  if (!record || now > record.resetAt) {
+    rateLimitStore.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+
+  record.count++;
+  return true;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const {
-      vendorId,
-      customerName,
-      customerEmail,
-      customerPhone,
-      segmentId,
-      eventType,
-      eventDate,
-      guestCount,
-      budgetMin,
-      budgetMax,
-      serviceStyle,
-      needsServiceStaff,
-      needsCleanup,
-      needsTablesChairs,
-      wantsRealTableware,
-      wantsDisposableTableware,
-      // Yeni alanlar
-      cuisinePreference,
-      deliveryModel,
-      dietaryRequirements,
-      notes,
-    } = body;
+    // 1) Rate Limiting
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
 
-    // Kullanıcı oturum kontrolü
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { error: "Çok fazla istek gönderdiniz. Lütfen biraz bekleyin." },
+        { status: 429 }
+      );
+    }
+
+    // 2) Body Parse
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Geçersiz JSON formatı" },
+        { status: 400 }
+      );
+    }
+
+    // 3) Zod Validation
+    const validationResult = createLeadSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      const errors = validationResult.error.issues.map((e) => ({
+        field: e.path.join("."),
+        message: e.message,
+      }));
+      return NextResponse.json(
+        { error: "Doğrulama hatası", details: errors },
+        { status: 400 }
+      );
+    }
+
+    const data = validationResult.data;
+
+    // 4) Idempotency Check
+    if (data.idempotencyKey) {
+      const { data: existingKey } = await supabaseAdmin
+        .from("idempotency_keys")
+        .select("entity_id")
+        .eq("key", data.idempotencyKey)
+        .eq("scope", "lead")
+        .maybeSingle();
+
+      if (existingKey) {
+        // Zaten işlenmiş, mevcut lead ID'yi dön
+        return NextResponse.json({
+          success: true,
+          leadId: existingKey.entity_id,
+          duplicate: true,
+        });
+      }
+    }
+
+    // 5) Sanitize text inputs
+    const sanitizedData = {
+      customerName: sanitizeInput(data.customerName),
+      customerEmail: data.customerEmail, // Email zaten validated
+      customerPhone: data.customerPhone,
+      notes: data.notes ? sanitizeInput(data.notes) : null,
+      cuisinePreference: data.cuisinePreference
+        ? sanitizeInput(data.cuisinePreference)
+        : null,
+    };
+
+    // 6) Kullanıcı oturum kontrolü
     const supabase = await createServerSupabaseClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // 1) Lead oluştur
-    const { data: lead, error: leadError } = await supabaseAdmin
-      .from("leads")
-      .insert({
-        customer_profile_id: user?.id || null,
-        customer_name: customerName,
-        customer_email: customerEmail,
-        customer_phone: customerPhone || null,
-        segment_id: segmentId || null,
-        event_type: eventType || null,
-        event_date: eventDate || null,
-        guest_count: guestCount ? parseInt(guestCount, 10) : null,
-        budget_min: budgetMin ? parseFloat(budgetMin) : null,
-        budget_max: budgetMax ? parseFloat(budgetMax) : null,
-        service_style: serviceStyle || null,
-        needs_service_staff: needsServiceStaff || false,
-        needs_cleanup: needsCleanup || false,
-        needs_tables_chairs: needsTablesChairs || false,
-        wants_real_tableware: wantsRealTableware || false,
-        wants_disposable_tableware: wantsDisposableTableware || false,
-        // Yeni alanlar
-        cuisine_preference: cuisinePreference || null,
-        delivery_model: deliveryModel || null,
-        dietary_requirements: dietaryRequirements || null,
-        notes: notes || null,
-        source: "vendor_page_form",
-      })
-      .select("id")
-      .single();
-
-    if (leadError || !lead) {
-      console.error("Lead oluşturulamadı:", leadError);
-      return NextResponse.json(
-        { error: leadError?.message || "Lead oluşturulamadı" },
-        { status: 500 }
-      );
-    }
-
-    // 2) Vendor-lead bağlantısı
-    const { error: vendorLeadError } = await supabaseAdmin
-      .from("vendor_leads")
-      .insert({
-        lead_id: lead.id,
-        vendor_id: vendorId,
-        status: "sent",
-      });
-
-    if (vendorLeadError) {
-      console.error("Vendor lead bağlantısı kurulamadı:", vendorLeadError);
-      return NextResponse.json(
-        { error: vendorLeadError.message },
-        { status: 500 }
-      );
-    }
-
-    // 3) Vendor bilgilerini çek
-    const { data: vendor } = await supabaseAdmin
+    // 7) Vendor'ın varlığını ve aktifliğini kontrol et
+    const { data: vendor, error: vendorError } = await supabaseAdmin
       .from("vendors")
-      .select("business_name, email")
-      .eq("id", vendorId)
+      .select("id, business_name, email, status")
+      .eq("id", data.vendorId)
       .single();
 
-    console.log("Vendor bilgisi:", {
-      vendorId,
-      vendorEmail: vendor?.email,
-      vendorName: vendor?.business_name,
-    });
+    if (vendorError || !vendor) {
+      return NextResponse.json({ error: "Firma bulunamadı" }, { status: 404 });
+    }
 
-    // 4) Segment bilgisini çek (e-posta için)
+    if (vendor.status !== "approved") {
+      return NextResponse.json(
+        { error: "Bu firma şu anda aktif değil" },
+        { status: 400 }
+      );
+    }
+
+    // 8) RPC ile Transaction içinde Lead + VendorLead oluştur
+    const { data: result, error: rpcError } = await supabaseAdmin.rpc(
+      "create_lead_with_vendor",
+      {
+        p_vendor_id: data.vendorId,
+        p_customer_profile_id: user?.id || null,
+        p_customer_name: sanitizedData.customerName,
+        p_customer_email: sanitizedData.customerEmail,
+        p_customer_phone: sanitizedData.customerPhone || null,
+        p_segment_id: data.segmentId || null,
+        p_event_type: data.eventType || null,
+        p_event_date: data.eventDate || null,
+        p_guest_count: data.guestCount || null,
+        p_budget_min: data.budgetMin || null,
+        p_budget_max: data.budgetMax || null,
+        p_service_style: data.serviceStyle || null,
+        p_needs_service_staff: data.needsServiceStaff,
+        p_needs_cleanup: data.needsCleanup,
+        p_needs_tables_chairs: data.needsTablesChairs,
+        p_wants_real_tableware: data.wantsRealTableware,
+        p_wants_disposable_tableware: data.wantsDisposableTableware,
+        p_cuisine_preference: sanitizedData.cuisinePreference,
+        p_delivery_model: data.deliveryModel || null,
+        p_dietary_requirements: data.dietaryRequirements || null,
+        p_notes: sanitizedData.notes,
+        p_idempotency_key: data.idempotencyKey || null,
+      }
+    );
+
+    if (rpcError) {
+      console.error("RPC Error:", rpcError);
+      return NextResponse.json(
+        { error: "Lead oluşturulurken bir hata oluştu" },
+        { status: 500 }
+      );
+    }
+
+    const leadId = result;
+
+    // 9) Segment bilgisini çek (e-posta için)
     let segmentName = "";
-    if (segmentId) {
+    if (data.segmentId) {
       const { data: segment } = await supabaseAdmin
         .from("customer_segments")
         .select("name")
-        .eq("id", segmentId)
+        .eq("id", data.segmentId)
         .single();
       segmentName = segment?.name || "";
     }
 
-    // 5) E-posta bildirimleri gönder
-    if (vendor?.email) {
-      console.log("Vendor'a email gönderiliyor:", vendor.email);
-      try {
-        const vendorEmailResult = await sendNewLeadNotification({
-          vendorEmail: vendor.email,
-          vendorName: vendor.business_name,
-          customerName,
-          customerEmail,
-          customerPhone,
-          eventDate,
-          guestCount: guestCount ? parseInt(guestCount, 10) : undefined,
-          message: notes,
-          segmentName,
-          eventType,
-        });
-        console.log("Vendor email sonucu:", vendorEmailResult);
-      } catch (err) {
-        console.error("Vendor email error:", err);
-      }
-    } else {
-      console.log("Vendor email adresi bulunamadı, mail gönderilmedi");
+    // 10) E-posta bildirimleri gönder (async, response'u bekleme)
+    if (vendor.email) {
+      sendNewLeadNotification({
+        vendorEmail: vendor.email,
+        vendorName: vendor.business_name,
+        customerName: sanitizedData.customerName,
+        customerEmail: sanitizedData.customerEmail,
+        customerPhone: sanitizedData.customerPhone || undefined,
+        eventDate: data.eventDate || undefined,
+        guestCount: data.guestCount || undefined,
+        message: sanitizedData.notes || undefined,
+        segmentName,
+        eventType: data.eventType || undefined,
+      }).catch((err) => console.error("Vendor email error:", err));
     }
 
-    // Müşteriye onay e-postası
-    console.log("Müşteriye email gönderiliyor:", customerEmail);
-    try {
-      const customerEmailResult = await sendLeadConfirmation({
-        customerEmail,
-        customerName,
-        vendorName: vendor?.business_name || "Firma",
-      });
-      console.log("Customer email sonucu:", customerEmailResult);
-    } catch (err) {
-      console.error("Customer email error:", err);
-    }
+    sendLeadConfirmation({
+      customerEmail: sanitizedData.customerEmail,
+      customerName: sanitizedData.customerName,
+      vendorName: vendor.business_name,
+    }).catch((err) => console.error("Customer email error:", err));
 
-    return NextResponse.json({ success: true, leadId: lead.id });
+    return NextResponse.json({ success: true, leadId });
   } catch (error) {
     console.error("Lead API error:", error);
+
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Doğrulama hatası", details: error.errors },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Beklenmeyen bir hata oluştu" },
       { status: 500 }

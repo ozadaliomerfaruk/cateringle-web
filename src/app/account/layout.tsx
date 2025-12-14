@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isAdmin, isVendor } from "@/lib/roles";
 
 export default async function AccountLayout({
   children,
@@ -19,7 +20,7 @@ export default async function AccountLayout({
 
   let { data: profile } = await supabase
     .from("profiles")
-    .select("role, full_name")
+    .select("full_name")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -33,7 +34,7 @@ export default async function AccountLayout({
         full_name: user.user_metadata?.full_name || user.email?.split("@")[0],
         role: "customer",
       })
-      .select("role, full_name")
+      .select("full_name")
       .single();
 
     if (insertError) {
@@ -43,11 +44,15 @@ export default async function AccountLayout({
     profile = newProfile;
   }
 
-  // Rol kontrolü
-  if (profile.role !== "customer") {
-    if (profile.role === "vendor_owner") redirect("/vendor");
-    if (profile.role === "admin") redirect("/panel");
-    redirect("/");
+  // RBAC kontrolü - admin veya vendor ise yönlendir
+  const hasAdminAccess = await isAdmin(supabase, user.id);
+  if (hasAdminAccess) {
+    redirect("/panel");
+  }
+
+  const hasVendorAccess = await isVendor(supabase, user.id);
+  if (hasVendorAccess) {
+    redirect("/vendor");
   }
 
   // Bekleyen teklif sayısı

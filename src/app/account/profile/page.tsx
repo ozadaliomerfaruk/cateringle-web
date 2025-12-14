@@ -47,7 +47,7 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile || profile.role !== "customer") {
+  if (!profile) {
     redirect("/account");
   }
 
