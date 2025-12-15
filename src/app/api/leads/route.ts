@@ -199,11 +199,9 @@ export async function POST(request: NextRequest) {
 
     // 11) In-app bildirim gönder (vendor sahibine)
     if (vendor.owner_id) {
-      notifyNewLead(
-        vendor.owner_id,
-        leadId,
-        sanitizedData.customerName
-      ).catch((err) => console.error("In-app notification error:", err));
+      notifyNewLead(vendor.owner_id, leadId, sanitizedData.customerName).catch(
+        (err) => console.error("In-app notification error:", err)
+      );
     }
 
     return NextResponse.json({ success: true, leadId });
@@ -212,7 +210,7 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Doğrulama hatası", details: error.errors },
+        { error: "Doğrulama hatası", details: error.issues },
         { status: 400 }
       );
     }

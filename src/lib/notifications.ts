@@ -27,7 +27,7 @@ interface CreateNotificationParams {
   entityType?: string;
   entityId?: string;
   actionUrl?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, string | number | boolean | null>;
 }
 
 /**
@@ -42,7 +42,10 @@ export async function createNotification({
   entityId,
   actionUrl,
   metadata = {},
-}: CreateNotificationParams): Promise<{ success: boolean; notificationId?: string }> {
+}: CreateNotificationParams): Promise<{
+  success: boolean;
+  notificationId?: string;
+}> {
   try {
     const { data, error } = await supabaseAdmin
       .from("notifications")
@@ -107,7 +110,9 @@ export async function notifyQuoteReceived(
     userId: customerId,
     type: "quote_received",
     title: "Yeni Teklif Aldınız",
-    message: `${vendorName} firmasından ${amount.toLocaleString("tr-TR")} ₺ tutarında teklif aldınız.`,
+    message: `${vendorName} firmasından ${amount.toLocaleString(
+      "tr-TR"
+    )} ₺ tutarında teklif aldınız.`,
     entityType: "quote",
     entityId: quoteId,
     actionUrl: `/account/quotes/${quoteId}`,

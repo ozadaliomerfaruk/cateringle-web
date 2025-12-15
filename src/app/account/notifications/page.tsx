@@ -10,6 +10,20 @@ export const metadata = {
   description: "Bildirim tercihlerinizi yönetin",
 };
 
+// RPC response type
+interface NotificationsRpcResult {
+  notifications: Array<{
+    id: string;
+    type: string;
+    title: string;
+    message: string;
+    is_read: boolean;
+    action_url: string | null;
+    created_at: string;
+  }>;
+  total_count: number;
+}
+
 export default async function NotificationsPage() {
   const supabase = await createServerSupabaseClient();
 
@@ -29,15 +43,16 @@ export default async function NotificationsPage() {
     .maybeSingle();
 
   // Tüm bildirimleri al
-  const { data: notificationsResult } = await supabase.rpc(
-    "get_user_notifications",
-    {
-      p_user_id: user.id,
-      p_limit: 50,
-      p_offset: 0,
-      p_unread_only: false,
-    }
-  );
+  const { data: rpcResult } = await supabase.rpc("get_user_notifications", {
+    p_user_id: user.id,
+    p_limit: 50,
+    p_offset: 0,
+    p_unread_only: false,
+  });
+
+  // Type cast for RPC jsonb result
+  const notificationsResult =
+    rpcResult as unknown as NotificationsRpcResult | null;
 
   return (
     <main className="min-h-screen bg-slate-50 p-4 lg:p-8">

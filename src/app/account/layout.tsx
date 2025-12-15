@@ -1,7 +1,16 @@
+// src/app/account/layout.tsx
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isAdmin, isVendor } from "@/lib/roles";
+import {
+  User,
+  Heart,
+  FileText,
+  Bell,
+  ChatCircle,
+  SignOut,
+} from "@phosphor-icons/react/dist/ssr";
 
 export default async function AccountLayout({
   children,
@@ -63,88 +72,101 @@ export default async function AccountLayout({
       { count: "exact", head: true }
     )
     .eq("vendor_lead.lead.customer_profile_id", user.id)
-    .eq("status", "sent");
+    .in("status", ["sent", "viewed"]);
+
+  // Okunmamış mesaj sayısı
+  const { data: unreadResult } = await supabase.rpc("get_unread_message_count");
+  const unreadMessageCount =
+    (unreadResult as { ok: boolean; data?: { unread_count: number } } | null)
+      ?.data?.unread_count || 0;
+
+  const navItems = [
+    {
+      href: "/account",
+      label: "Hesabım",
+      icon: <User size={20} weight="regular" />,
+    },
+    {
+      href: "/account/favorites",
+      label: "Favorilerim",
+      icon: <Heart size={20} weight="regular" />,
+    },
+    {
+      href: "/account/quotes",
+      label: "Tekliflerim",
+      badge: pendingQuoteCount || 0,
+      icon: <FileText size={20} weight="regular" />,
+    },
+    {
+      href: "/account/messages",
+      label: "Mesajlar",
+      badge: unreadMessageCount,
+      icon: <ChatCircle size={20} weight="regular" />,
+    },
+    {
+      href: "/account/notifications",
+      label: "Bildirimler",
+      icon: <Bell size={20} weight="regular" />,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Üst navigasyon */}
-      <nav className="border-b bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-6">
-            <Link
-              href="/account"
-              className="text-lg font-semibold text-leaf-700"
-            >
-              Hesabım
-            </Link>
-            <Link
-              href="/account/favorites"
-              className="flex items-center gap-1.5 rounded-md px-3 py-2 hover:bg-slate-100"
-            >
+      {/* Top Navigation */}
+      <div className="sticky top-0 z-30 border-b bg-white/80 backdrop-blur-lg">
+        <div className="mx-auto max-w-4xl px-4">
+          <div className="flex h-16 items-center justify-between">
+            {/* Logo / Back */}
+            <Link href="/" className="flex items-center gap-2 text-slate-600 hover:text-slate-900">
               <svg
-                className="h-4 w-4 text-red-500"
-                fill="currentColor"
+                className="h-5 w-5"
+                fill="none"
                 viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
               </svg>
-              Favorilerim
+              <span className="text-sm font-medium">Ana Sayfa</span>
             </Link>
-            <div className="hidden items-center gap-4 text-sm md:flex">
+
+            {/* User Info */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-leaf-600 text-sm font-bold text-white">
+                {profile?.full_name?.charAt(0)?.toUpperCase() ||
+                  user.email?.charAt(0)?.toUpperCase()}
+              </div>
+              <span className="hidden text-sm font-medium text-slate-700 sm:block">
+                {profile?.full_name || user.email}
+              </span>
+            </div>
+          </div>
+
+          {/* Nav Tabs */}
+          <nav className="-mb-px flex gap-1 overflow-x-auto pb-px">
+            {navItems.map((item) => (
               <Link
-                href="/account/quotes"
-                className="relative text-slate-600 hover:text-slate-900"
+                key={item.href}
+                href={item.href}
+                className="relative flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:border-leaf-300 hover:text-leaf-700"
               >
-                Tekliflerim
-                {(pendingQuoteCount || 0) > 0 && (
-                  <span className="absolute -right-3 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-leaf-500 text-[10px] font-bold text-white">
-                    {pendingQuoteCount}
+                {item.icon}
+                <span>{item.label}</span>
+                {item.badge && item.badge > 0 && (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white">
+                    {item.badge > 9 ? "9+" : item.badge}
                   </span>
                 )}
               </Link>
-              <Link
-                href="/account/profile"
-                className="text-slate-600 hover:text-slate-900"
-              >
-                Profil
-              </Link>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-slate-600 md:inline">
-              {profile?.full_name || user.email}
-            </span>
-            <Link
-              href="/vendors"
-              className="rounded-md bg-leaf-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-leaf-700"
-            >
-              Firma Bul
-            </Link>
-          </div>
+            ))}
+          </nav>
         </div>
-        {/* Mobil menü */}
-        <div className="flex items-center justify-center gap-4 border-t px-4 py-2 text-xs md:hidden">
-          <Link
-            href="/account/quotes"
-            className="relative text-slate-600 hover:text-slate-900"
-          >
-            Tekliflerim
-            {(pendingQuoteCount || 0) > 0 && (
-              <span className="absolute -right-2 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-leaf-500 text-[8px] font-bold text-white">
-                {pendingQuoteCount}
-              </span>
-            )}
-          </Link>
-          <Link
-            href="/account/profile"
-            className="text-slate-600 hover:text-slate-900"
-          >
-            Profil
-          </Link>
-        </div>
-      </nav>
+      </div>
 
-      {/* İçerik */}
       {children}
     </div>
   );

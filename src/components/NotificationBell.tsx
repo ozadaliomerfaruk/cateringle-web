@@ -56,7 +56,7 @@ export default function NotificationBell() {
         return;
       }
 
-      setData(result);
+      setData(result as unknown as NotificationsData);
     } catch (error) {
       console.error("Load notifications error:", error);
     } finally {

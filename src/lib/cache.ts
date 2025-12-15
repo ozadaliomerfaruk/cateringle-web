@@ -230,9 +230,14 @@ export const getCachedServiceGroups = unstable_cache(
     return (data || []).map((group) => ({
       ...group,
       services:
-        (group.services as { id: number; name: string; slug: string; sort_order: number | null }[])?.sort(
-          (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
-        ) || [],
+        (
+          group.services as {
+            id: number;
+            name: string;
+            slug: string;
+            sort_order: number | null;
+          }[]
+        )?.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)) || [],
     }));
   },
   ["service-groups"],
@@ -271,7 +276,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
  * Belirli bir cache tag'ini invalidate et
  */
 export function invalidateCacheTag(tag: string) {
-  revalidateTag(tag);
+  revalidateTag(tag, "max");
 }
 
 /**
@@ -279,7 +284,7 @@ export function invalidateCacheTag(tag: string) {
  */
 export function invalidateAllLookups() {
   Object.values(CACHE_TAGS).forEach((tag) => {
-    revalidateTag(tag);
+    revalidateTag(tag, "max");
   });
 }
 
@@ -287,7 +292,7 @@ export function invalidateAllLookups() {
  * Vendor ile ilgili cache'leri invalidate et
  */
 export function invalidateVendorCache() {
-  revalidateTag(CACHE_TAGS.VENDORS);
+  revalidateTag(CACHE_TAGS.VENDORS, "max");
   revalidatePath("/vendors");
 }
 
@@ -320,7 +325,7 @@ export function invalidateLookupCache(
 
   const tag = tagMap[type];
   if (tag) {
-    revalidateTag(tag);
+    revalidateTag(tag, "max");
   }
 
   // Vendors sayfasını da revalidate et

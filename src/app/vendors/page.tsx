@@ -249,9 +249,7 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
       ? params.delivery_models.split(",").map(Number)
       : null,
     p_tag_ids: params.tags ? params.tags.split(",").map(Number) : null,
-    p_lead_time_types: params.lead_time
-      ? params.lead_time.split(",")
-      : null,
+    p_lead_time_types: params.lead_time ? params.lead_time.split(",") : null,
     p_available_24_7: params.available_24_7 === "true" ? true : null,
     p_has_refrigerated: params.has_refrigerated === "true" ? true : null,
     p_serves_outside_city: params.serves_outside_city === "true" ? true : null,
@@ -272,7 +270,7 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
   );
 
   // Sonuçları parse et
-  const result: SearchResult = searchResult || {
+  const result: SearchResult = (searchResult as unknown as SearchResult) || {
     vendors: [],
     total_count: 0,
     page: 1,
@@ -309,7 +307,7 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
     const urlParams = new URLSearchParams();
     // page parametresini sıfırla (filtre değiştiğinde)
     const resetPage = Object.keys(newParams).some((k) => k !== "page");
-    
+
     Object.entries({ ...params, ...newParams }).forEach(([key, value]) => {
       if (key === "page" && resetPage && !newParams.page) return;
       if (value) urlParams.set(key, value);
@@ -527,13 +525,16 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                         max_guest_count: vendor.max_guest_count,
                         lead_time_type: vendor.lead_time_type,
                         available_24_7: vendor.available_24_7,
-                        has_refrigerated_vehicle: vendor.has_refrigerated_vehicle,
+                        has_refrigerated_vehicle:
+                          vendor.has_refrigerated_vehicle,
                         serves_outside_city: vendor.serves_outside_city,
                         halal_certified: vendor.halal_certified,
                         free_tasting: vendor.free_tasting,
                         free_delivery: vendor.free_delivery,
                         accepts_last_minute: vendor.accepts_last_minute,
-                        city: vendor.city_name ? { name: vendor.city_name } : null,
+                        city: vendor.city_name
+                          ? { name: vendor.city_name }
+                          : null,
                         district: vendor.district_name
                           ? { name: vendor.district_name }
                           : null,

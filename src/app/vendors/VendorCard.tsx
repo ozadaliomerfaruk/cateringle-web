@@ -16,12 +16,23 @@ interface VendorCardProps {
     avg_price_per_person: number | null;
     min_guest_count: number | null;
     max_guest_count: number | null;
+    lead_time_type?: string | null;
     available_24_7?: boolean;
     has_refrigerated_vehicle?: boolean;
     serves_outside_city?: boolean;
-    city: { name: string } | null;
-    district: { name: string } | null;
-    vendor_ratings:
+    halal_certified?: boolean;
+    free_tasting?: boolean;
+    free_delivery?: boolean;
+    accepts_last_minute?: boolean;
+    // İki farklı format destekle (eski ve yeni)
+    city?: { name: string } | null;
+    district?: { name: string } | null;
+    city_name?: string | null;
+    district_name?: string | null;
+    // Rating - iki format
+    avg_rating?: number | null;
+    review_count?: number | null;
+    vendor_ratings?:
       | { avg_rating: number | null; review_count: number | null }[]
       | null;
     vendor_cuisines?: { cuisine_type_id: number }[];
@@ -35,8 +46,15 @@ export default function VendorCard({ vendor }: VendorCardProps) {
   // Sadece logo_url kullan
   const hasImage = !!vendor.logo_url;
 
+  // Rating - her iki formatı destekle
   const rating = vendor.vendor_ratings?.[0];
-  const hasRating = rating?.avg_rating != null && rating.avg_rating > 0;
+  const avgRating = vendor.avg_rating ?? rating?.avg_rating;
+  const reviewCount = vendor.review_count ?? rating?.review_count;
+  const hasRating = avgRating != null && avgRating > 0;
+
+  // Konum - her iki formatı destekle
+  const cityName = vendor.city_name ?? vendor.city?.name;
+  const districtName = vendor.district_name ?? vendor.district?.name;
 
   return (
     <Link
@@ -81,24 +99,20 @@ export default function VendorCard({ vendor }: VendorCardProps) {
             <div className="flex shrink-0 items-center gap-1">
               <Star size={14} weight="fill" className="text-slate-900" />
               <span className="text-sm font-medium text-slate-900">
-                {Number(rating.avg_rating).toFixed(1)}
+                {Number(avgRating).toFixed(1)}
               </span>
-              {rating.review_count && rating.review_count > 0 && (
-                <span className="text-sm text-slate-500">
-                  ({rating.review_count})
-                </span>
+              {reviewCount && reviewCount > 0 && (
+                <span className="text-sm text-slate-500">({reviewCount})</span>
               )}
             </div>
           )}
         </div>
 
         {/* Konum */}
-        {(vendor.city?.name || vendor.district?.name) && (
+        {(cityName || districtName) && (
           <p className="mt-0.5 flex items-center gap-1 text-sm text-slate-500">
             <MapPin size={14} weight="light" />
-            {[vendor.district?.name, vendor.city?.name]
-              .filter(Boolean)
-              .join(", ")}
+            {[districtName, cityName].filter(Boolean).join(", ")}
           </p>
         )}
 

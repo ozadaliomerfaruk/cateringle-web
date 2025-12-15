@@ -1,244 +1,184 @@
-# Phase 0.2 Supabase Altyapı Doğrulama Raporu
+# CATERINGLE.COM — Yapılacaklar
 
-**Tarih:** 15 Aralık 2025  
-**Kaynak:** supabase-altyapi.docx  
-**Durum:** ✅ PHASE 0.2 TAMAMLANDI
+**Son Güncelleme:** 15 Aralık 2025
 
 ---
 
-## 1. Kritik Tablolar
+## ✅ Tamamlanan Fazlar
 
-### ✅ idempotency_keys
+### Phase 0: Altyapı
 
-| Alan        | Beklenen                  | Gerçek                           | Durum |
-| ----------- | ------------------------- | -------------------------------- | ----- |
-| key (PK)    | uuid                      | uuid, NOT NULL                   | ✅    |
-| scope       | text                      | text, NOT NULL                   | ✅    |
-| entity_type | text                      | text, NOT NULL                   | ✅    |
-| entity_id   | uuid                      | uuid, NOT NULL                   | ✅    |
-| expires_at  | timestamptz (24h default) | `(now() + '24:00:00'::interval)` | ✅    |
-| created_at  | timestamptz               | timestamptz, default now()       | ✅    |
+- [x] Supabase proje kurulumu
+- [x] Next.js 16 + React 19 + TypeScript 5
+- [x] Tailwind CSS 4 konfigürasyonu
+- [x] Authentication sistemi (Supabase Auth)
+- [x] RLS politikaları
 
-**TTL Cleanup:** `cleanup_expired_idempotency_keys()` fonksiyonu mevcut ✅
+### Phase 0.2: Güvenlik Altyapısı
 
-### ✅ activity_logs
+- [x] idempotency_keys tablosu + TTL
+- [x] activity_logs tablosu + RLS
+- [x] RBAC sistemi (roles, user_roles, helper functions)
+- [x] Rate limiting
+- [x] Turnstile captcha entegrasyonu
+- [x] Trigram indexler (pg_trgm)
+- [x] Composite indexler
 
-| Alan        | Beklenen    | Gerçek                     | Durum |
-| ----------- | ----------- | -------------------------- | ----- |
-| id          | uuid PK     | uuid, gen_random_uuid()    | ✅    |
-| actor_id    | uuid        | uuid, nullable             | ✅    |
-| actor_type  | text        | text, default 'user'       | ✅    |
-| action      | text        | text, NOT NULL             | ✅    |
-| entity_type | text        | text, NOT NULL             | ✅    |
-| entity_id   | uuid        | uuid, nullable             | ✅    |
-| metadata    | jsonb       | jsonb, default '{}'        | ✅    |
-| ip_address  | inet        | inet, nullable             | ✅    |
-| user_agent  | text        | text, nullable             | ✅    |
-| request_id  | text        | text, nullable             | ✅    |
-| created_at  | timestamptz | timestamptz, default now() | ✅    |
+### Phase 1: Temel Modüller
 
-> **Not:** Schema knowledge-reference.md'den farklı: `old_data/new_data` yerine `metadata` jsonb kullanılmış. Bu kabul edilebilir - metadata içinde saklanabilir.
+- [x] Vendor listeleme (/vendors)
+- [x] Vendor detay sayfası (/vendors/[slug])
+- [x] Vendor arama (search_vendors RPC)
+- [x] Lead form (talep oluşturma)
+- [x] Şehir/ilçe filtreleme
+- [x] Kategori sistemi (segments, categories, services)
+- [x] Mutfak türleri, teslimat modelleri, etiketler
 
-### ✅ vendor_leads
+### Phase 2: Dashboard'lar
 
-- Tablo mevcut
-- Composite index `(vendor_id, status, created_at DESC)` ✅
-- Soft delete desteği (deleted_at) ✅
+- [x] Vendor dashboard (/vendor)
+- [x] Vendor leads yönetimi (/vendor/leads)
+- [x] Vendor ayarları (/vendor/settings)
+- [x] Müşteri hesabı (/account)
+- [x] Müşteri talepleri (/account/leads)
+- [x] Müşteri teklifleri (/account/quotes)
+- [x] Müşteri favorileri (/account/favorites)
+- [x] Admin panel (/panel)
 
-### ✅ vendors
+### Phase 3: İletişim & Bildirim
 
-- Tablo mevcut
-- city_id + status index ✅
-- Trigram index (business_name) ✅
+- [x] Takvim sistemi (vendor_calendar, availability)
+- [x] Bildirim sistemi (notifications tablosu)
+- [x] NotificationBell component
+- [x] Bildirim tercihleri
 
-### ✅ leads
+### Phase 3.5: Mesajlaşma Sistemi ✅ YENİ
 
-- Tablo mevcut
-- created_at index ✅
-- Trigram index (customer_email) ✅
-- Soft delete desteği (deleted_at) ✅
-
-### ✅ quotes
-
-- Tablo mevcut
-- vendor_lead_id index ✅
-- status index ✅
-- Soft delete desteği (deleted_at) ✅
-
-### ✅ profiles
-
-- Tablo mevcut
-- role column (user_role enum, default 'customer') ✅
-- Soft delete desteği (deleted_at) ✅
-
-### ✅ user_roles (RBAC)
-
-- Tablo mevcut
-- UNIQUE constraint (user_id, role_id) ✅
-- is_active column ✅
-
-### ✅ roles (RBAC)
-
-- Tablo mevcut
-- name column (varchar 50) ✅
+- [x] vendor_lead_messages tablosu
+- [x] Real-time messaging (Supabase Realtime)
+- [x] MessageThread, MessageInput, ConversationList components
+- [x] Vendor inbox (/vendor/messages)
+- [x] Customer inbox (/account/messages)
+- [x] Conversation sayfaları (/\*/messages/[vendorLeadId])
+- [x] Unread count badges (navigation)
+- [x] Per-user read state (conversation_read_state tablosu)
+- [x] Quote-Message entegrasyonu
+- [x] QuoteCard, QuoteSendForm components
+- [x] Quote gönderme (/api/quotes)
+- [x] Quote kabul/red (/api/quotes/[id]/status)
+- [x] Quote state machine (valid transitions)
+- [x] Auto-message on quote send/status change
 
 ---
 
-## 2. RPC Fonksiyonları
+## 🔄 Devam Eden / Sonraki Fazlar
 
-| Fonksiyon                          | Durum | Açıklama                                   |
-| ---------------------------------- | ----- | ------------------------------------------ |
-| `search_vendors`                   | ✅    | Full-featured arama, pagination, filtering |
-| `get_user_roles`                   | ✅    | Kullanıcının aktif rollerini döndürür      |
-| `add_user_role`                    | ✅    | SECURITY DEFINER, conflict handling        |
-| `has_role`                         | ✅    | Boolean kontrol fonksiyonu                 |
-| `create_lead_with_vendor`          | ✅    | Idempotency desteği, transaction güvenliği |
-| `cleanup_expired_idempotency_keys` | ✅    | TTL temizlik fonksiyonu                    |
-| `log_activity`                     | ✅    | Activity logging helper                    |
-| `is_admin`                         | ✅    | Admin kontrolü                             |
-| `is_vendor`                        | ✅    | Vendor kontrolü                            |
-| `get_my_vendor_ids`                | ✅    | Kullanıcının vendor ID'leri                |
-| `can_access_lead_as_vendor`        | ✅    | Lead erişim kontrolü                       |
-| `can_access_vendor_lead`           | ✅    | Vendor lead erişim kontrolü                |
+### Phase 4: Teklif Sistemi İyileştirmeleri
 
----
+- [ ] Quote counter-offer (karşı teklif)
+- [ ] Quote revision history
+- [ ] Quote PDF export
+- [ ] Quote templates (vendor için)
+- [ ] Bulk quote operations
 
-## 3. Index Doğrulaması
+### Phase 5: Email Bildirimleri
 
-### idempotency_keys Indexes
+- [ ] Email template sistemi
+- [ ] Yeni mesaj email bildirimi
+- [ ] Yeni teklif email bildirimi
+- [ ] Quote kabul/red email bildirimi
+- [ ] Email preference settings
+- [ ] Unsubscribe flow
 
-| Index                             | Tanım              | Durum |
-| --------------------------------- | ------------------ | ----- |
-| `idempotency_keys_pkey`           | UNIQUE btree (key) | ✅    |
-| `idx_idempotency_keys_expires_at` | btree (expires_at) | ✅    |
-| `idx_idempotency_keys_scope_key`  | btree (scope, key) | ✅    |
+### Phase 6: Performans & SEO
 
-### vendor_leads Indexes
+- [ ] Image optimization (next/image)
+- [ ] ISR (Incremental Static Regeneration)
+- [ ] Sitemap generation
+- [ ] Meta tags optimization
+- [ ] Structured data (JSON-LD)
+- [ ] Core Web Vitals optimization
 
-| Index                                    | Tanım                                      | Durum            |
-| ---------------------------------------- | ------------------------------------------ | ---------------- |
-| `vendor_leads_pkey`                      | UNIQUE btree (id)                          | ✅               |
-| `idx_vendor_leads_vendor_status_created` | btree (vendor_id, status, created_at DESC) | ✅ **COMPOSITE** |
-| `idx_vendor_leads_lead_id`               | btree (lead_id)                            | ✅               |
-| `idx_vendor_leads_vendor_id`             | btree (vendor_id)                          | ✅               |
-| `idx_vendor_leads_deleted_at`            | btree (deleted_at) WHERE NULL              | ✅               |
+### Phase 7: Analytics & Monitoring
 
-### vendors Indexes
+- [ ] Vendor analytics dashboard
+- [ ] Lead conversion tracking
+- [ ] Quote success rate metrics
+- [ ] Response time tracking
+- [ ] Abuse monitoring dashboard
 
-| Index                       | Tanım                                  | Durum            |
-| --------------------------- | -------------------------------------- | ---------------- |
-| `vendors_pkey`              | UNIQUE btree (id)                      | ✅               |
-| `vendors_slug_key`          | UNIQUE btree (slug)                    | ✅               |
-| `idx_vendors_city_status`   | btree (city_id, status) WHERE approved | ✅ **COMPOSITE** |
-| `idx_vendors_name_trgm`     | GIN (business_name gin_trgm_ops)       | ✅ **TRIGRAM**   |
-| `idx_vendors_status_active` | btree (status) WHERE approved          | ✅               |
+### Phase 8: Ödeme Sistemi
 
-### leads Indexes
+- [ ] Ödeme altyapısı seçimi (iyzico/stripe)
+- [ ] Vendor abonelik planları
+- [ ] Premium listing
+- [ ] Commission tracking
 
-| Index                           | Tanım                             | Durum          |
-| ------------------------------- | --------------------------------- | -------------- |
-| `leads_pkey`                    | UNIQUE btree (id)                 | ✅             |
-| `idx_leads_created_at`          | btree (created_at)                | ✅             |
-| `idx_leads_email_trgm`          | GIN (customer_email gin_trgm_ops) | ✅ **TRIGRAM** |
-| `idx_leads_customer_profile_id` | btree (customer_profile_id)       | ✅             |
-| `idx_leads_deleted_at`          | btree (deleted_at) WHERE NULL     | ✅             |
+### Phase 9: Mobile App
+
+- [ ] React Native / Expo setup
+- [ ] Push notifications
+- [ ] Offline support
+- [ ] Deep linking
 
 ---
 
-## 4. RLS Policy Doğrulaması
+## 🐛 Bilinen Sorunlar / Technical Debt
 
-### Kritik Tablolarda RLS
-
-| Tablo            | RLS Aktif | Politika Sayısı | Durum                     |
-| ---------------- | --------- | --------------- | ------------------------- |
-| activity_logs    | ✅        | 3               | Admin/Vendor/Service role |
-| idempotency_keys | ✅        | 1               | Service role only         |
-| leads            | ✅        | 7               | Customer/Vendor/Admin     |
-| vendor_leads     | ✅        | 6               | Customer/Vendor/Admin     |
-| vendors          | ✅        | 9               | Public/Owner/Admin        |
-| quotes           | ✅        | 10              | Customer/Vendor/Admin     |
-| profiles         | ✅        | 5               | Own/Admin                 |
-| user_roles       | ✅        | 3               | Own/Admin                 |
-| roles            | ✅        | 1               | Authenticated read        |
-
-### Önemli RLS Politikaları
-
-- **idempotency_keys:** Sadece `service_role` erişebilir ✅
-- **activity_logs:** Admin tümünü görebilir, vendor kendi entity'lerini ✅
-- **leads:** `can_access_lead_as_vendor()` helper kullanılıyor ✅
-- **vendor_leads:** `can_access_vendor_lead()` helper kullanılıyor ✅
-- **user_roles:** `has_role()` fonksiyonu kullanılıyor ✅
+| Sorun                           | Öncelik | Notlar                         |
+| ------------------------------- | ------- | ------------------------------ |
+| TypeScript strict mode hataları | Düşük   | cache.ts, notifications.ts     |
+| Email template HTML escape      | Orta    | User input escape edilmeli     |
+| Vendor profile image upload     | Orta    | Storage bucket gerekli         |
+| Search performance              | Düşük   | Large dataset'te test edilmeli |
 
 ---
 
-## 5. Helper Fonksiyonlar
+## 📊 Database Migrations (Uygulanmış)
 
-| Fonksiyon                     | Kullanım      | Durum               |
-| ----------------------------- | ------------- | ------------------- |
-| `is_admin()`                  | RLS policies  | ✅ SECURITY DEFINER |
-| `is_vendor()`                 | RLS policies  | ✅ SECURITY DEFINER |
-| `get_my_vendor_ids()`         | RLS policies  | ✅ SECURITY DEFINER |
-| `is_lead_customer()`          | RLS policies  | ✅ SECURITY DEFINER |
-| `can_access_lead_as_vendor()` | RLS policies  | ✅ SECURITY DEFINER |
-| `can_access_vendor_lead()`    | RLS policies  | ✅ SECURITY DEFINER |
-| `has_role()`                  | RBAC checks   | ✅ SECURITY DEFINER |
-| `check_abuse_threshold()`     | Rate limiting | ✅ SECURITY DEFINER |
+| Migration                                 | Tarih      | Açıklama                                 |
+| ----------------------------------------- | ---------- | ---------------------------------------- |
+| 20251215_vendor_lead_messages.sql         | 15.12.2025 | Mesaj tablosu, RLS, RPC                  |
+| 20251215_quote_message_integration.sql    | 15.12.2025 | message_type, quote_id, triggers         |
+| 20251215_read_state_and_state_machine.sql | 15.12.2025 | Per-user read state, quote state machine |
 
 ---
 
-## 6. Trigram Extension
+## 🔧 Teknik Notlar
 
-```
-✅ pg_trgm extension aktif (public schema'da fonksiyonlar mevcut)
-   - similarity(), show_trgm(), gin_trgm_ops
-   - leads.customer_email üzerinde GIN index
-   - vendors.business_name üzerinde GIN index
+### API Response Standardı
+
+```typescript
+// Success
+{ ok: true, data: T }
+
+// Error
+{ ok: false, error: { code: string, message: string } }
 ```
 
----
+### Güvenlik Zinciri
 
-## 7. Phase 0.2 Checklist Sonucu
+- **Public endpoint:** Zod → Rate Limit → Turnstile → Idempotency → İşlem
+- **Auth endpoint:** Auth → Zod → Rate Limit → İşlem
 
-| Gereksinim                   | Durum |
-| ---------------------------- | ----- |
-| idempotency_keys tablosu     | ✅    |
-| idempotency_keys UNIQUE key  | ✅    |
-| idempotency_keys TTL (24h)   | ✅    |
-| cleanup fonksiyonu           | ✅    |
-| activity_logs tablosu        | ✅    |
-| activity_logs RLS            | ✅    |
-| search_vendors RPC           | ✅    |
-| get_user_roles RPC           | ✅    |
-| add_user_role RPC            | ✅    |
-| has_role RPC                 | ✅    |
-| create_lead_with_vendor RPC  | ✅    |
-| vendor_leads composite index | ✅    |
-| vendors city/status index    | ✅    |
-| leads created_at index       | ✅    |
-| Trigram indexes              | ✅    |
-| RLS on all critical tables   | ✅    |
+### RBAC Mapping
+
+- Kod'da `vendor` = DB'de `vendor_owner`
+- Tek kaynak: `user_roles` / `roles` tabloları
 
 ---
 
-## 8. Sonuç
+## 📁 Önemli Dosyalar
 
-### ✅ PHASE 0.2 TAMAMEN DOĞRULANDI
-
-Tüm kritik altyapı bileşenleri mevcut ve doğru yapılandırılmış:
-
-1. **Idempotency sistemi** tam çalışır durumda
-2. **Activity logging** kapsamlı şekilde implement edilmiş
-3. **RBAC sistemi** (roles + user_roles + helper functions) aktif
-4. **Arama altyapısı** (search_vendors + trigram indexes) hazır
-5. **RLS politikaları** tüm kritik tablolarda aktif
-6. **Composite indexler** performans için optimize edilmiş
-
-### Sonraki Adımlar
-
-- Phase 1: Frontend integration testleri
-- Phase 2: API endpoint testleri
-- Phase 3: E2E flow testleri
+| Dosya                              | Açıklama                      |
+| ---------------------------------- | ----------------------------- |
+| `src/types/messaging.ts`           | Mesajlaşma tipleri            |
+| `src/lib/messages.ts`              | Server-side messaging helpers |
+| `src/components/QuoteCard.tsx`     | Teklif kartı componenti       |
+| `src/components/MessageThread.tsx` | Mesaj thread componenti       |
+| `src/app/api/quotes/route.ts`      | Quote API                     |
+| `src/app/api/messages/route.ts`    | Messages API                  |
 
 ---
 
-\_Bu rapor supabase-altyapi.docx dosyasının tam analizi sonucunda oluşturulmuştur.\_15.12.2025 03:12
+_Bu dosya proje roadmap'i için tek doğru kaynaktır. Her değişiklikte güncellenmelidir._
