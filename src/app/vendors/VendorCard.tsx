@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import FavoriteButton from "../../components/FavoriteButton";
 import ImageCarousel from "../../components/ImageCarousel";
 import VendorBadges from "../../components/VendorBadges";
-import { MapPin, Star } from "@phosphor-icons/react";
+import QuickQuoteModal from "../../components/QuickQuoteModal";
+import { MapPin, Star, PaperPlaneTilt } from "@phosphor-icons/react";
 
 interface VendorImage {
   id: string;
@@ -49,6 +51,8 @@ interface VendorCardProps {
 }
 
 export default function VendorCard({ vendor }: VendorCardProps) {
+  const [isQuickQuoteOpen, setIsQuickQuoteOpen] = useState(false);
+
   // Images - is_primary olanı öne al
   const sortedImages = [...(vendor.images || [])].sort((a, b) => {
     if (a.is_primary && !b.is_primary) return -1;
@@ -75,73 +79,94 @@ export default function VendorCard({ vendor }: VendorCardProps) {
   const districtName = vendor.district_name ?? vendor.district?.name;
 
   return (
-    <div className="group">
-      {/* Görsel Alanı */}
-      <div className="relative">
-        <Link href={`/vendors/${vendor.slug}`}>
-          <ImageCarousel
-            images={carouselImages}
-            alt={vendor.business_name}
-            fallbackLetter={vendor.business_name?.charAt(0)}
-            aspectRatio="4/3"
-            showArrows={true}
-            showDots={true}
-          />
-        </Link>
+    <>
+      <div className="group">
+        {/* Görsel Alanı */}
+        <div className="relative">
+          <Link href={`/vendors/${vendor.slug}`}>
+            <ImageCarousel
+              images={carouselImages}
+              alt={vendor.business_name}
+              fallbackLetter={vendor.business_name?.charAt(0)}
+              aspectRatio="4/3"
+              showArrows={true}
+              showDots={true}
+            />
+          </Link>
 
-        {/* Favori Butonu */}
-        <div className="absolute right-3 top-3 z-10">
-          <FavoriteButton vendorId={vendor.id} />
+          {/* Favori Butonu */}
+          <div className="absolute right-3 top-3 z-10">
+            <FavoriteButton vendorId={vendor.id} />
+          </div>
+
+          {/* Hızlı Teklif Butonu - Hover'da görünür */}
+          <button
+            onClick={() => setIsQuickQuoteOpen(true)}
+            className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-1.5 text-sm font-medium text-slate-900 opacity-0 shadow-lg backdrop-blur-sm transition-opacity hover:bg-white group-hover:opacity-100"
+          >
+            <PaperPlaneTilt size={16} weight="bold" className="text-leaf-600" />
+            Hızlı Teklif
+          </button>
         </div>
+
+        {/* Bilgi Alanı */}
+        <Link href={`/vendors/${vendor.slug}`} className="block mt-3">
+          {/* Üst satır: İsim + Rating */}
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold text-slate-900 group-hover:text-leaf-600 transition-colors">
+              {vendor.business_name}
+            </h3>
+            {hasRating && (
+              <div className="flex shrink-0 items-center gap-1">
+                <Star size={14} weight="fill" className="text-slate-900" />
+                <span className="text-sm font-medium text-slate-900">
+                  {Number(avgRating).toFixed(1)}
+                </span>
+                {reviewCount && reviewCount > 0 && (
+                  <span className="text-sm text-slate-500">
+                    ({reviewCount})
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Konum */}
+          {(cityName || districtName) && (
+            <p className="mt-0.5 flex items-center gap-1 text-sm text-slate-500">
+              <MapPin size={14} weight="light" />
+              {[districtName, cityName].filter(Boolean).join(", ")}
+            </p>
+          )}
+
+          {/* Badge'ler */}
+          <VendorBadges
+            vendor={vendor}
+            maxBadges={3}
+            size="sm"
+            showLabel={true}
+            className="mt-2"
+          />
+
+          {/* Fiyat */}
+          {typeof vendor.avg_price_per_person === "number" && (
+            <p className="mt-2">
+              <span className="font-semibold text-slate-900">
+                ₺{Math.round(vendor.avg_price_per_person)}
+              </span>
+              <span className="text-slate-500"> / kişi</span>
+            </p>
+          )}
+        </Link>
       </div>
 
-      {/* Bilgi Alanı */}
-      <Link href={`/vendors/${vendor.slug}`} className="block mt-3">
-        {/* Üst satır: İsim + Rating */}
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-slate-900 group-hover:text-leaf-600 transition-colors">
-            {vendor.business_name}
-          </h3>
-          {hasRating && (
-            <div className="flex shrink-0 items-center gap-1">
-              <Star size={14} weight="fill" className="text-slate-900" />
-              <span className="text-sm font-medium text-slate-900">
-                {Number(avgRating).toFixed(1)}
-              </span>
-              {reviewCount && reviewCount > 0 && (
-                <span className="text-sm text-slate-500">({reviewCount})</span>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Konum */}
-        {(cityName || districtName) && (
-          <p className="mt-0.5 flex items-center gap-1 text-sm text-slate-500">
-            <MapPin size={14} weight="light" />
-            {[districtName, cityName].filter(Boolean).join(", ")}
-          </p>
-        )}
-
-        {/* Badge'ler */}
-        <VendorBadges
-          vendor={vendor}
-          maxBadges={3}
-          size="sm"
-          showLabel={true}
-          className="mt-2"
-        />
-
-        {/* Fiyat */}
-        {typeof vendor.avg_price_per_person === "number" && (
-          <p className="mt-2">
-            <span className="font-semibold text-slate-900">
-              ₺{Math.round(vendor.avg_price_per_person)}
-            </span>
-            <span className="text-slate-500"> / kişi</span>
-          </p>
-        )}
-      </Link>
-    </div>
+      {/* Quick Quote Modal */}
+      <QuickQuoteModal
+        isOpen={isQuickQuoteOpen}
+        onClose={() => setIsQuickQuoteOpen(false)}
+        vendorId={vendor.id}
+        vendorName={vendor.business_name}
+      />
+    </>
   );
 }

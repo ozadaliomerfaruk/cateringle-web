@@ -588,6 +588,7 @@ export default async function VendorsPage({ searchParams }: VendorsPageProps) {
                             review_count: vendor.review_count,
                           },
                         ],
+                        images: vendor.images || [],
                       }}
                     />
                   ))}
