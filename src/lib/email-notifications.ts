@@ -10,6 +10,7 @@ import {
   newQuoteEmailTemplate,
   vendorApprovedEmailTemplate,
   vendorRejectedEmailTemplate,
+  newReviewEmailTemplate,
   generateUnsubscribeToken,
 } from "@/lib/email-templates";
 
@@ -528,6 +529,85 @@ export async function sendVendorRejectedEmail({
     "vendor_rejected",
     "vendor",
     vendorId,
+    result.success ? "sent" : "failed",
+    result.success ? undefined : String(result.error)
+  );
+
+  return { success: result.success };
+}
+
+// ============================================
+// Review Email Functions
+// ============================================
+
+interface SendNewReviewEmailParams {
+  vendorOwnerId: string;
+  vendorName: string;
+  customerName: string;
+  reviewId: string;
+  rating: number;
+  comment?: string | null;
+  eventType?: string | null;
+  guestCount?: number | null;
+  reviewDate: string;
+}
+
+/**
+ * Send new review notification email to vendor
+ */
+export async function sendNewReviewEmail({
+  vendorOwnerId,
+  vendorName,
+  customerName,
+  reviewId,
+  rating,
+  comment,
+  eventType,
+  guestCount,
+  reviewDate,
+}: SendNewReviewEmailParams): Promise<{ success: boolean; skipped?: boolean; rateLimited?: boolean }> {
+  // Check preference
+  const shouldSend = await shouldSendEmail(vendorOwnerId, "review_new_email");
+  if (!shouldSend) {
+    await logEmailSend(vendorOwnerId, "review_new", "review", reviewId, "skipped");
+    return { success: true, skipped: true };
+  }
+
+  // Check rate limit
+  const withinLimit = await checkEmailRateLimit(vendorOwnerId);
+  if (!withinLimit) {
+    await logEmailSend(vendorOwnerId, "review_new", "review", reviewId, "skipped", "Rate limited");
+    return { success: true, rateLimited: true };
+  }
+
+  // Get email
+  const email = await getUserEmail(vendorOwnerId);
+  if (!email) {
+    await logEmailSend(vendorOwnerId, "review_new", "review", reviewId, "failed", "No email found");
+    return { success: false };
+  }
+
+  const reviewsUrl = `${BASE_URL}/vendor/reviews`;
+
+  const { subject, html } = newReviewEmailTemplate({
+    vendorName,
+    customerName,
+    rating,
+    comment,
+    eventType,
+    guestCount,
+    reviewDate,
+    reviewsUrl,
+    unsubscribeUrl: getUnsubscribeUrl(vendorOwnerId, "review_new"),
+  });
+
+  const result = await sendEmail({ to: email, subject, html });
+
+  await logEmailSend(
+    vendorOwnerId,
+    "review_new",
+    "review",
+    reviewId,
     result.success ? "sent" : "failed",
     result.success ? undefined : String(result.error)
   );

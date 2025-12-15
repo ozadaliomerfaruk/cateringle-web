@@ -6,6 +6,8 @@ import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MobileBottomNav from "../components/MobileBottomNav";
+import ServiceWorkerRegistration from "../components/ServiceWorkerRegistration";
+import PWAInstallPrompt from "../components/PWAInstallPrompt";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const montserrat = Montserrat({
@@ -66,6 +68,8 @@ export default async function RootLayout({
           <Footer />
         </div>
         <MobileBottomNav />
+        <ServiceWorkerRegistration />
+        <PWAInstallPrompt />
       </body>
     </html>
   );

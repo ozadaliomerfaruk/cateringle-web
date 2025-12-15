@@ -966,8 +966,141 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_revisions: {
+        Row: {
+          change_note: string | null
+          change_type: string
+          changed_by: string | null
+          created_at: string | null
+          exclusions: string | null
+          id: string
+          inclusions: string | null
+          message: string | null
+          price_per_person: number | null
+          quote_id: string
+          revision_number: number
+          terms: string | null
+          total_price: number
+          valid_until: string | null
+        }
+        Insert: {
+          change_note?: string | null
+          change_type: string
+          changed_by?: string | null
+          created_at?: string | null
+          exclusions?: string | null
+          id?: string
+          inclusions?: string | null
+          message?: string | null
+          price_per_person?: number | null
+          quote_id: string
+          revision_number?: number
+          terms?: string | null
+          total_price: number
+          valid_until?: string | null
+        }
+        Update: {
+          change_note?: string | null
+          change_type?: string
+          changed_by?: string | null
+          created_at?: string | null
+          exclusions?: string | null
+          id?: string
+          inclusions?: string | null
+          message?: string | null
+          price_per_person?: number | null
+          quote_id?: string
+          revision_number?: number
+          terms?: string | null
+          total_price?: number
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_revisions_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_templates: {
+        Row: {
+          created_at: string | null
+          default_price_per_person: number | null
+          deposit_percentage: number | null
+          description: string | null
+          exclusions: string | null
+          id: string
+          inclusions: string | null
+          is_default: boolean | null
+          message: string | null
+          name: string
+          terms: string | null
+          title: string | null
+          updated_at: string | null
+          usage_count: number | null
+          valid_days: number | null
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          default_price_per_person?: number | null
+          deposit_percentage?: number | null
+          description?: string | null
+          exclusions?: string | null
+          id?: string
+          inclusions?: string | null
+          is_default?: boolean | null
+          message?: string | null
+          name: string
+          terms?: string | null
+          title?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          valid_days?: number | null
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string | null
+          default_price_per_person?: number | null
+          deposit_percentage?: number | null
+          description?: string | null
+          exclusions?: string | null
+          id?: string
+          inclusions?: string | null
+          is_default?: boolean | null
+          message?: string | null
+          name?: string
+          terms?: string | null
+          title?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          valid_days?: number | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_templates_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_full_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_templates_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quotes: {
         Row: {
+          counter_offer_by: string | null
+          counter_offer_note: string | null
           created_at: string
           customer_response_note: string | null
           deleted_at: string | null
@@ -976,7 +1109,9 @@ export type Database = {
           exclusions: string | null
           id: string
           inclusions: string | null
+          is_counter_offer: boolean | null
           message: string | null
+          parent_quote_id: string | null
           price_per_person: number | null
           responded_at: string | null
           sent_at: string | null
@@ -990,6 +1125,8 @@ export type Database = {
           viewed_at: string | null
         }
         Insert: {
+          counter_offer_by?: string | null
+          counter_offer_note?: string | null
           created_at?: string
           customer_response_note?: string | null
           deleted_at?: string | null
@@ -998,7 +1135,9 @@ export type Database = {
           exclusions?: string | null
           id?: string
           inclusions?: string | null
+          is_counter_offer?: boolean | null
           message?: string | null
+          parent_quote_id?: string | null
           price_per_person?: number | null
           responded_at?: string | null
           sent_at?: string | null
@@ -1012,6 +1151,8 @@ export type Database = {
           viewed_at?: string | null
         }
         Update: {
+          counter_offer_by?: string | null
+          counter_offer_note?: string | null
           created_at?: string
           customer_response_note?: string | null
           deleted_at?: string | null
@@ -1020,7 +1161,9 @@ export type Database = {
           exclusions?: string | null
           id?: string
           inclusions?: string | null
+          is_counter_offer?: boolean | null
           message?: string | null
+          parent_quote_id?: string | null
           price_per_person?: number | null
           responded_at?: string | null
           sent_at?: string | null
@@ -1034,6 +1177,13 @@ export type Database = {
           viewed_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "quotes_parent_quote_id_fkey"
+            columns: ["parent_quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "quotes_vendor_lead_id_fkey"
             columns: ["vendor_lead_id"]
@@ -2728,6 +2878,7 @@ export type Database = {
         }
         Returns: string
       }
+      get_admin_analytics: { Args: { p_days?: number }; Returns: Json }
       get_categories_by_segment: {
         Args: { p_segment_slug: string }
         Returns: {
@@ -2747,6 +2898,7 @@ export type Database = {
       }
       get_my_role: { Args: never; Returns: string }
       get_my_vendor_ids: { Args: never; Returns: string[] }
+      get_quote_with_history: { Args: { p_quote_id: string }; Returns: Json }
       get_unread_message_count: { Args: never; Returns: Json }
       get_unread_notification_count: {
         Args: { p_user_id: string }

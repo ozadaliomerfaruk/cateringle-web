@@ -1,58 +1,47 @@
-// src/app/components/ReviewForm.tsx
+// src/components/ReviewForm.tsx
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { Users, Calendar } from "@phosphor-icons/react";
+
+interface ReviewFormUser {
+  id: string;
+  name: string;
+  email: string;
+}
 
 interface ReviewFormProps {
   vendorId: string;
   vendorName: string;
+  user: ReviewFormUser | null;
 }
 
-export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
+const EVENT_TYPES = [
+  "Düğün",
+  "Nişan",
+  "Kına",
+  "Doğum Günü",
+  "Kurumsal Etkinlik",
+  "Kokteyl",
+  "Mezuniyet",
+  "Özel Davet",
+  "Diğer",
+];
+
+export default function ReviewForm({
+  vendorId,
+  vendorName,
+  user,
+}: ReviewFormProps) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
-  const [isCheckingUser, setIsCheckingUser] = useState(true);
-  const [user, setUser] = useState<{
-    id: string;
-    name: string;
-    email: string;
-  } | null>(null);
-
-  const fetchUser = useCallback(async () => {
-    try {
-      const supabase = createBrowserSupabaseClient();
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
-
-      if (authUser) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", authUser.id)
-          .maybeSingle();
-
-        setUser({
-          id: authUser.id,
-          name: profile?.full_name || "",
-          email: authUser.email || "",
-        });
-      }
-    } catch (err) {
-      console.error("Error fetching user:", err);
-    } finally {
-      setIsCheckingUser(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+  const [eventType, setEventType] = useState("");
+  const [guestCount, setGuestCount] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +63,8 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
         customer_email: user?.email || null,
         rating,
         comment: comment.trim() || null,
+        event_type: eventType || null,
+        guest_count: guestCount ? parseInt(guestCount) : null,
         is_verified: false,
         is_approved: false,
       });
@@ -87,6 +78,8 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
       setSuccess(true);
       setRating(0);
       setComment("");
+      setEventType("");
+      setGuestCount("");
     } catch (err) {
       console.error("Submit error:", err);
       setError("Beklenmeyen bir hata oluştu");
@@ -94,36 +87,6 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
       setLoading(false);
     }
   };
-
-  // Loading state while checking user
-  if (isCheckingUser) {
-    return (
-      <div className="rounded-lg border bg-white p-4">
-        <div className="flex items-center justify-center gap-2 py-4">
-          <svg
-            className="h-5 w-5 animate-spin text-leaf-600"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          <span className="text-sm text-slate-500">Yükleniyor...</span>
-        </div>
-      </div>
-    );
-  }
 
   if (!user) {
     return (
@@ -145,7 +108,7 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
 
   if (success) {
     return (
-      <div className="rounded-lg border border-leaf--200 bg-leaf-50 p-4">
+      <div className="rounded-lg border border-leaf-200 bg-leaf-50 p-4">
         <div className="flex items-center gap-2">
           <svg
             className="h-5 w-5 text-leaf-600"
@@ -226,7 +189,7 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
               <svg
                 className={`h-7 w-7 ${
                   star <= (hoverRating || rating)
-                    ? "text-amber-400 fill-amber-400"
+                    ? "fill-amber-400 text-amber-400"
                     : "text-slate-300"
                 }`}
                 viewBox="0 0 20 20"
@@ -241,6 +204,51 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
               {rating}/5
             </span>
           )}
+        </div>
+      </div>
+
+      {/* Event Details */}
+      <div className="mb-4 grid grid-cols-2 gap-3">
+        <div>
+          <label
+            htmlFor="event-type"
+            className="mb-1 flex items-center gap-1 text-xs font-medium text-slate-700"
+          >
+            <Calendar size={12} />
+            Etkinlik Türü
+          </label>
+          <select
+            id="event-type"
+            value={eventType}
+            onChange={(e) => setEventType(e.target.value)}
+            className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-leaf-500 focus:ring-1 focus:ring-leaf-500"
+          >
+            <option value="">Seçiniz</option>
+            {EVENT_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label
+            htmlFor="guest-count"
+            className="mb-1 flex items-center gap-1 text-xs font-medium text-slate-700"
+          >
+            <Users size={12} />
+            Kişi Sayısı
+          </label>
+          <input
+            type="number"
+            id="guest-count"
+            value={guestCount}
+            onChange={(e) => setGuestCount(e.target.value)}
+            placeholder="örn: 100"
+            min="1"
+            max="10000"
+            className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-leaf-500 focus:ring-1 focus:ring-leaf-500"
+          />
         </div>
       </div>
 
@@ -259,7 +267,7 @@ export default function ReviewForm({ vendorId, vendorName }: ReviewFormProps) {
           rows={3}
           maxLength={1000}
           placeholder={`${vendorName} ile deneyiminizi paylaşın...`}
-          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-leaf--500 focus:ring-1 focus:ring-leaf--500"
+          className="w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors focus:border-leaf-500 focus:ring-1 focus:ring-leaf-500"
         />
         <p className="mt-1 text-right text-xs text-slate-400">
           {comment.length}/1000
