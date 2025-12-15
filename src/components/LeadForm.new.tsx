@@ -276,7 +276,9 @@ export default function LeadForm({
       if (!response.ok) {
         // Validation hatası varsa detayları göster
         if (data.details && Array.isArray(data.details)) {
-          const messages = data.details.map((d: { message: string }) => d.message).join(", ");
+          const messages = data.details
+            .map((d: { message: string }) => d.message)
+            .join(", ");
           throw new Error(messages);
         }
         throw new Error(data.error || "Bir hata oluştu");
@@ -848,12 +850,16 @@ export default function LeadForm({
               setTurnstileError(null);
             }}
             onError={(error) => {
-              setTurnstileError("Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin.");
+              setTurnstileError(
+                "Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin."
+              );
               console.error("Turnstile error:", error);
             }}
             onExpire={() => {
               setTurnstileToken("");
-              setTurnstileError("Güvenlik doğrulaması süresi doldu. Lütfen tekrar deneyin.");
+              setTurnstileError(
+                "Güvenlik doğrulaması süresi doldu. Lütfen tekrar deneyin."
+              );
             }}
             theme="light"
           />

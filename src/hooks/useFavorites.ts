@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useAuth } from "./useAuth";
 
@@ -8,30 +8,39 @@ export function useFavorites() {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const supabase = createBrowserSupabaseClient();
-  const hasFetched = useRef(false);
+
+  // Supabase client'ı bir kez oluştur
+  const supabase = useMemo(() => createBrowserSupabaseClient(), []);
+
+  // User ID'yi takip et
+  const currentUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // User yoksa veya zaten fetch edildiyse çık
-    if (!user) {
-      if (favorites.length > 0 || loading) {
-        // Sadece değişiklik gerekiyorsa state güncelle
-        setFavorites([]);
-        setLoading(false);
-      }
-      hasFetched.current = false;
+    const userId = user?.id ?? null;
+
+    // User değişmediyse ve zaten fetch edildiyse çık
+    if (userId === currentUserIdRef.current && !loading) {
       return;
     }
 
-    // Zaten fetch edildiyse tekrar yapma
-    if (hasFetched.current) return;
+    // User yoksa state'i temizle
+    if (!userId) {
+      currentUserIdRef.current = null;
+      setFavorites([]);
+      setLoading(false);
+      return;
+    }
+
+    // User değiştiyse yeni user için fetch et
+    currentUserIdRef.current = userId;
+    setLoading(true);
 
     const fetchFavorites = async () => {
       try {
         const { data, error } = await supabase
           .from("favorites")
           .select("vendor_id")
-          .eq("user_id", user.id);
+          .eq("user_id", userId);
 
         if (error) {
           console.error("Favorites fetch error:", error);
@@ -44,18 +53,24 @@ export function useFavorites() {
         setFavorites([]);
       } finally {
         setLoading(false);
-        hasFetched.current = true;
       }
     };
 
     fetchFavorites();
-  }, [favorites.length, loading, supabase, user]);
+  }, [user?.id, supabase, loading]);
 
   const toggleFavorite = useCallback(
     async (vendorId: string): Promise<boolean> => {
       if (!user) return false;
 
       const isFavorited = favorites.includes(vendorId);
+
+      // Optimistic update
+      if (isFavorited) {
+        setFavorites((prev) => prev.filter((id) => id !== vendorId));
+      } else {
+        setFavorites((prev) => [...prev, vendorId]);
+      }
 
       try {
         if (isFavorited) {
@@ -66,20 +81,24 @@ export function useFavorites() {
             .eq("vendor_id", vendorId);
 
           if (error) throw error;
-          setFavorites((prev) => prev.filter((id) => id !== vendorId));
         } else {
           const { error } = await supabase
             .from("favorites")
             .insert({ user_id: user.id, vendor_id: vendorId });
 
           if (error) throw error;
-          setFavorites((prev) => [...prev, vendorId]);
         }
 
         return !isFavorited;
       } catch (err) {
         console.error("Toggle favorite error:", err);
-        return isFavorited; // Hata durumunda mevcut durumu koru
+        // Hata olursa geri al (rollback)
+        if (isFavorited) {
+          setFavorites((prev) => [...prev, vendorId]);
+        } else {
+          setFavorites((prev) => prev.filter((id) => id !== vendorId));
+        }
+        return isFavorited;
       }
     },
     [user, favorites, supabase]

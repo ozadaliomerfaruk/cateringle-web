@@ -1,92 +1,46 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { useState } from "react";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from "@/hooks/useAuth";
 
 interface FavoriteButtonProps {
   vendorId: string;
-  initialFavorited?: boolean;
   size?: "sm" | "md" | "lg";
   showTooltip?: boolean;
+  className?: string;
 }
 
 export default function FavoriteButton({
   vendorId,
-  initialFavorited = false,
   size = "md",
   showTooltip = true,
+  className = "",
 }: FavoriteButtonProps) {
-  const [isFavorited, setIsFavorited] = useState(initialFavorited);
-  const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [isChecking, setIsChecking] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user, loading: authLoading } = useAuth();
+  const {
+    isFavorite,
+    toggleFavorite,
+    loading: favoritesLoading,
+  } = useFavorites();
+  const [isToggling, setIsToggling] = useState(false);
 
-  const checkAuth = useCallback(async () => {
-    try {
-      const supabase = createBrowserSupabaseClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        setUserId(user.id);
-
-        const { data } = await supabase
-          .from("favorites")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("vendor_id", vendorId)
-          .maybeSingle();
-
-        setIsFavorited(!!data);
-      }
-    } catch (err) {
-      console.error("Auth check error:", err);
-    } finally {
-      setIsChecking(false);
-    }
-  }, [vendorId]);
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+  const isFavorited = isFavorite(vendorId);
+  const isLoading = authLoading || favoritesLoading;
 
   const handleToggle = async () => {
-    if (!userId) {
-      window.location.href = `/auth/login?redirect=/vendors/${vendorId}`;
+    // Giriş yapmamış kullanıcıyı login'e yönlendir
+    if (!user) {
+      window.location.href = `/auth/login?redirect=/vendors`;
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
+    // Optimistic update için toggle'ı çağır
+    setIsToggling(true);
     try {
-      const supabase = createBrowserSupabaseClient();
-
-      if (isFavorited) {
-        const { error: deleteError } = await supabase
-          .from("favorites")
-          .delete()
-          .eq("user_id", userId)
-          .eq("vendor_id", vendorId);
-
-        if (deleteError) throw deleteError;
-        setIsFavorited(false);
-      } else {
-        const { error: insertError } = await supabase
-          .from("favorites")
-          .insert({ user_id: userId, vendor_id: vendorId });
-
-        if (insertError) throw insertError;
-        setIsFavorited(true);
-      }
-    } catch (err) {
-      console.error("Favorite toggle error:", err);
-      setError("İşlem başarısız");
-      setTimeout(() => setError(null), 2000);
+      await toggleFavorite(vendorId);
     } finally {
-      setLoading(false);
+      setIsToggling(false);
     }
   };
 
@@ -96,19 +50,20 @@ export default function FavoriteButton({
     lg: "h-12 w-12 text-2xl",
   };
 
-  if (isChecking) {
+  // Loading skeleton
+  if (isLoading) {
     return (
       <div
-        className={`${sizeClasses[size]} animate-pulse rounded-full bg-slate-100`}
+        className={`${sizeClasses[size]} animate-pulse rounded-full bg-slate-100 ${className}`}
       />
     );
   }
 
   return (
-    <div className="relative">
+    <div className={`relative ${className}`}>
       <button
         onClick={handleToggle}
-        disabled={loading}
+        disabled={isToggling}
         className={`group relative flex items-center justify-center rounded-full transition-all hover:scale-110 active:scale-95 disabled:opacity-50 ${
           sizeClasses[size]
         } ${
@@ -118,7 +73,7 @@ export default function FavoriteButton({
         }`}
         aria-label={isFavorited ? "Favorilerden çıkar" : "Favorilere ekle"}
       >
-        {loading ? (
+        {isToggling ? (
           <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle
               className="opacity-25"
@@ -158,13 +113,6 @@ export default function FavoriteButton({
           </span>
         )}
       </button>
-
-      {/* Error tooltip */}
-      {error && (
-        <span className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-red-600 px-2 py-1 text-xs text-white">
-          {error}
-        </span>
-      )}
     </div>
   );
 }

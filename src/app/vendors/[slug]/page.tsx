@@ -1,7 +1,6 @@
 // src/app/vendors/[slug]/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalBusinessSchema, BreadcrumbSchema } from "@/components/seo";
@@ -9,6 +8,7 @@ import LeadForm from "../../../components/LeadForm";
 import ReviewForm from "../../../components/ReviewForm";
 import ReviewList from "../../../components/ReviewList";
 import FavoriteButton from "../../../components/FavoriteButton";
+import VendorGallery from "../../../components/VendorGallery";
 import {
   MapPin,
   Star,
@@ -412,59 +412,13 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
           </div>
         </div>
 
-        {/* Galeri Section - Airbnb Grid */}
+        {/* Galeri Section */}
         <section className="mx-auto max-w-7xl px-4 pt-6 lg:px-6">
-          {galleryImages.length > 0 ? (
-            <div className="grid grid-cols-4 gap-2 overflow-hidden rounded-xl">
-              {/* Ana Görsel */}
-              <div className="relative col-span-4 aspect-[16/9] sm:col-span-2 sm:row-span-2 sm:aspect-square">
-                <Image
-                  src={galleryImages[0]?.image_url || vendor.logo_url || ""}
-                  alt={vendor.business_name}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-              {/* Küçük Görseller */}
-              {galleryImages.slice(1, 5).map((img, idx) => (
-                <div
-                  key={img.id}
-                  className="relative hidden aspect-square sm:block"
-                >
-                  <Image
-                    src={img.image_url}
-                    alt={`${vendor.business_name} - ${idx + 2}`}
-                    fill
-                    className="object-cover"
-                  />
-                  {idx === 3 && galleryImages.length > 5 && (
-                    <button className="absolute inset-0 flex items-center justify-center bg-black/40 text-white transition-colors hover:bg-black/50">
-                      <span className="text-sm font-medium">
-                        +{galleryImages.length - 5} fotoğraf
-                      </span>
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : vendor.logo_url ? (
-            <div className="relative mx-auto aspect-video max-w-2xl overflow-hidden rounded-xl">
-              <Image
-                src={vendor.logo_url}
-                alt={vendor.business_name}
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          ) : (
-            <div className="mx-auto flex aspect-video max-w-2xl items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-200">
-              <span className="text-6xl font-bold text-slate-300">
-                {vendor.business_name?.charAt(0)?.toUpperCase()}
-              </span>
-            </div>
-          )}
+          <VendorGallery
+            images={galleryImages}
+            vendorName={vendor.business_name}
+            logoUrl={vendor.logo_url}
+          />
         </section>
 
         {/* Ana İçerik */}

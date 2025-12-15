@@ -60,6 +60,12 @@ interface ServiceGroup {
 }
 
 // RPC'den dönen vendor tipi
+interface VendorImage {
+  id: string;
+  image_url: string;
+  is_primary: boolean;
+}
+
 interface SearchVendor {
   id: string;
   business_name: string;
@@ -81,6 +87,7 @@ interface SearchVendor {
   district_name: string | null;
   avg_rating: number;
   review_count: number;
+  images: VendorImage[];
 }
 
 interface SearchResult {

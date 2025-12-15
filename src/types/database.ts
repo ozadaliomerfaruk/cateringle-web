@@ -1193,6 +1193,87 @@ export type Database = {
           },
         ]
       }
+      review_replies: {
+        Row: {
+          created_at: string | null
+          id: string
+          reply_text: string
+          review_id: string
+          updated_at: string | null
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          reply_text: string
+          review_id: string
+          updated_at?: string | null
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          reply_text?: string
+          review_id?: string
+          updated_at?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_replies_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: true
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_replies_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_full_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_replies_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_helpful: boolean
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_helpful: boolean
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_helpful?: boolean
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_votes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           comment: string | null
@@ -1201,12 +1282,19 @@ export type Database = {
           customer_id: string | null
           customer_name: string
           deleted_at: string | null
+          event_date: string | null
+          event_type: string | null
+          guest_count: number | null
+          helpful_count: number | null
           id: string
           is_approved: boolean | null
           is_verified: boolean | null
+          not_helpful_count: number | null
           rating: number
           updated_at: string | null
           vendor_id: string
+          vendor_reply: string | null
+          vendor_reply_at: string | null
         }
         Insert: {
           comment?: string | null
@@ -1215,12 +1303,19 @@ export type Database = {
           customer_id?: string | null
           customer_name: string
           deleted_at?: string | null
+          event_date?: string | null
+          event_type?: string | null
+          guest_count?: number | null
+          helpful_count?: number | null
           id?: string
           is_approved?: boolean | null
           is_verified?: boolean | null
+          not_helpful_count?: number | null
           rating: number
           updated_at?: string | null
           vendor_id: string
+          vendor_reply?: string | null
+          vendor_reply_at?: string | null
         }
         Update: {
           comment?: string | null
@@ -1229,12 +1324,19 @@ export type Database = {
           customer_id?: string | null
           customer_name?: string
           deleted_at?: string | null
+          event_date?: string | null
+          event_type?: string | null
+          guest_count?: number | null
+          helpful_count?: number | null
           id?: string
           is_approved?: boolean | null
           is_verified?: boolean | null
+          not_helpful_count?: number | null
           rating?: number
           updated_at?: string | null
           vendor_id?: string
+          vendor_reply?: string | null
+          vendor_reply_at?: string | null
         }
         Relationships: [
           {
@@ -2024,6 +2126,7 @@ export type Database = {
           created_at: string | null
           id: string
           image_url: string
+          is_primary: boolean
           sort_order: number | null
           vendor_id: string | null
         }
@@ -2031,6 +2134,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           image_url: string
+          is_primary?: boolean
           sort_order?: number | null
           vendor_id?: string | null
         }
@@ -2038,6 +2142,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           image_url?: string
+          is_primary?: boolean
           sort_order?: number | null
           vendor_id?: string | null
         }
@@ -2647,6 +2752,36 @@ export type Database = {
         }
         Relationships: []
       }
+      review_stats: {
+        Row: {
+          approved_reviews: number | null
+          avg_rating: number | null
+          five_star: number | null
+          four_star: number | null
+          one_star: number | null
+          replied_reviews: number | null
+          three_star: number | null
+          total_reviews: number | null
+          two_star: number | null
+          vendor_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_full_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       segment_vendor_counts: {
         Row: {
           segment_id: number | null
@@ -2898,6 +3033,29 @@ export type Database = {
       }
       get_my_role: { Args: never; Returns: string }
       get_my_vendor_ids: { Args: never; Returns: string[] }
+      get_public_reviews: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_rating?: number
+          p_sort?: string
+          p_vendor_id: string
+        }
+        Returns: {
+          comment: string
+          created_at: string
+          customer_name: string
+          event_type: string
+          guest_count: number
+          helpful_count: number
+          id: string
+          is_verified: boolean
+          not_helpful_count: number
+          rating: number
+          vendor_reply: string
+          vendor_reply_at: string
+        }[]
+      }
       get_quote_with_history: { Args: { p_quote_id: string }; Returns: Json }
       get_unread_message_count: { Args: never; Returns: Json }
       get_unread_notification_count: {
@@ -2935,6 +3093,31 @@ export type Database = {
       get_vendor_monthly_availability: {
         Args: { p_month: number; p_vendor_id: string; p_year: number }
         Returns: Json
+      }
+      get_vendor_reviews: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_rating?: number
+          p_status?: string
+          p_vendor_id: string
+        }
+        Returns: {
+          comment: string
+          created_at: string
+          customer_email: string
+          customer_name: string
+          event_type: string
+          guest_count: number
+          helpful_count: number
+          id: string
+          is_approved: boolean
+          is_verified: boolean
+          not_helpful_count: number
+          rating: number
+          reply_created_at: string
+          reply_text: string
+        }[]
       }
       get_vendors_by_segment_and_category: {
         Args: {
