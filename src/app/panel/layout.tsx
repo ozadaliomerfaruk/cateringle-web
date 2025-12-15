@@ -34,6 +34,7 @@ export default async function AdminLayout({
       title: "Genel",
       items: [
         { href: "/panel", label: "Dashboard" },
+        { href: "/panel/analytics", label: "Analitik" },
         { href: "/panel/users", label: "Kullanicilar & Firmalar" },
         { href: "/panel/leads", label: "Talepler" },
         { href: "/panel/reviews", label: "Yorumlar" },
