@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { LocalBusinessSchema, BreadcrumbSchema } from "@/components/seo";
 import LeadForm from "../../../components/LeadForm";
 import ReviewForm from "../../../components/ReviewForm";
 import ReviewList from "../../../components/ReviewList";
@@ -28,6 +29,8 @@ import {
   Medal,
   Timer,
 } from "@phosphor-icons/react/dist/ssr";
+
+const BASE_URL = "https://cateringle.com";
 
 // Type definitions
 type VendorService = {
@@ -102,7 +105,7 @@ export async function generateMetadata({
 
   const { data: vendor } = await supabase
     .from("vendors")
-    .select("business_name, description, city_id")
+    .select("business_name, description, city_id, logo_url")
     .eq("slug", slug)
     .eq("status", "approved")
     .maybeSingle();
@@ -121,13 +124,39 @@ export async function generateMetadata({
     cityName = city?.name || "";
   }
 
+  const title = `${vendor.business_name} | Catering Hizmeti${cityName ? ` - ${cityName}` : ""}`;
+  const description = vendor.description?.slice(0, 155) || `${vendor.business_name} catering hizmetleri. Fiyat teklifi alın.`;
+  const url = `${BASE_URL}/vendors/${slug}`;
+  const image = vendor.logo_url || `${BASE_URL}/og-image.jpg`;
+
   return {
-    title: `${vendor.business_name} | Catering Hizmeti${
-      cityName ? ` - ${cityName}` : ""
-    }`,
-    description:
-      vendor.description?.slice(0, 155) ||
-      `${vendor.business_name} catering hizmetleri.`,
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "Cateringle.com",
+      locale: "tr_TR",
+      type: "website",
+      images: [
+        {
+          url: image,
+          width: 800,
+          height: 600,
+          alt: vendor.business_name,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
@@ -291,8 +320,51 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
       desc: "Acil siparişler kabul edilir",
     });
 
+  // Price range for schema
+  const priceRange = vendor.avg_price_per_person
+    ? vendor.avg_price_per_person < 100
+      ? "₺"
+      : vendor.avg_price_per_person < 200
+        ? "₺₺"
+        : "₺₺₺"
+    : undefined;
+
   return (
-    <main className="min-h-screen bg-white">
+    <>
+      {/* JSON-LD Structured Data */}
+      <LocalBusinessSchema
+        name={vendor.business_name}
+        description={vendor.description}
+        url={`${BASE_URL}/vendors/${vendor.slug}`}
+        logo={vendor.logo_url}
+        telephone={vendor.phone}
+        email={vendor.email}
+        address={{
+          city: cityName,
+          district: districtName,
+          addressText: vendor.address_text,
+        }}
+        priceRange={priceRange}
+        rating={
+          hasRating
+            ? {
+                ratingValue: ratingData.avg_rating,
+                reviewCount: reviewCount,
+              }
+            : null
+        }
+        images={galleryImages.map((img) => img.image_url)}
+        serviceArea={cityName ? [cityName] : undefined}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: "Ana Sayfa", url: BASE_URL },
+          { name: "Catering Firmaları", url: `${BASE_URL}/vendors` },
+          { name: vendor.business_name, url: `${BASE_URL}/vendors/${vendor.slug}` },
+        ]}
+      />
+
+      <main className="min-h-screen bg-white">
       {/* Üst Bar - Geri + Paylaş + Favori */}
       <div className="sticky top-16 z-20 border-b border-slate-200 bg-white lg:top-20">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-6">
@@ -889,5 +961,6 @@ export default async function VendorDetailPage({ params }: VendorPageProps) {
         </div>
       </div>
     </main>
+    </>
   );
 }

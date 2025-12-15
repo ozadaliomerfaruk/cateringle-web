@@ -1,4 +1,5 @@
 // src/app/vendors/page.tsx
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import FilterSidebar from "./FilterSidebar";
@@ -15,6 +16,8 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 
 export const dynamic = "force-dynamic";
+
+const BASE_URL = "https://cateringle.com";
 
 interface VendorsPageProps {
   searchParams: Promise<{
@@ -101,20 +104,54 @@ const segmentInfo: Record<string, { title: string; description: string }> = {
   },
 };
 
-export async function generateMetadata({ searchParams }: VendorsPageProps) {
+export async function generateMetadata({
+  searchParams,
+}: VendorsPageProps): Promise<Metadata> {
   const params = await searchParams;
   const segment = params.segment;
 
-  if (segment && segmentInfo[segment]) {
-    return {
-      title: segmentInfo[segment].title,
-      description: segmentInfo[segment].description,
-    };
-  }
+  const title =
+    segment && segmentInfo[segment]
+      ? `${segmentInfo[segment].title} | Cateringle.com`
+      : "Catering Firmaları | Cateringle.com";
+
+  const description =
+    segment && segmentInfo[segment]
+      ? segmentInfo[segment].description
+      : "En iyi catering firmalarını keşfedin. Düğün, kurumsal etkinlik, doğum günü ve daha fazlası için fiyat teklifi alın.";
+
+  const url = segment
+    ? `${BASE_URL}/vendors?segment=${segment}`
+    : `${BASE_URL}/vendors`;
 
   return {
-    title: "Catering Firmaları",
-    description: "Türkiye'nin en iyi catering firmalarını keşfedin.",
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "Cateringle.com",
+      locale: "tr_TR",
+      type: "website",
+      images: [
+        {
+          url: `${BASE_URL}/og-image.jpg`,
+          width: 1200,
+          height: 630,
+          alt: "Cateringle - Catering Firmaları",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`${BASE_URL}/og-image.jpg`],
+    },
   };
 }
 
