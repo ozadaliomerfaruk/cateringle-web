@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import { Bell, Envelope, Gear, Check, Trash } from "@phosphor-icons/react";
+import { Bell, Envelope, Gear, Check } from "@phosphor-icons/react";
 import Link from "next/link";
 
 interface Notification {
@@ -97,7 +97,7 @@ export default function NotificationSettings({
   userId,
   initialPreferences,
   initialNotifications,
-  totalCount,
+  totalCount: _totalCount,
 }: NotificationSettingsProps) {
   const [activeTab, setActiveTab] = useState<"all" | "settings">("all");
   const [preferences, setPreferences] = useState<Preferences>(

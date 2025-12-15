@@ -1,5 +1,6 @@
 // src/app/vendor/layout.tsx
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ChatCircle } from "@phosphor-icons/react/dist/ssr";
@@ -161,9 +162,11 @@ export default async function VendorLayout({
             {/* Logo */}
             <Link href="/vendor" className="flex items-center gap-3">
               {vendor.logo_url ? (
-                <img
+                <Image
                   src={vendor.logo_url}
                   alt={vendor.business_name}
+                  width={40}
+                  height={40}
                   className="h-10 w-10 rounded-lg object-cover"
                 />
               ) : (

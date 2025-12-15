@@ -1,5 +1,6 @@
 import "server-only";
 import nodemailer from "nodemailer";
+import { escapeHtml } from "@/lib/email-templates/helpers";
 
 // Google SMTP transporter
 const transporter = nodemailer.createTransport({
@@ -83,8 +84,18 @@ export async function sendNewLeadNotification({
   const eventTypeLabel = eventType
     ? eventTypeLabels[eventType] || eventType
     : null;
-  const subject = `Yeni Teklif Talebi - ${customerName}${
-    segmentName ? ` (${segmentName})` : ""
+  
+  // HTML escape all user inputs for security
+  const safeVendorName = escapeHtml(vendorName);
+  const safeCustomerName = escapeHtml(customerName);
+  const safeCustomerEmail = escapeHtml(customerEmail);
+  const safeCustomerPhone = customerPhone ? escapeHtml(customerPhone) : null;
+  const safeMessage = message ? escapeHtml(message) : null;
+  const safeSegmentName = segmentName ? escapeHtml(segmentName) : null;
+  const safeEventTypeLabel = eventTypeLabel ? escapeHtml(eventTypeLabel) : null;
+  
+  const subject = `Yeni Teklif Talebi - ${safeCustomerName}${
+    safeSegmentName ? ` (${safeSegmentName})` : ""
   }`;
 
   const html = `
@@ -115,40 +126,40 @@ export async function sendNewLeadNotification({
           <h1 style="margin: 0; font-size: 20px;">🎉 Yeni Teklif Talebi</h1>
           <p style="margin: 5px 0 0 0; opacity: 0.9;">Cateringle.com üzerinden yeni bir talep aldınız</p>
           ${
-            segmentName
+            safeSegmentName
               ? `<span class="segment-badge">${
-                  segmentName === "Kurumsal" ? "🏢" : "🎈"
-                } ${segmentName}</span>`
+                  safeSegmentName === "Kurumsal" ? "🏢" : "🎈"
+                } ${safeSegmentName}</span>`
               : ""
           }
         </div>
         
         <div class="content">
-          <p>Merhaba <strong>${vendorName}</strong>,</p>
+          <p>Merhaba <strong>${safeVendorName}</strong>,</p>
           <p>Firmanıza yeni bir teklif talebi geldi. Detaylar aşağıda:</p>
           
           ${
-            segmentName || eventTypeLabel
+            safeSegmentName || safeEventTypeLabel
               ? `
           <div class="highlight-box">
             ${
-              segmentName
+              safeSegmentName
                 ? `
             <div style="display: inline-block; margin-right: 20px;">
               <div class="label">Müşteri Tipi</div>
               <div class="value">${
-                segmentName === "Kurumsal" ? "🏢" : "🎈"
-              } ${segmentName}</div>
+                safeSegmentName === "Kurumsal" ? "🏢" : "🎈"
+              } ${safeSegmentName}</div>
             </div>
             `
                 : ""
             }
             ${
-              eventTypeLabel
+              safeEventTypeLabel
                 ? `
             <div style="display: inline-block;">
               <div class="label">Etkinlik Türü</div>
-              <div class="value">${eventTypeLabel}</div>
+              <div class="value">${safeEventTypeLabel}</div>
             </div>
             `
                 : ""
@@ -160,20 +171,20 @@ export async function sendNewLeadNotification({
           
           <div class="info-row">
             <div class="label">Müşteri Adı</div>
-            <div class="value">${customerName}</div>
+            <div class="value">${safeCustomerName}</div>
           </div>
           
           <div class="info-row">
             <div class="label">E-posta</div>
-            <div class="value"><a href="mailto:${customerEmail}" style="color: #FF6B35;">${customerEmail}</a></div>
+            <div class="value"><a href="mailto:${safeCustomerEmail}" style="color: #FF6B35;">${safeCustomerEmail}</a></div>
           </div>
           
           ${
-            customerPhone
+            safeCustomerPhone
               ? `
           <div class="info-row">
             <div class="label">Telefon</div>
-            <div class="value"><a href="tel:${customerPhone}" style="color: #FF6B35;">${customerPhone}</a></div>
+            <div class="value"><a href="tel:${safeCustomerPhone}" style="color: #FF6B35;">${safeCustomerPhone}</a></div>
           </div>
           `
               : ""
@@ -205,11 +216,11 @@ export async function sendNewLeadNotification({
           }
           
           ${
-            message
+            safeMessage
               ? `
           <div class="info-row">
             <div class="label">Mesaj</div>
-            <div class="value">${message}</div>
+            <div class="value">${safeMessage}</div>
           </div>
           `
               : ""

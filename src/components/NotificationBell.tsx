@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import { Bell, Check, X } from "@phosphor-icons/react";
+import { Bell, Check } from "@phosphor-icons/react";
 import Link from "next/link";
 
 interface Notification {
@@ -136,6 +136,7 @@ export default function NotificationBell() {
     // Her 30 saniyede bir yenile
     const interval = setInterval(loadNotifications, 30000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Dropdown dışına tıklama
@@ -197,6 +198,7 @@ export default function NotificationBell() {
     };
 
     setupSubscription();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const formatTime = (dateStr: string) => {

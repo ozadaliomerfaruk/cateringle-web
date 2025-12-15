@@ -24,11 +24,9 @@ import {
   CheckCircle,
   ShieldCheck,
   CaretLeft,
-  Heart,
   Export,
   Medal,
   Timer,
-  CurrencyDollar,
 } from "@phosphor-icons/react/dist/ssr";
 
 // Type definitions

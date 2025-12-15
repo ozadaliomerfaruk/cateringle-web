@@ -25,7 +25,7 @@ interface QuoteSendFormProps {
 }
 
 export default function QuoteSendForm({
-  vendorLeadId,
+  vendorLeadId: _vendorLeadId,
   guestCount,
   onSend,
   onCancel,
@@ -81,7 +81,7 @@ export default function QuoteSendForm({
         message: data.message,
         validUntil,
       });
-    } catch (err) {
+    } catch (_err) {
       setError("Teklif gönderilemedi");
     } finally {
       setIsLoading(false);

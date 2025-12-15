@@ -2,11 +2,11 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { createNotification } from "@/lib/notifications";
+import { sendNewMessageEmail } from "@/lib/email-notifications";
 import type {
   MessageSenderType,
   ApiResponse,
   SendMessageResponse,
-  ConversationContext,
 } from "@/types/messaging";
 
 // Re-export types for convenience
@@ -141,6 +141,28 @@ export async function sendMessageWithNotification(
       entityId: vendorLeadId,
       actionUrl,
     }).catch((err) => console.error("Message notification error:", err));
+
+    // Send email notification (respects user preferences)
+    const senderName =
+      senderType === "vendor"
+        ? context.vendor?.business_name || "Firma"
+        : context.lead?.customer_name || "Müşteri";
+    const recipientName =
+      senderType === "vendor"
+        ? context.lead?.customer_name || "Müşteri"
+        : context.vendor?.business_name || "Firma";
+
+    sendNewMessageEmail({
+      recipientUserId: recipientId,
+      recipientName,
+      senderName,
+      senderType,
+      messageContent: content,
+      messageTime: new Date().toISOString(),
+      vendorLeadId,
+      eventDate: context.lead?.event_date,
+      guestCount: null, // Could be added to lead context if needed
+    }).catch((err) => console.error("Message email error:", err));
   }
 
   return {

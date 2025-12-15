@@ -139,6 +139,12 @@ export const rateLimitPresets = {
     maxRequests: 3,
     keyPrefix: "ratelimit:strict",
   },
+  // Email: saatte 10 email per user (spam protection)
+  email: {
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 10,
+    keyPrefix: "ratelimit:email",
+  },
 };
 
 // Helper: IP'den identifier oluştur

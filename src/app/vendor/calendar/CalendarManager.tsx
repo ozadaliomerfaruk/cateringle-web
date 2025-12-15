@@ -11,7 +11,6 @@ import {
   X,
   Plus,
   Check,
-  Warning,
   Trash,
 } from "@phosphor-icons/react";
 

@@ -7,6 +7,7 @@
 ## Overview
 
 This implementation adds a comprehensive email notification system with:
+
 - Modular, reusable email templates
 - HTML escape for XSS protection (security fix)
 - User preference checking before sending
@@ -19,45 +20,45 @@ This implementation adds a comprehensive email notification system with:
 
 ### Email Templates (`src/lib/email-templates/`)
 
-| File | Description |
-|------|-------------|
-| `helpers.ts` | HTML escape, formatters, unsubscribe token generation |
-| `styles.ts` | Shared CSS-in-JS styles for email compatibility |
-| `base.ts` | Base template wrapper with header/footer |
-| `new-message.ts` | New message email template |
-| `quote-status.ts` | Quote accepted/rejected/new templates |
-| `index.ts` | Exports all template functions |
+| File              | Description                                           |
+| ----------------- | ----------------------------------------------------- |
+| `helpers.ts`      | HTML escape, formatters, unsubscribe token generation |
+| `styles.ts`       | Shared CSS-in-JS styles for email compatibility       |
+| `base.ts`         | Base template wrapper with header/footer              |
+| `new-message.ts`  | New message email template                            |
+| `quote-status.ts` | Quote accepted/rejected/new templates                 |
+| `index.ts`        | Exports all template functions                        |
 
 ### Services
 
-| File | Description |
-|------|-------------|
+| File                             | Description                                        |
+| -------------------------------- | -------------------------------------------------- |
 | `src/lib/email-notifications.ts` | Main notification service with preference checking |
 
 ### API Routes
 
-| File | Description |
-|------|-------------|
+| File                               | Description              |
+| ---------------------------------- | ------------------------ |
 | `src/app/api/unsubscribe/route.ts` | Unsubscribe API endpoint |
 
 ### Pages
 
-| File | Description |
-|------|-------------|
+| File                           | Description                    |
+| ------------------------------ | ------------------------------ |
 | `src/app/unsubscribe/page.tsx` | User-friendly unsubscribe page |
 
 ### Modified Files
 
-| File | Changes |
-|------|---------|
-| `src/lib/email.ts` | Added `escapeHtml` import, secured user inputs |
-| `src/lib/messages.ts` | Added email notification trigger |
-| `src/app/api/quotes/[quoteId]/status/route.ts` | Added quote status email notifications |
+| File                                           | Changes                                        |
+| ---------------------------------------------- | ---------------------------------------------- |
+| `src/lib/email.ts`                             | Added `escapeHtml` import, secured user inputs |
+| `src/lib/messages.ts`                          | Added email notification trigger               |
+| `src/app/api/quotes/[quoteId]/status/route.ts` | Added quote status email notifications         |
 
 ### Database
 
-| File | Description |
-|------|-------------|
+| File                                                   | Description                                               |
+| ------------------------------------------------------ | --------------------------------------------------------- |
 | `supabase/migrations/20251215_email_notifications.sql` | Email logs table, preference columns, rate limit function |
 
 ---
@@ -161,16 +162,16 @@ Log to email_logs table
 
 ## Email Types & Preference Keys
 
-| Email Type | Preference Column | Default |
-|------------|-------------------|---------|
-| New message | `message_new_email` | `true` |
-| New quote (customer) | `quote_received_email` | `true` |
-| Quote accepted (vendor) | `quote_accepted_email` | `true` |
-| Quote rejected (vendor) | `quote_rejected_email` | `false` |
-| New lead (vendor) | `lead_new_email` | `true` |
-| New review | `review_new_email` | `true` |
-| Booking reminder | `booking_reminder_email` | `true` |
-| System | `system_email` | `false` |
+| Email Type              | Preference Column        | Default |
+| ----------------------- | ------------------------ | ------- |
+| New message             | `message_new_email`      | `true`  |
+| New quote (customer)    | `quote_received_email`   | `true`  |
+| Quote accepted (vendor) | `quote_accepted_email`   | `true`  |
+| Quote rejected (vendor) | `quote_rejected_email`   | `false` |
+| New lead (vendor)       | `lead_new_email`         | `true`  |
+| New review              | `review_new_email`       | `true`  |
+| Booking reminder        | `booking_reminder_email` | `true`  |
+| System                  | `system_email`           | `false` |
 
 ---
 
@@ -203,17 +204,17 @@ SELECT * FROM notification_preferences WHERE user_id = 'xxx';
 
 ### Risks
 
-| Risk | Mitigation |
-|------|------------|
-| SMTP rate limits | Use queue/batch in future |
-| Token collision | Uses timestamp + user-specific hash |
-| Email delivery issues | Logged in email_logs for debugging |
+| Risk                  | Mitigation                          |
+| --------------------- | ----------------------------------- |
+| SMTP rate limits      | Use queue/batch in future           |
+| Token collision       | Uses timestamp + user-specific hash |
+| Email delivery issues | Logged in email_logs for debugging  |
 
 ### Rollback
 
 ```sql
 -- Disable email notifications
-UPDATE notification_preferences 
+UPDATE notification_preferences
 SET message_new_email = false,
     quote_received_email = false,
     quote_accepted_email = false,

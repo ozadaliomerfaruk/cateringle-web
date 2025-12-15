@@ -9,7 +9,6 @@ import {
   FileText,
   Bell,
   ChatCircle,
-  SignOut,
 } from "@phosphor-icons/react/dist/ssr";
 
 export default async function AccountLayout({

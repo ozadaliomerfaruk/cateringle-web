@@ -11,7 +11,6 @@ import {
   ChatCircleDots,
   CurrencyDollar,
   ArrowRight,
-  Star,
   MapPin,
   Cake,
   Champagne,

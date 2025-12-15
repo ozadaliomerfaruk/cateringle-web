@@ -41,7 +41,7 @@ interface VendorCardProps {
 }
 
 export default function VendorCard({ vendor }: VendorCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
+  const [_isHovered, setIsHovered] = useState(false);
 
   // Sadece logo_url kullan
   const hasImage = !!vendor.logo_url;

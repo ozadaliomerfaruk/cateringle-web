@@ -81,14 +81,16 @@
 - [ ] Quote templates (vendor için)
 - [ ] Bulk quote operations
 
-### Phase 5: Email Bildirimleri
+### Phase 5: Email Bildirimleri ✅ YENİ
 
-- [ ] Email template sistemi
-- [ ] Yeni mesaj email bildirimi
-- [ ] Yeni teklif email bildirimi
-- [ ] Quote kabul/red email bildirimi
-- [ ] Email preference settings
-- [ ] Unsubscribe flow
+- [x] Email template sistemi (modular, reusable templates)
+- [x] HTML escape utility (güvenlik düzeltmesi)
+- [x] Yeni mesaj email bildirimi
+- [x] Yeni teklif email bildirimi (mevcut iyileştirildi)
+- [x] Quote kabul/red email bildirimi
+- [x] Email preference checking (notification_preferences entegrasyonu)
+- [x] Unsubscribe flow (secure token + page)
+- [ ] Email digest (batch notifications - optional)
 
 ### Phase 6: Performans & SEO
 
@@ -128,7 +130,6 @@
 | Sorun                           | Öncelik | Notlar                         |
 | ------------------------------- | ------- | ------------------------------ |
 | TypeScript strict mode hataları | Düşük   | cache.ts, notifications.ts     |
-| Email template HTML escape      | Orta    | User input escape edilmeli     |
 | Vendor profile image upload     | Orta    | Storage bucket gerekli         |
 | Search performance              | Düşük   | Large dataset'te test edilmeli |
 
@@ -141,6 +142,7 @@
 | 20251215_vendor_lead_messages.sql         | 15.12.2025 | Mesaj tablosu, RLS, RPC                  |
 | 20251215_quote_message_integration.sql    | 15.12.2025 | message_type, quote_id, triggers         |
 | 20251215_read_state_and_state_machine.sql | 15.12.2025 | Per-user read state, quote state machine |
+| 20251215_email_notifications.sql          | 15.12.2025 | Email logs, preferences, rate limit fn   |
 
 ---
 
@@ -170,14 +172,18 @@
 
 ## 📁 Önemli Dosyalar
 
-| Dosya                              | Açıklama                      |
-| ---------------------------------- | ----------------------------- |
-| `src/types/messaging.ts`           | Mesajlaşma tipleri            |
-| `src/lib/messages.ts`              | Server-side messaging helpers |
-| `src/components/QuoteCard.tsx`     | Teklif kartı componenti       |
-| `src/components/MessageThread.tsx` | Mesaj thread componenti       |
-| `src/app/api/quotes/route.ts`      | Quote API                     |
-| `src/app/api/messages/route.ts`    | Messages API                  |
+| Dosya                                    | Açıklama                         |
+| ---------------------------------------- | -------------------------------- |
+| `src/types/messaging.ts`                 | Mesajlaşma tipleri               |
+| `src/lib/messages.ts`                    | Server-side messaging helpers    |
+| `src/lib/email-notifications.ts`         | Email bildirim servisi           |
+| `src/lib/email-templates/`               | Modüler email template'leri      |
+| `src/components/QuoteCard.tsx`           | Teklif kartı componenti          |
+| `src/components/MessageThread.tsx`       | Mesaj thread componenti          |
+| `src/app/api/quotes/route.ts`            | Quote API                        |
+| `src/app/api/messages/route.ts`          | Messages API                     |
+| `src/app/api/unsubscribe/route.ts`       | Unsubscribe API                  |
+| `src/app/unsubscribe/page.tsx`           | Unsubscribe sayfası              |
 
 ---
 

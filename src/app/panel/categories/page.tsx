@@ -149,7 +149,6 @@ export default async function CategoriesPage() {
   const bireyselCount = typedCategories.filter(
     (c) => c.segment?.slug === "bireysel"
   ).length;
-  const herIkisiCount = typedCategories.filter((c) => !c.segment_id).length;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
