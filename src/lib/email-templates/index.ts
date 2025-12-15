@@ -45,3 +45,6 @@ export {
   vendorApprovedEmailTemplate,
   vendorRejectedEmailTemplate,
 } from "./vendor-approved";
+
+// NEW: Review template
+export { newReviewEmailTemplate } from "./new-review";

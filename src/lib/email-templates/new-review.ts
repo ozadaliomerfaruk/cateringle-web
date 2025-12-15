@@ -1,139 +1,184 @@
 // src/lib/email-templates/new-review.ts
 import "server-only";
-import {
-  baseEmailTemplate,
-  ctaButton,
-  messageBox,
-} from "./base";
-import {
-  escapeHtml,
-  formatMessageContent,
-  formatDateTime,
-} from "./helpers";
+import { baseEmailTemplate, ctaButton, messageBox, infoRow } from "./base";
+import { escapeHtml, formatMessageContent, formatDateTime } from "./helpers";
 import { inlineStyles } from "./styles";
 
 interface NewReviewEmailParams {
   vendorName: string;
   customerName: string;
-  rating: number;
+  rating: number; // 1-5
   comment?: string | null;
+  reviewDate: string;
   eventType?: string | null;
   guestCount?: number | null;
-  reviewDate: string;
-  reviewsUrl: string;
+  reviewsUrl: string; // "reviewUrl" değil "reviewsUrl" (çoğul)
   unsubscribeUrl?: string;
 }
 
 /**
- * Yeni yorum email template'i
+ * Yeni yorum email template'i - Vendor'a gönderilir
  */
 export function newReviewEmailTemplate({
   vendorName,
   customerName,
   rating,
   comment,
+  reviewDate,
   eventType,
   guestCount,
-  reviewDate,
   reviewsUrl,
   unsubscribeUrl,
 }: NewReviewEmailParams): { subject: string; html: string } {
   const safeVendorName = escapeHtml(vendorName);
   const safeCustomerName = escapeHtml(customerName);
   const safeComment = comment ? formatMessageContent(comment, 500) : null;
+  const safeEventType = eventType ? escapeHtml(eventType) : null;
   const formattedDate = formatDateTime(reviewDate);
 
-  // Yıldız render
-  const starsHtml = Array.from({ length: 5 }, (_, i) => {
-    const filled = i < rating;
-    return `<span style="color: ${filled ? '#f59e0b' : '#e2e8f0'}; font-size: 20px;">★</span>`;
-  }).join("");
+  // Star rating görsel (⭐ emoji ile)
+  const stars = "⭐".repeat(rating) + "☆".repeat(5 - rating);
 
-  // Rating emoji ve renk
-  let ratingEmoji = "⭐";
-  let ratingColor = "#f59e0b";
-  let ratingText = "yorum";
+  // Rating'e göre renk ve mesaj
+  let ratingStyle: "green" | "orange" | "red";
+  let ratingMessage: string;
+
   if (rating >= 4) {
-    ratingEmoji = "🌟";
-    ratingColor = "#22c55e";
-    ratingText = "harika bir yorum";
-  } else if (rating <= 2) {
-    ratingEmoji = "📝";
-    ratingColor = "#ef4444";
-    ratingText = "yorum";
+    ratingStyle = "green";
+    ratingMessage = "Harika bir değerlendirme aldınız!";
+  } else if (rating >= 3) {
+    ratingStyle = "orange";
+    ratingMessage = "Yeni bir değerlendirme aldınız.";
+  } else {
+    ratingStyle = "red";
+    ratingMessage = "Müşterinizden geri bildirim aldınız.";
   }
 
-  // Event context
-  let contextHtml = "";
-  if (eventType || guestCount) {
-    const contextItems: string[] = [];
-    if (eventType) {
-      contextItems.push(`🎉 ${escapeHtml(eventType)}`);
-    }
-    if (guestCount) {
-      contextItems.push(`👥 ${guestCount} kişi`);
-    }
-    contextHtml = `
-      <div style="margin-bottom: 16px; padding: 12px; background: #f1f5f9; border-radius: 8px; font-size: 13px; color: #64748b;">
-        ${contextItems.join(" &nbsp;•&nbsp; ")}
-      </div>
-    `;
-  }
+  // Rating badge colors
+  const ratingColors = {
+    green: { bg: "#dcfce7", text: "#166534", border: "#86efac" },
+    orange: { bg: "#fef3c7", text: "#92400e", border: "#fcd34d" },
+    red: { bg: "#fee2e2", text: "#991b1b", border: "#fca5a5" },
+  };
 
-  // Comment box
-  const commentHtml = safeComment ? messageBox(`
-    <div style="font-size: 14px; color: #64748b; margin-bottom: 8px;">
-      <strong>${safeCustomerName}</strong> • ${formattedDate}
-    </div>
-    <div style="font-size: 15px; color: #1e293b; line-height: 1.6;">
-      "${safeComment}"
-    </div>
-  `) : "";
+  const ratingColor = ratingColors[ratingStyle];
+
+  // Info rows
+  let infoHtml = "";
+  infoHtml += infoRow("Müşteri", safeCustomerName);
+  infoHtml += infoRow("Puan", `${rating}/5 ${stars}`);
+  infoHtml += infoRow("Tarih", formattedDate);
+  if (safeEventType) {
+    infoHtml += infoRow("Etkinlik Türü", safeEventType);
+  }
+  if (guestCount) {
+    infoHtml += infoRow("Kişi Sayısı", `${guestCount} kişi`);
+  }
 
   const content = `
-    <p style="${inlineStyles.greeting}">Merhaba <strong>${safeVendorName}</strong>,</p>
+    <p style="${
+      inlineStyles.greeting
+    }">Merhaba <strong>${safeVendorName}</strong>,</p>
     
-    <p>${ratingEmoji} Bir müşteriniz size ${ratingText} bıraktı!</p>
+    <p>${ratingMessage}</p>
     
+    <!-- Rating Badge -->
     <div style="text-align: center; margin: 24px 0;">
-      <div style="display: inline-block; padding: 16px 24px; background: #fffbeb; border-radius: 12px; border: 2px solid #fcd34d;">
-        <div style="margin-bottom: 8px;">${starsHtml}</div>
-        <div style="font-size: 24px; font-weight: bold; color: ${ratingColor};">${rating}/5</div>
-        <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
-          ${safeCustomerName}
+      <div style="
+        display: inline-block;
+        padding: 16px 32px;
+        background: ${ratingColor.bg};
+        border: 1px solid ${ratingColor.border};
+        border-radius: 12px;
+      ">
+        <div style="font-size: 28px; margin-bottom: 8px;">${stars}</div>
+        <div style="font-size: 24px; font-weight: 700; color: ${
+          ratingColor.text
+        };">
+          ${rating}/5 Puan
         </div>
       </div>
     </div>
     
-    ${contextHtml}
+    <div style="margin: 24px 0;">
+      ${infoHtml}
+    </div>
     
-    ${commentHtml}
+    ${
+      safeComment
+        ? `
+      <div style="margin: 24px 0;">
+        <div style="${inlineStyles.infoLabel}">Müşteri Yorumu</div>
+        ${messageBox(`
+          <div style="font-style: italic; color: #475569;">
+            "${safeComment}"
+          </div>
+        `)}
+      </div>
+    `
+        : `
+      <div style="margin: 24px 0; padding: 12px; background: #f1f5f9; border-radius: 8px; font-size: 14px; color: #64748b; text-align: center;">
+        Müşteri yazılı yorum bırakmadı.
+      </div>
+    `
+    }
+    
+    ${
+      rating >= 4
+        ? `
+      <div style="margin: 24px 0; padding: 16px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px;">
+        <div style="font-size: 14px; color: #166534;">
+          💡 <strong>İpucu:</strong> Yüksek puanlı yorumları sosyal medyada paylaşarak yeni müşteriler çekebilirsiniz!
+        </div>
+      </div>
+    `
+        : rating <= 2
+        ? `
+      <div style="margin: 24px 0; padding: 16px; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px;">
+        <div style="font-size: 14px; color: #92400e;">
+          💬 <strong>Öneri:</strong> Müşterinizle iletişime geçip sorunu çözmeye çalışabilirsiniz. Çoğu zaman sorunlar çözüldüğünde müşteriler değerlendirmelerini güncellerler.
+        </div>
+      </div>
+    `
+        : ""
+    }
     
     <p style="font-size: 14px; color: #64748b;">
-      Bu yorum onaylandıktan sonra profilinizde görünecektir. Yoruma yanıt vermek için aşağıdaki butona tıklayın.
+      Yorumu görüntülemek ve yanıtlamak için aşağıdaki butona tıklayın.
     </p>
     
-    ${ctaButton("Yorumları Yönet →", reviewsUrl)}
-    
-    <div style="margin-top: 24px; padding: 16px; background: #f0fdf4; border-radius: 8px; border-left: 4px solid #22c55e;">
-      <p style="margin: 0; font-size: 14px; color: #166534;">
-        <strong>💡 İpucu:</strong> Müşteri yorumlarına yanıt vermek, potansiyel müşterilerinize profesyonelliğinizi gösterir ve güven oluşturur.
-      </p>
-    </div>
+    ${ctaButton("Yorumu Görüntüle →", reviewsUrl)}
   `;
 
+  // Header style based on rating
+  const headerStyle = ratingStyle;
+  const headerEmoji = rating >= 4 ? "🌟" : rating >= 3 ? "📝" : "💬";
+  const headerTitle =
+    rating >= 4
+      ? "Harika Bir Yorum Aldınız!"
+      : rating >= 3
+      ? "Yeni Değerlendirme"
+      : "Müşteri Geri Bildirimi";
+
   const html = baseEmailTemplate({
-    headerStyle: rating >= 4 ? "green" : "orange",
-    headerEmoji: ratingEmoji,
-    headerTitle: "Yeni Müşteri Yorumu",
-    headerSubtitle: `${safeCustomerName} size ${rating} yıldız verdi`,
+    headerStyle,
+    headerEmoji,
+    headerTitle,
+    headerSubtitle: `${safeCustomerName} sizi değerlendirdi`,
     content,
     unsubscribeUrl,
     unsubscribeText: "Yorum bildirimlerini almak istemiyorsanız",
   });
 
-  return {
-    subject: `${ratingEmoji} ${customerName} size ${rating} yıldız verdi`,
-    html,
-  };
+  // Subject based on rating
+  let subject: string;
+  if (rating >= 4) {
+    subject = `🌟 ${customerName} size ${rating} yıldız verdi!`;
+  } else if (rating >= 3) {
+    subject = `📝 ${customerName} sizi değerlendirdi (${rating}/5)`;
+  } else {
+    subject = `💬 ${customerName}'dan geri bildirim aldınız`;
+  }
+
+  return { subject, html };
 }
