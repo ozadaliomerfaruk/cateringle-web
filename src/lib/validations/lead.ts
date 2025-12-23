@@ -15,6 +15,9 @@ export const createLeadSchema = z.object({
     .toLowerCase()
     .trim(),
 
+  // Turnstile token (CAPTCHA)
+  turnstileToken: z.string().min(1, "Güvenlik doğrulaması gerekli"),
+
   // Opsiyonel alanlar
   customerPhone: z
     .string()
@@ -34,7 +37,20 @@ export const createLeadSchema = z.object({
   budgetMin: z.coerce.number().min(0).optional().nullable(),
   budgetMax: z.coerce.number().min(0).optional().nullable(),
   serviceStyle: z
-    .enum(["buffet", "seated", "cocktail", "boxed", "drop_off"])
+    .enum([
+      "open_buffet",
+      "cocktail",
+      "plated",
+      "coffee_break",
+      "lunchbox",
+      "self_service",
+      "seated",
+      "buffet",
+      "standing",
+      "mixed",
+      "boxed",
+      "drop_off",
+    ])
     .optional()
     .nullable(),
   needsServiceStaff: z.boolean().optional().default(false),

@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendNewLeadNotification, sendLeadConfirmation } from "@/lib/email";
 import { createLeadSchema, sanitizeInput } from "@/lib/validations/lead";
 import { notifyNewLead } from "@/lib/notifications";
+import { verifyTurnstile, getTurnstileErrorMessage } from "@/lib/turnstile";
 import { ZodError } from "zod";
 
 // Rate limit için basit in-memory store (production'da Redis kullanılmalı)
@@ -71,7 +72,16 @@ export async function POST(request: NextRequest) {
 
     const data = validationResult.data;
 
-    // 4) Idempotency Check
+    // 4) Turnstile (CAPTCHA) Verification
+    const turnstileResult = await verifyTurnstile(data.turnstileToken, ip);
+    if (!turnstileResult.success) {
+      return NextResponse.json(
+        { error: getTurnstileErrorMessage(turnstileResult.errorCodes) },
+        { status: 400 }
+      );
+    }
+
+    // 5) Idempotency Check (çift tıklama koruması)
     if (data.idempotencyKey) {
       const { data: existingKey } = await supabaseAdmin
         .from("idempotency_keys")
@@ -90,7 +100,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 5) Sanitize text inputs
+    // 6) Sanitize text inputs
     const sanitizedData = {
       customerName: sanitizeInput(data.customerName),
       customerEmail: data.customerEmail, // Email zaten validated
@@ -101,13 +111,13 @@ export async function POST(request: NextRequest) {
         : null,
     };
 
-    // 6) Kullanıcı oturum kontrolü
+    // 7) Kullanıcı oturum kontrolü
     const supabase = await createServerSupabaseClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // 7) Vendor'ın varlığını ve aktifliğini kontrol et
+    // 8) Vendor'ın varlığını ve aktifliğini kontrol et
     const { data: vendor, error: vendorError } = await supabaseAdmin
       .from("vendors")
       .select("id, business_name, email, status, owner_id")
@@ -125,7 +135,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 8) RPC ile Transaction içinde Lead + VendorLead oluştur
+    // 9) RPC ile Transaction içinde Lead + VendorLead oluştur
     const { data: result, error: rpcError } = await supabaseAdmin.rpc(
       "create_lead_with_vendor",
       {
@@ -164,7 +174,7 @@ export async function POST(request: NextRequest) {
 
     const leadId = result;
 
-    // 9) Segment bilgisini çek (e-posta için)
+    // 10) Segment bilgisini çek (e-posta için)
     let segmentName = "";
     if (data.segmentId) {
       const { data: segment } = await supabaseAdmin
@@ -175,7 +185,7 @@ export async function POST(request: NextRequest) {
       segmentName = segment?.name || "";
     }
 
-    // 10) E-posta bildirimleri gönder (async, response'u bekleme)
+    // 11) E-posta bildirimleri gönder (async, response'u bekleme)
     if (vendor.email) {
       sendNewLeadNotification({
         vendorEmail: vendor.email,
@@ -197,7 +207,7 @@ export async function POST(request: NextRequest) {
       vendorName: vendor.business_name,
     }).catch((err) => console.error("Customer email error:", err));
 
-    // 11) In-app bildirim gönder (vendor sahibine)
+    // 12) In-app bildirim gönder (vendor sahibine)
     if (vendor.owner_id) {
       notifyNewLead(vendor.owner_id, leadId, sanitizedData.customerName).catch(
         (err) => console.error("In-app notification error:", err)

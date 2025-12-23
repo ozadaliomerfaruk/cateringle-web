@@ -139,16 +139,17 @@ export type MessageSenderType = "vendor" | "customer";
 export type MessageType = "text" | "quote";
 
 // Quote status with valid transitions
-export type QuoteStatus = "draft" | "sent" | "viewed" | "accepted" | "rejected" | "expired";
+export type QuoteStatus = "draft" | "sent" | "viewed" | "accepted" | "rejected" | "expired" | "cancelled";
 
 // Valid quote status transitions (for client-side validation)
 export const QUOTE_STATUS_TRANSITIONS: Record<QuoteStatus, QuoteStatus[]> = {
-  draft: ["sent"],
-  sent: ["viewed", "accepted", "rejected", "expired"],
-  viewed: ["accepted", "rejected", "expired"],
+  draft: ["sent", "cancelled"],
+  sent: ["viewed", "accepted", "rejected", "expired", "cancelled"],
+  viewed: ["accepted", "rejected", "expired", "cancelled"],
   accepted: [], // terminal
   rejected: [], // terminal
   expired: [], // terminal
+  cancelled: [], // terminal
 };
 
 // Helper to check if status transition is valid
