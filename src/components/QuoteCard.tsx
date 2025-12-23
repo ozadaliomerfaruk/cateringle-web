@@ -72,6 +72,11 @@ const statusConfig: Record<
     color: "bg-slate-100 text-slate-500",
     icon: <Clock size={14} weight="bold" />,
   },
+  cancelled: {
+    label: "İptal Edildi",
+    color: "bg-slate-100 text-slate-500",
+    icon: <XCircle size={14} weight="bold" />,
+  },
 };
 
 export default function QuoteCard({
