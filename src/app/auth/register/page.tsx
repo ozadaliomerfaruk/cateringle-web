@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendNewVendorNotification } from "@/lib/email";
 
 export const metadata: Metadata = {
@@ -35,9 +36,15 @@ export default async function VendorRegisterPage({
     "use server";
 
     const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+
+    // Kullanıcı oturumunu kontrol et (hata varsa null döner)
+    let user = null;
+    try {
+      const { data } = await supabase.auth.getUser();
+      user = data.user;
+    } catch {
+      // Oturum yoksa devam et
+    }
 
     // Form verilerini al
     const cityIdStr = formData.get("city_id") as string;
@@ -74,16 +81,16 @@ export default async function VendorRegisterPage({
       }
 
       if (authData.user) {
-        // Profil oluştur
-        await supabase.from("profiles").upsert({
+        // Profil oluştur (admin client - RLS bypass)
+        await supabaseAdmin.from("profiles").upsert({
           id: authData.user.id,
           email,
           full_name: fullName,
           role: "vendor_owner", // Geriye uyumluluk için
         });
 
-        // RBAC: Hem customer hem vendor rolü ekle
-        const { data: roles } = await supabase
+        // RBAC: Hem customer hem vendor rolü ekle (admin client)
+        const { data: roles } = await supabaseAdmin
           .from("roles")
           .select("id, name")
           .in("name", ["customer", "vendor"]);
@@ -93,11 +100,11 @@ export default async function VendorRegisterPage({
             user_id: authData.user!.id,
             role_id: role.id,
           }));
-          await supabase.from("user_roles").upsert(roleInserts);
+          await supabaseAdmin.from("user_roles").upsert(roleInserts);
         }
 
-        // Vendor kaydı
-        const { data: vendor, error: vendorError } = await supabase
+        // Vendor kaydı (admin client - RLS bypass)
+        const { data: vendor, error: vendorError } = await supabaseAdmin
           .from("vendors")
           .insert({
             owner_id: authData.user.id,
@@ -123,13 +130,13 @@ export default async function VendorRegisterPage({
           );
         }
 
-        // Vendor segment ilişkilerini kaydet
+        // Vendor segment ilişkilerini kaydet (admin client)
         if (vendor && segmentIds.length > 0) {
           const segmentInserts = segmentIds.map((segmentId) => ({
             vendor_id: vendor.id,
             segment_id: segmentId,
           }));
-          await supabase.from("vendor_segments").insert(segmentInserts);
+          await supabaseAdmin.from("vendor_segments").insert(segmentInserts);
         }
 
         // Admin'e bildirim emaili gönder
@@ -251,9 +258,14 @@ export default async function VendorRegisterPage({
     }
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Kullanıcı oturumunu kontrol et (hata varsa null döner)
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Oturum yoksa devam et
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12">

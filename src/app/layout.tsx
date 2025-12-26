@@ -9,6 +9,7 @@ import MobileBottomNav from "../components/MobileBottomNav";
 import ServiceWorkerRegistration from "../components/ServiceWorkerRegistration";
 import PWAInstallPrompt from "../components/PWAInstallPrompt";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { Analytics } from "@vercel/analytics/next";
 
 const montserrat = Montserrat({
   subsets: ["latin", "latin-ext"],
@@ -31,9 +32,13 @@ export default async function RootLayout({
 }) {
   // Server-side'da kullanıcı bilgisini al
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Oturum yoksa devam et
+  }
 
   let initialUser = null;
   if (user) {
@@ -70,6 +75,7 @@ export default async function RootLayout({
         <MobileBottomNav />
         <ServiceWorkerRegistration />
         <PWAInstallPrompt />
+        <Analytics />
       </body>
     </html>
   );

@@ -12,4 +12,9 @@ if (!url || !serviceKey) {
   );
 }
 
-export const supabaseAdmin = createClient<Database>(url, serviceKey);
+export const supabaseAdmin = createClient<Database>(url, serviceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
